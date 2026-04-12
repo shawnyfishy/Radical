@@ -1,0 +1,12 @@
+# IDE and system files
+.gemini/
+.DS_Store
+Thumbs.db
+node_modules/
+
+# Local assets/scratch (optional, but keeping core assets)
+# !assets/
+
+# Environment files
+.env
+.env.local

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RADICAL Men's Jewellery. Steel wearables built for men who choose alignment over noise. Identity-driven jewellery for the disciplined modern man." />
+  <meta name="theme-color" content="#1A1A1A" />
+  <title>RADICAL Men's Jewellery</title>
+
+  <!-- Google Fonts: Cormorant Garamond for brand/headings, Questrial for UI/Nav text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Questrial&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    /* Prevent Flash of Unstyled Content (FOUC) */
+    body {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       SCROLL PROGRESS BAR
+  ============================================================ -->
+  <div id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- ============================================================
+       STICKY NAVIGATION
+  ============================================================ -->
+  <header id="main-nav" class="nav" role="banner">
+    <div class="nav__inner">
+
+      <!-- LEFT: Hamburger + Search -->
+      <div class="nav__left" role="group" aria-label="Menu controls">
+
+        <!-- Hamburger -->
+        <button id="nav-menu-btn" class="nav__icon-btn" aria-label="Open navigation menu" aria-expanded="false" aria-haspopup="true">
+          <svg class="nav__icon hamburger-svg" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect class="hamburger-top" x="0" y="4" width="20" height="1.4" rx="0.7" fill="currentColor"/>
+            <rect class="hamburger-mid" x="0" y="9.3" width="20" height="1.4" rx="0.7" fill="currentColor"/>
+            <rect class="hamburger-bot" x="0" y="14.6" width="20" height="1.4" rx="0.7" fill="currentColor"/>
+          </svg>
+        </button>
+
+        <!-- Search -->
+        <button id="nav-search-btn" class="nav__icon-btn" aria-label="Search">
+          <svg class="nav__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="8.5" cy="8.5" r="5.5"/>
+            <line x1="12.5" y1="12.5" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+      </div>
+
+      <!-- CENTER: Brand wordmark -->
+      <a href="#" class="nav__brand" id="nav-brand" aria-label="RADICAL Home">RADICAL</a>
+
+      <!-- RIGHT: Account + Bag -->
+      <div class="nav__right" role="group" aria-label="Account controls">
+
+        <!-- Account/User -->
+        <button id="nav-account-btn" class="nav__icon-btn" aria-label="My account">
+          <svg class="nav__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="6.5" r="3.5"/>
+            <path d="M2 18c0-4 3.582-7 8-7s8 3 8 7"/>
+          </svg>
+        </button>
+
+        <!-- Shopping Bag -->
+        <button id="nav-bag-btn" class="nav__icon-btn" aria-label="Shopping bag (0 items)">
+          <svg class="nav__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h14l-1.5 10H4.5L3 6Z"/>
+            <path d="M7 6V4.5C7 3.12 8.12 2 9.5 2h1C11.88 2 13 3.12 13 4.5V6"/>
+          </svg>
+          <span class="nav__bag-count" aria-label="0 items in bag">0</span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ============================================================
+       NAVIGATION OVERLAY (Floating Sidebar)
+  ============================================================ -->
+  <div id="nav-overlay" class="nav-overlay" aria-hidden="true" role="dialog" aria-label="Navigation menu" aria-modal="true">
+    <div class="nav-overlay__backdrop" id="nav-backdrop"></div>
+    <div class="nav-overlay__panel" id="nav-panel">
+      
+      <!-- Close button (X Close matching reference) -->
+      <div class="nav-overlay__header">
+        <button id="nav-close-btn" class="nav-overlay__close" aria-label="Close menu">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+            <line x1="2" y1="2" x2="12" y2="12"/>
+            <line x1="12" y1="2" x2="2" y2="12"/>
+          </svg>
+          <span>Close</span>
+        </button>
+      </div>
+
+      <ul class="nav-overlay__list" role="menu">
+        
+        <!-- Accordion Item: Shop -->
+        <li role="menuitem" class="nav-overlay__item has-submenu">
+          <button class="nav-overlay__link nav-overlay__toggle" aria-expanded="false">
+            Shop
+            <svg class="nav-overlay__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 2 8 6 4 10"></polyline>
+            </svg>
+          </button>
+          <ul class="nav-overlay__sublist">
+            <li><a href="product.html" class="nav-overlay__sublink">Rings</a></li>
+            <li><a href="product-pendant.html" class="nav-overlay__sublink">Pendants</a></li>
+            <li><a href="product-bracelet.html" class="nav-overlay__sublink">Bracelets</a></li>
+            <li><a href="product-limited.html" class="nav-overlay__sublink">Limited Editions</a></li>
+          </ul>
+        </li>
+
+        <li role="menuitem" class="nav-overlay__item"><a href="#editorial-grid" class="nav-overlay__link">Collections</a></li>
+        <li role="menuitem" class="nav-overlay__item"><a href="about.html" class="nav-overlay__link">Our Philosophy</a></li>
+        <li role="menuitem" class="nav-overlay__item"><a href="#hero" class="nav-overlay__link">The Steel</a></li>
+        <li role="menuitem" class="nav-overlay__item"><a href="#campaign" class="nav-overlay__link">Craftsmanship</a></li>
+        <li role="menuitem" class="nav-overlay__item"><a href="#footer" class="nav-overlay__link">Contact</a></li>
+
+      </ul>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       SEARCH OVERLAY
+  ============================================================ -->
+  <div id="search-scrim" class="search-scrim" aria-hidden="true"></div>
+  <div id="search-strip" class="search-strip" aria-hidden="true" role="search">
+    <div class="search-strip__inner">
+      <input type="text" id="search-input" class="search-strip__input" placeholder="Search RADICAL" aria-label="Search" />
+      <button id="search-close-btn" class="search-strip__close" aria-label="Close search">
+        <!-- 16px explicit viewbox to match target sizes -->
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="3" y1="3" x2="13" y2="13"/>
+          <line x1="13" y1="3" x2="3" y2="13"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       MAIN CONTENT — SECTION SKELETONS
+  ============================================================ -->
+  <main id="main-content" role="main">
+
+    <!-- 1. HERO ------------------------------------------------ -->
+    <section id="hero" class="section section--hero section--full-bleed" aria-label="RADICAL founding collection hero">
+
+      <!-- Background image container (swap src when real photo is ready) -->
+      <div class="hero__media" aria-hidden="true">
+        <img
+          class="hero__img"
+          src="assets/hero.png"
+          alt="RADICAL Founding Collection — premium steel jewellery"
+          role="presentation"
+        />
+        <!-- Placeholder hidden when image src is populated -->
+      </div>
+
+      <!-- Dark gradient overlay -->
+      <div class="hero__overlay" aria-hidden="true"></div>
+
+      <!-- Text overlay — bottom-center -->
+      <div class="hero__content">
+
+        <!-- Small label -->
+        <p class="hero__label">The Founding Collection</p>
+
+        <!-- Display headline -->
+        <h1 class="hero__headline">Weapons for Identity</h1>
+
+        <!-- CTA -->
+        <a href="product.html" class="hero__cta" id="hero-cta-btn" aria-label="Discover the RADICAL Founding Collection">
+          Discover More
+        </a>
+
+      </div>
+
+    </section>
+
+    <!-- 2. EDITORIAL GRID ------------------------------------- -->
+    <section id="editorial-grid" class="section section--editorial" aria-label="Collection editorial grid">
+      <div class="editorial__inner">
+
+        <div class="editorial__grid">
+
+          <!-- Left cell — Rings -->
+          <article class="editorial__item reveal" aria-label="Rings collection">
+            <a href="product.html" class="editorial__item-link" aria-label="Shop Rings collection">
+            <div class="editorial__media">
+              <img
+                class="editorial__img"
+                src="assets/rings_collection.png"
+                alt="RADICAL Rings Collection — sculptural steel rings for men"
+                role="presentation"
+              />
+            </div>
+            <p class="editorial__caption">Rings</p>
+            </a>
+          </article>
+
+          <!-- Right cell — Pendants -->
+          <article class="editorial__item reveal delay-150" aria-label="Pendants collection">
+            <a href="product-pendant.html" class="editorial__item-link" aria-label="Shop Pendants collection">
+            <div class="editorial__media">
+              <img
+                class="editorial__img"
+                src="assets/pendants_collection.png"
+                alt="RADICAL Pendants Collection — surgical steel pendants for men"
+                role="presentation"
+              />
+            </div>
+            <p class="editorial__caption">Pendants</p>
+            </a>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PHILOSOPHY TEXT ------------------------------------ -->
+    <section id="philosophy-text" class="section section--philosophy" aria-label="Brand philosophy">
+      <div class="philosophy__inner">
+
+        <!-- Brand mark — thin rule, will be replaced by RADICAL SVG mark -->
+        <div class="philosophy__mark reveal" aria-hidden="true">
+          <svg class="philosophy__mark-svg" width="40" height="12" viewBox="0 0 40 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="RADICAL brand mark">
+            <!-- Outer serif-like terminals on the rule — refined, not plain HR -->
+            <line x1="0"  y1="6" x2="40" y2="6" stroke="#1A1A1A" stroke-width="1"/>
+            <line x1="0"  y1="2" x2="0"  y2="10" stroke="#1A1A1A" stroke-width="1"/>
+            <line x1="40" y1="2" x2="40" y2="10" stroke="#1A1A1A" stroke-width="1"/>
+          </svg>
+        </div>
+
+        <!-- Philosophy body copy -->
+        <p class="philosophy__text reveal delay-200">
+          The Founding Collection features surgical-grade steel pieces forged as identity symbols.
+          Rooted in warrior philosophy and Indian heritage, each piece is designed to be worn daily,
+          not as decoration, but as a reminder of discipline, purpose, and self-mastery.
+        </p>
+
+      </div>
+    </section>
+
+    <!-- 4. COLLECTION BANNER ---------------------------------- -->
+    <section id="collection-banner" class="section section--banner section--full-bleed" aria-label="Lifestyle collection banner">
+
+      <!-- Media container -->
+      <div class="banner__media reveal" aria-hidden="true">
+        <img
+          class="banner__img"
+          src="assets/lifestyle_banner.png"
+          alt="RADICAL Lifestyle — Steel. Discipline. Identity."
+          role="presentation"
+        />
+      </div>
+
+      <!-- Gradient overlay -->
+      <div class="banner__overlay" aria-hidden="true"></div>
+
+      <!-- Text content -->
+      <div class="banner__content">
+        <p class="banner__label reveal delay-150">Philosophy-Led Design</p>
+        <h2 class="banner__headline reveal delay-300">Steel. Discipline. Identity.</h2>
+        <a href="product.html" class="hero__cta banner__cta reveal delay-450" aria-label="Explore the RADICAL Collection">
+          Explore the Collection
+        </a>
+      </div>
+
+    </section>
+
+    <!-- 5. CATEGORY ROW --------------------------------------- -->
+    <section id="category-row" class="section section--category" aria-label="Product categories">
+      <div class="category__inner">
+
+        <ul class="category__grid">
+          
+          <!-- Item 1: Rings -->
+          <li class="category__item reveal" aria-label="Shop Rings">
+            <a href="product.html" class="category__link">
+              <div class="category__media">
+                <img class="category__img" src="assets/rings_collection.png" alt="Rings" role="presentation" />
+                <div class="category__placeholder" aria-hidden="true">[IMAGE]</div>
+              </div>
+              <p class="category__title">Rings</p>
+            </a>
+          </li>
+
+          <li class="category__item reveal delay-100" aria-label="Shop Pendants">
+            <a href="product-pendant.html" class="category__link">
+              <div class="category__media">
+                <img class="category__img" src="assets/pendants_collection.png" alt="Pendants" role="presentation" />
+              </div>
+              <p class="category__title">Pendants</p>
+            </a>
+          </li>
+
+          <li class="category__item reveal delay-200" aria-label="Shop Bracelets">
+            <a href="product-bracelet.html" class="category__link">
+              <div class="category__media">
+                <img class="category__img" src="assets/bracelets_collection.png" alt="Bracelets" role="presentation" />
+              </div>
+              <p class="category__title">Bracelets</p>
+            </a>
+          </li>
+
+          <li class="category__item reveal delay-300" aria-label="Shop Limited Editions">
+            <a href="product-limited.html" class="category__link">
+              <div class="category__media">
+                <img class="category__img" src="assets/limited_1_front.png" alt="Limited Editions" role="presentation" />
+              </div>
+              <p class="category__title">Limited Editions</p>
+            </a>
+          </li>
+
+        </ul>
+
+      </div>
+    </section>
+
+    <!-- 6. CAMPAIGN ------------------------------------------- -->
+    <section id="campaign" class="section section--campaign" aria-label="Brand campaign">
+      <div class="campaign__inner">
+        
+        <!-- Header -->
+        <header class="campaign__header">
+          <p class="campaign__label reveal">Radical Men</p>
+          <h2 class="campaign__headline reveal delay-100">The Founding Campaign</h2>
+        </header>
+
+        <!-- Media -->
+        <div class="campaign__media reveal delay-250" aria-hidden="true">
+          <img class="campaign__img" src="assets/hero.png" alt="RADICAL Fall Campaign" role="presentation" />
+        </div>
+
+        <!-- Body & CTA -->
+        <div class="campaign__body">
+          <p class="campaign__text reveal delay-350">
+            A gathering of steel, discipline, and identity. RADICAL's founding campaign captures men who choose alignment over noise, forged in restraint, worn with purpose.
+          </p>
+          <a href="product.html" class="campaign__link reveal delay-450" aria-label="Discover the founding campaign">Discover</a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 7. FOOTER --------------------------------------------- -->
+    <footer id="footer" class="section section--footer" role="contentinfo" aria-label="Site footer">
+      <div class="footer__inner">
+
+        <!-- Top Wordmark -->
+        <div class="footer__brand">
+          <span class="footer__logo">RADICAL</span>
+        </div>
+
+        <!-- 4-Column Links -->
+        <nav class="footer__nav" aria-label="Footer Navigation">
+          <!-- Column 1 -->
+          <div class="footer__col is-accordion">
+            <h3 class="footer__col-title">
+              <button class="footer__col-toggle" aria-expanded="false">
+                Shop
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="footer__chevron" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="2 4 6 8 10 4"></polyline>
+                </svg>
+              </button>
+            </h3>
+            <ul class="footer__list">
+              <li><a href="product.html" class="footer__link">Rings</a></li>
+              <li><a href="product-pendant.html" class="footer__link">Pendants</a></li>
+              <li><a href="product-bracelet.html" class="footer__link">Bracelets</a></li>
+              <li><a href="product-limited.html" class="footer__link">Limited Editions</a></li>
+            </ul>
+          </div>
+          <!-- Column 2 -->
+          <div class="footer__col is-accordion">
+            <h3 class="footer__col-title">
+              <button class="footer__col-toggle" aria-expanded="false">
+                About
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="footer__chevron" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="2 4 6 8 10 4"></polyline>
+                </svg>
+              </button>
+            </h3>
+            <ul class="footer__list">
+              <li><a href="#" class="footer__link">Our Philosophy</a></li>
+              <li><a href="#" class="footer__link">The Steel</a></li>
+              <li><a href="#" class="footer__link">Craftsmanship</a></li>
+            </ul>
+          </div>
+          <!-- Column 3 -->
+          <div class="footer__col is-accordion">
+            <h3 class="footer__col-title">
+              <button class="footer__col-toggle" aria-expanded="false">
+                Support
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="footer__chevron" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="2 4 6 8 10 4"></polyline>
+                </svg>
+              </button>
+            </h3>
+            <ul class="footer__list">
+              <li><a href="#" class="footer__link">Contact</a></li>
+              <li><a href="#" class="footer__link">Shipping</a></li>
+              <li><a href="#" class="footer__link">Returns</a></li>
+              <li><a href="#" class="footer__link">FAQ</a></li>
+            </ul>
+          </div>
+          <!-- Column 4 -->
+          <div class="footer__col is-accordion">
+            <h3 class="footer__col-title">
+              <button class="footer__col-toggle" aria-expanded="false">
+                Connect
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="footer__chevron" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="2 4 6 8 10 4"></polyline>
+                </svg>
+              </button>
+            </h3>
+            <ul class="footer__list">
+              <li><a href="#" class="footer__link">Instagram</a></li>
+              <li><a href="#" class="footer__link">Newsletter</a></li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Bottom Legal -->
+        <div class="footer__bottom">
+          <p class="footer__copyright">© 2026 RADICAL. All rights reserved.</p>
+        </div>
+
+      </div>
+    </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

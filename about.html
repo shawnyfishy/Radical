@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RADICAL builds steel jewellery as weapons for identity. Philosophy-led, warrior-rooted, designed for men who choose alignment over noise." />
+  <meta name="theme-color" content="#1A1A1A" />
+  <title>Our Philosophy — RADICAL Men's Jewellery</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Questrial&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    body {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       SCROLL PROGRESS BAR
+  ============================================================ -->
+  <div id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- ============================================================
+       STICKY NAVIGATION
+  ============================================================ -->
+  <header id="main-nav" class="nav" role="banner">
+    <div class="nav__inner">
+
+      <div class="nav__left" role="group" aria-label="Menu controls">
+        <button id="nav-menu-btn" class="nav__icon-btn" aria-label="Open navigation menu" aria-expanded="false" aria-haspopup="true">
+          <svg class="nav__icon hamburger-svg" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect class="hamburger-top" x="0" y="4" width="20" height="1.4" rx="0.7" fill="currentColor"/>
+            <rect class="hamburger-mid" x="0" y="9.3" width="20" height="1.4" rx="0.7" fill="currentColor"/>
+            <rect class="hamburger-bot" x="0" y="14.6" width="20" height="1.4" rx="0.7" fill="currentColor"/>
+          </svg>
+        </button>
+        <button id="nav-search-btn" class="nav__icon-btn" aria-label="Search">
+          <svg class="nav__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="8.5" cy="8.5" r="5.5"/>
+            <line x1="12.5" y1="12.5" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <a href="index.html" class="nav__brand" id="nav-brand" aria-label="RADICAL Home">RADICAL</a>
+
+      <div class="nav__right" role="group" aria-label="Account controls">
+        <button id="nav-account-btn" class="nav__icon-btn" aria-label="My account">
+          <svg class="nav__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="6.5" r="3.5"/>
+            <path d="M2 18c0-4 3.582-7 8-7s8 3 8 7"/>
+          </svg>
+        </button>
+        <button id="nav-bag-btn" class="nav__icon-btn" aria-label="Shopping bag (0 items)">
+          <svg class="nav__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h14l-1.5 10H4.5L3 6Z"/>
+            <path d="M7 6V4.5C7 3.12 8.12 2 9.5 2h1C11.88 2 13 3.12 13 4.5V6"/>
+          </svg>
+          <span class="nav__bag-count" aria-label="0 items in bag">0</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+
+  <!-- ============================================================
+       NAVIGATION OVERLAY
+  ============================================================ -->
+  <div id="nav-overlay" class="nav-overlay" aria-hidden="true" role="dialog" aria-label="Navigation menu" aria-modal="true">
+    <div class="nav-overlay__backdrop" id="nav-backdrop"></div>
+    <div class="nav-overlay__panel" id="nav-panel">
+
+      <div class="nav-overlay__header">
+        <button id="nav-close-btn" class="nav-overlay__close" aria-label="Close menu">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+            <line x1="2" y1="2" x2="12" y2="12"/>
+            <line x1="12" y1="2" x2="2" y2="12"/>
+          </svg>
+          <span>Close</span>
+        </button>
+      </div>
+
+      <ul class="nav-overlay__list" role="menu">
+        <li role="menuitem" class="nav-overlay__item has-submenu">
+          <button class="nav-overlay__link nav-overlay__toggle" aria-expanded="false">
+            Shop
+            <svg class="nav-overlay__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 2 8 6 4 10"></polyline>
+            </svg>
+          </button>
+          <ul class="nav-overlay__sublist">
+            <li><a href="product.html" class="nav-overlay__sublink">Rings</a></li>
+            <li><a href="product-pendant.html" class="nav-overlay__sublink">Pendants</a></li>
+            <li><a href="product-bracelet.html" class="nav-overlay__sublink">Bracelets</a></li>
+            <li><a href="product-limited.html" class="nav-overlay__sublink">Limited Editions</a></li>
+          </ul>
+        </li>
+        <li role="menuitem" class="nav-overlay__item"><a href="index.html#editorial-grid" class="nav-overlay__link">Collections</a></li>
+        <li role="menuitem" class="nav-overlay__item"><a href="about.html" class="nav-overlay__link">Our Philosophy</a></li>
+        <li role="menuitem" class="nav-overlay__item"><a href="about.html#the-steel" class="nav-overlay__link">The Steel</a></li>
+        <li role="menuitem" class="nav-overlay__item"><a href="index.html#campaign" class="nav-overlay__link">Craftsmanship</a></li>
+        <li role="menuitem" class="nav-overlay__item"><a href="index.html#footer" class="nav-overlay__link">Contact</a></li>
+      </ul>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       SEARCH OVERLAY
+  ============================================================ -->
+  <div id="search-scrim" class="search-scrim" aria-hidden="true"></div>
+  <div id="search-strip" class="search-strip" aria-hidden="true" role="search">
+    <div class="search-strip__inner">
+      <input type="text" id="search-input" class="search-strip__input" placeholder="Search RADICAL" aria-label="Search" />
+      <button id="search-close-btn" class="search-strip__close" aria-label="Close search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="3" y1="3" x2="13" y2="13"/>
+          <line x1="13" y1="3" x2="3" y2="13"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       MAIN CONTENT
+  ============================================================ -->
+  <main role="main">
+
+    <!-- 1. FULL-SCREEN OPENING HERO -->
+    <section class="about-hero" aria-label="RADICAL brand philosophy hero">
+      <div class="about-hero__media" aria-hidden="true">
+        <img class="about-hero__img" src="assets/hero.png" alt="RADICAL — Not Decoration. Identity." 
+             style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;" />
+      </div>
+      <div class="about-hero__overlay" aria-hidden="true"></div>
+      <div class="about-hero__content" id="about-hero-content">
+        <p class="about-hero__label">The RADICAL Philosophy</p>
+        <h1 class="about-hero__headline">Not Decoration.<br>Identity.</h1>
+        <p class="about-hero__sub">RADICAL builds steel jewellery as weapons for identity, worn with discipline, built for men who choose alignment over noise.</p>
+      </div>
+    </section>
+
+
+    <!-- 2. ALTERNATING STORY SECTIONS -->
+
+    <!-- SECTION 1 — WHY STEEL (image left, text right) -->
+    <section id="the-steel" class="about-section" aria-label="Why steel">
+      <div class="about-section__media about-reveal about-reveal--left">
+        <img class="about-section__img" src="assets/ring_1_detail.png" alt="RADICAL surgical steel — raw material" />
+      </div>
+      <div class="about-section__text about-reveal about-reveal--right">
+        <span class="about-section__label">01</span>
+        <h2 class="about-section__heading">Why Steel</h2>
+        <p class="about-section__body">Throughout history, warriors chose steel as their final material. Not gold. Not silver. Steel. Because steel demands nothing from you except the decision to wear it. It does not tarnish under pressure. It does not break under weight. It survives everything you put it through.</p>
+        <p class="about-section__body">Surgical-grade 316L steel is the same material used in medical implants. It is worn inside the human body. We bring that standard to the outside. Durable long-term wear over trend rotation. Discipline over indulgence. Permanence over novelty.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — THE PHILOSOPHY (text left, image right — reversed) -->
+    <section class="about-section about-section--reversed" aria-label="The philosophy">
+      <div class="about-section__text about-reveal about-reveal--left">
+        <span class="about-section__label">02</span>
+        <h2 class="about-section__heading">Meaning Over Ornament</h2>
+        <p class="about-section__body">There is a gap between what men wear and who men are becoming. Fashion offers novelty. Luxury offers status. Neither offers identity. RADICAL exists in that gap.</p>
+        <p class="about-section__body">Each piece is designed as a physical anchor, a daily reminder of the standard you have set for yourself. Not worn to signal. Not worn to impress. Worn to remember. The jewellery market is full of products that rotate. RADICAL builds pieces that stay.</p>
+      </div>
+      <div class="about-section__media about-reveal about-reveal--right">
+        <img class="about-section__img" src="assets/pendant_1_lifestyle.png" alt="RADICAL philosophy — identity through steel" />
+      </div>
+    </section>
+
+    <!-- SECTION 3 — THE WARRIOR (image left, text right) -->
+    <section class="about-section" aria-label="The warrior">
+      <div class="about-section__media about-reveal about-reveal--left">
+        <img class="about-section__img" src="assets/bracelet_1_lifestyle.png" alt="RADICAL — the disciplined modern man" />
+      </div>
+      <div class="about-section__text about-reveal about-reveal--right">
+        <span class="about-section__label">03</span>
+        <h2 class="about-section__heading">Who This Is For</h2>
+        <p class="about-section__body">RADICAL is not for everyone. It is for the man who is building himself deliberately. The founder, the athlete, the creator. Not defined by title, but by the private standard he holds himself to.</p>
+        <p class="about-section__body">Men aged 22 to 45 who value self-discipline and inner order. Who reject loud masculinity and shallow trends. Who want symbols that reflect not just who they are, but who they are choosing to become. This is a psychographic, not a demographic. A decision, not a category.</p>
+      </div>
+    </section>
+
+
+    <!-- 3. CLOSING STATEMENT -->
+    <section class="about-closing" aria-label="Brand closing statement">
+      <div class="about-closing__inner about-reveal about-reveal--up">
+        <p class="about-closing__statement">Steel. Discipline. Identity.</p>
+        <p class="about-closing__sub">The Founding Collection is available now.</p>
+        <a href="product.html" class="about-closing__cta">Shop the Collection</a>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
+  <footer id="footer" class="section section--footer" role="contentinfo" aria-label="Site footer">
+    <div class="footer__inner">
+
+      <div class="footer__brand">
+        <span class="footer__logo">RADICAL</span>
+      </div>
+
+      <nav class="footer__nav" aria-label="Footer Navigation">
+        <div class="footer__col is-accordion">
+          <h3 class="footer__col-title">
+            <button class="footer__col-toggle" aria-expanded="false">
+              Shop
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="footer__chevron" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="2 4 6 8 10 4"></polyline>
+              </svg>
+            </button>
+          </h3>
+          <ul class="footer__list">
+            <li><a href="product.html" class="footer__link">Rings</a></li>
+            <li><a href="product-pendant.html" class="footer__link">Pendants</a></li>
+            <li><a href="product-bracelet.html" class="footer__link">Bracelets</a></li>
+            <li><a href="product-limited.html" class="footer__link">Limited Editions</a></li>
+          </ul>
+        </div>
+        <div class="footer__col is-accordion">
+          <h3 class="footer__col-title">
+            <button class="footer__col-toggle" aria-expanded="false">
+              About
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="footer__chevron" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="2 4 6 8 10 4"></polyline>
+              </svg>
+            </button>
+          </h3>
+          <ul class="footer__list">
+            <li><a href="about.html" class="footer__link">Our Philosophy</a></li>
+            <li><a href="about.html#the-steel" class="footer__link">The Steel</a></li>
+            <li><a href="index.html#campaign" class="footer__link">Craftsmanship</a></li>
+          </ul>
+        </div>
+        <div class="footer__col is-accordion">
+          <h3 class="footer__col-title">
+            <button class="footer__col-toggle" aria-expanded="false">
+              Support
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="footer__chevron" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="2 4 6 8 10 4"></polyline>
+              </svg>
+            </button>
+          </h3>
+          <ul class="footer__list">
+            <li><a href="#" class="footer__link">Contact</a></li>
+            <li><a href="#" class="footer__link">Shipping</a></li>
+            <li><a href="#" class="footer__link">Returns</a></li>
+            <li><a href="#" class="footer__link">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer__col is-accordion">
+          <h3 class="footer__col-title">
+            <button class="footer__col-toggle" aria-expanded="false">
+              Connect
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="footer__chevron" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="2 4 6 8 10 4"></polyline>
+              </svg>
+            </button>
+          </h3>
+          <ul class="footer__list">
+            <li><a href="#" class="footer__link">Instagram</a></li>
+            <li><a href="#" class="footer__link">Newsletter</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="footer__bottom">
+        <p class="footer__copyright">&copy; 2026 RADICAL. All rights reserved.</p>
+      </div>
+
+    </div>
+  </footer>
+
+
+  <script src="script.js"></script>
+  <script src="about.js"></script>
+</body>
+</html>
