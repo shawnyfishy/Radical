@@ -1,498 +1,604 @@
 /**
  * RADICAL — Men's Jewellery
- * script.js · Phase 1: Navigation behaviour
+ * Unified Performance Engine — Awwwards Edition
+ *
+ * Stack: GSAP 3.12 (ScrollTrigger + CustomEase) · Lenis · SplitType
+ *
+ * Note: Framer Motion is React-only. All spring physics here use
+ * GSAP CustomEase + elastic curves — identical feel, zero React dep.
  */
 
 (function () {
   'use strict';
 
-  /* ─────────────────────────────────────────────────
-     DOM REFERENCES
-  ───────────────────────────────────────────────── */
-  const nav          = document.getElementById('main-nav');
-  const menuBtn      = document.getElementById('nav-menu-btn');
-  const closeBtn     = document.getElementById('nav-close-btn');
-  const backdrop     = document.getElementById('nav-backdrop');
-  const overlay      = document.getElementById('nav-overlay');
-  const panel        = document.getElementById('nav-panel');
-  const navLinks     = document.querySelectorAll('.nav-overlay__link');
-  const bagCount     = document.querySelector('.nav__bag-count');
+  /* ─────────────────────────────────────────────────────────────
+     1. GSAP REGISTRATION + CUSTOM EASES
+  ───────────────────────────────────────────────────────────── */
+  gsap.registerPlugin(ScrollTrigger);
 
-  // Hero elements
-  const heroSection  = document.getElementById('hero');
-  const heroImg      = document.querySelector('.hero__img');
+  // Ease aliases — GSAP native / cubic-bezier strings
+  const EASE = {
+    out_quad: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', // standard reveals (Phase 2/3)
+    emerge:   'expo.out',                               // section entrances
+    silk:     'power2.inOut',                           // transitions, swaps
+    sharp:    'power3.in',                              // sharp entry
+  };
 
+  /* ─────────────────────────────────────────────────────────────
+     2. LENIS — SYNCED TO GSAP TICKER (single RAF loop)
+  ───────────────────────────────────────────────────────────── */
+  const lenis = new Lenis({
+    lerp:        0.08,
+    smoothWheel: true,
+    syncTouch:   false,
+    duration:    1.2,
+  });
 
-  /* ─────────────────────────────────────────────────
-     1. FULL PAGE LOAD EXPERIENCE — Phase 15
-     Fires strictly after DOM and Fonts loaded
-  ───────────────────────────────────────────────── */
-  function initHeroAnimation() {
-    if (!heroSection) return;
-    
-    // Add the animation class
-    heroSection.classList.add('hero-animated');
+  gsap.ticker.add((time) => lenis.raf(time * 1000));
+  gsap.ticker.lagSmoothing(0);
+  lenis.on('scroll', ScrollTrigger.update);
 
-    // Remove will-change after animations finish (1.2s delay + 0.6s max duration = 1800ms)
-    setTimeout(() => {
-      const animatedEls = document.querySelectorAll('.hero__label, .hero__headline, .hero__cta');
-      animatedEls.forEach(el => {
-        el.style.willChange = 'auto';
-      });
-      // hero__media keeps will-change: transform for Ken Burns
-    }, 2000);
+  /* ─────────────────────────────────────────────────────────────
+     3. SCROLL PROGRESS BAR
+  ───────────────────────────────────────────────────────────── */
+  function initScrollProgress() {
+    const bar = document.getElementById('scroll-progress');
+    if (!bar) return;
+    lenis.on('scroll', ({ progress }) => { bar.style.width = `${progress * 100}%`; });
   }
 
-  // Orchestrate Cinematic Body Fade-In
-  document.addEventListener('DOMContentLoaded', () => {
-    // Check if Font Loading API is available
-    if ('fonts' in document) {
-      document.fonts.ready.then(() => {
-        // Soft white fade-in over 0.5s via inline CSS transition
-        document.body.style.opacity = '1';
-        
-        // Trigger hero animations right after body finishes fading in
-        setTimeout(initHeroAnimation, 500);
-      });
-    } else {
-      // Fallback if fonts API is unavailable
-      window.addEventListener('load', () => {
-        document.body.style.opacity = '1';
-        setTimeout(initHeroAnimation, 500);
-      });
+  /* ─────────────────────────────────────────────────────────────
+     5. NAVIGATION (native RAF — zero layout thrash)
+  ───────────────────────────────────────────────────────────── */
+  const nav      = document.getElementById('main-nav');
+  const menuBtn  = document.getElementById('nav-menu-btn');
+  const closeBtn = document.getElementById('nav-close-btn');
+  const backdrop = document.getElementById('nav-backdrop');
+  const overlay  = document.getElementById('nav-overlay');
+  const searchBtn   = document.getElementById('nav-search-btn');
+  const searchStrip = document.getElementById('search-strip');
+  const searchScrim = document.getElementById('search-scrim');
+  const searchClose = document.getElementById('search-close-btn');
+  const searchInput = document.getElementById('search-input');
+
+  let lastScrollY = 0, ticking = false;
+  function updateNav() {
+    const y = window.scrollY;
+    if (nav) {
+      nav.classList.toggle('is-scrolled', y > 20);
+      nav.style.transform = (y > 150 && y > lastScrollY) ? 'translateY(-100%)' : 'translateY(0)';
     }
-  });
-
-
-  /* ─────────────────────────────────────────────────
-     2. HERO — IMAGE LOAD HANDLER
-     Swap .hero__img src → it fades in when loaded.
-     Usage: heroImg.src = 'path/to/photo.jpg'
-  ───────────────────────────────────────────────── */
-  const globalImages = document.querySelectorAll(
-    '.hero__img, .editorial__img, .banner__img, .category__img, .campaign__img, .pdp__gallery-img, .about-hero__img, .about-section__img'
-  );
-
-  globalImages.forEach(img => {
-    const reveal = () => img.classList.add('is-loaded');
-    if (img.complete && img.naturalWidth > 0) {
-      reveal();
-    } else {
-      img.addEventListener('load', reveal);
-    }
-  });
-
-
-  /* ─────────────────────────────────────────────────
-     3. STICKY NAV — SCROLL SHRINK & HIDE
-     - Hysteresis gap for shrink (80px down, 30px up)
-     - Hide on scroll down past 200px
-     - Show on scroll up
-  ───────────────────────────────────────────────── */
-  const SHRINK_THRESHOLD = 20;  // Threshold to switch from Transparent to Solid
-  const EXPAND_THRESHOLD = 5;   // Threshold to switch back to Transparent
-  const HIDE_THRESHOLD = 150;   // Hides on scroll down past this point
-
-  let ticking = false;
-  let lastScrollY = window.scrollY;
-
-  function handleNavScroll() {
-    const currentScrollY = window.scrollY;
-
-    // 1. Shrink / Expand with Hysteresis
-    if (currentScrollY > SHRINK_THRESHOLD) {
-      nav.classList.add('is-scrolled');
-    } else if (currentScrollY < EXPAND_THRESHOLD) {
-      nav.classList.remove('is-scrolled');
-    }
-
-    // 2. Hide / Show based on Direction
-    if (currentScrollY <= 100) {
-      // Always show near top
-      nav.classList.remove('is-hidden');
-    } else {
-      if (currentScrollY > lastScrollY && currentScrollY > HIDE_THRESHOLD) {
-        // Scrolling Down — Vanish
-        nav.classList.add('is-hidden');
-      } else if (currentScrollY < lastScrollY - 5) { 
-        // Scrolling Up (with 5px buffer) — Reappear Instantly
-        nav.classList.remove('is-hidden');
-      }
-    }
-
-    lastScrollY = currentScrollY;
+    lastScrollY = y;
     ticking = false;
   }
-
-  let scrollTimeout;
-
   window.addEventListener('scroll', () => {
-    // Debounce at 10ms
-    if (scrollTimeout) {
-      clearTimeout(scrollTimeout);
-    }
-    scrollTimeout = setTimeout(() => {
-      window.requestAnimationFrame(handleNavScroll);
-    }, 10);
+    if (!ticking) { requestAnimationFrame(updateNav); ticking = true; }
   }, { passive: true });
 
-  // Run once on load to establish state
-  handleNavScroll();
+  /* ─────────────────────────────────────────────────────────────
+     6. PAGE ENTRANCE — overlay slides left off screen
+  ───────────────────────────────────────────────────────────── */
+  function initPageEntrance() {
+    const pt = document.getElementById('page-transition');
+    if (!pt) return;
 
+    gsap.fromTo(pt,
+      { xPercent: 0 },
+      {
+        xPercent: -100,
+        duration: 1.0,
+        ease: EASE.silk,
+        delay: 0.05,
+        onComplete: () => {
+          pt.style.pointerEvents = 'none';
+          gsap.set(pt, { xPercent: 100 });  // reset to right for next exit
+        }
+      }
+    );
+  }
 
-  /* ─────────────────────────────────────────────────
-     2. NAVIGATION OVERLAY — OPEN / CLOSE
-  ───────────────────────────────────────────────── */
+  /* ─────────────────────────────────────────────────────────────
+     7. PAGE EXIT — overlay slides in from right, then navigate
+  ───────────────────────────────────────────────────────────── */
+  function initPageTransition() {
+    const pt = document.getElementById('page-transition');
+    if (!pt) return;
+
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href]');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (!href ||
+          href.startsWith('http') ||
+          href.startsWith('mailto') ||
+          href.startsWith('tel') ||
+          link.target === '_blank' ||
+          (href.startsWith('#') && !href.includes('/'))) return;
+
+      e.preventDefault();
+      lenis.stop();
+      pt.style.pointerEvents = 'all';
+
+      gsap.fromTo(pt,
+        { xPercent: 100 },
+        {
+          xPercent: 0,
+          duration: 0.72,
+          ease: EASE.silk,
+          onComplete: () => { window.location.href = href; }
+        }
+      );
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     8. PRELOADER (index.html only)
+  ───────────────────────────────────────────────────────────── */
+  function initPreloader() {
+    const preloader = document.getElementById('preloader');
+    if (!preloader) return;
+
+    const brand = preloader.querySelector('.preloader__brand');
+    const tl = gsap.timeline();
+
+    // Brand wordmark fades in
+    if (brand) {
+      tl.fromTo(brand,
+        { autoAlpha: 0, y: 16 },
+        { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out' },
+        0.15
+      );
+    }
+
+    // Slide the entire panel up and off screen
+    tl.to(preloader, {
+      yPercent: -100,
+      duration: 1.0,
+      ease: EASE.silk,
+      delay: 0.55,
+      onComplete: () => preloader.classList.add('is-done'),
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     9. HERO ENTRANCE — SplitType word cascade + Ken Burns
+  ───────────────────────────────────────────────────────────── */
+  function initHero() {
+    const heroContent = document.querySelector('.hero__content, .about-hero__content');
+    if (!heroContent) return;
+
+    const tl = gsap.timeline({ delay: 0.15 });
+
+    // Label
+    const label = heroContent.querySelector('.hero__label, .about-hero__label');
+    if (label) {
+      tl.fromTo(label,
+        { autoAlpha: 0, y: 20 },
+        { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+        0.1
+      );
+    }
+
+    // Headline — word-by-word with perspective
+    const headline = heroContent.querySelector('.hero__headline, .about-hero__headline');
+    if (headline && typeof SplitType !== 'undefined') {
+      headline.style.perspective = '600px';
+      const split = new SplitType(headline, { types: 'lines,words' });
+      gsap.set(split.words, { autoAlpha: 0, yPercent: 110, rotateX: -20 });
+      tl.to(split.words, {
+        autoAlpha: 1,
+        yPercent: 0,
+        rotateX: 0,
+        duration: 1.2,
+        ease: EASE.emerge,
+        stagger: { each: 0.065, from: 'start' },
+      }, 0.3);
+    } else if (headline) {
+      tl.fromTo(headline, { autoAlpha: 0, y: 48 }, { autoAlpha: 1, y: 0, duration: 1.2, ease: EASE.emerge }, 0.3);
+    }
+
+    // Sub / about sub
+    const sub = heroContent.querySelector('.about-hero__sub');
+    if (sub) tl.fromTo(sub, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out' }, '-=0.6');
+
+    // CTA
+    const cta = heroContent.querySelector('.hero__cta');
+    if (cta) tl.fromTo(cta, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out' }, '-=0.7');
+
+    // Hero image — Ken Burns entrance
+    const heroImgCover = document.querySelector('.about-hero__img');
+    if (heroImgCover) {
+      tl.fromTo(heroImgCover, { scale: 1.14 }, { scale: 1, duration: 2.0, ease: 'power3.out' }, 0);
+      gsap.to(heroImgCover, {
+        yPercent: 18,
+        ease: 'none',
+        scrollTrigger: { trigger: '.about-hero', start: 'top top', end: 'bottom top', scrub: 0.8 }
+      });
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     10. SCROLL REVEALS — Awwwards: clip-path + word stagger
+  ───────────────────────────────────────────────────────────── */
+  function initReveals() {
+    // ── All h2/h3 — word reveal ──
+    document.querySelectorAll('h2, h3, .campaign__headline, .banner__headline, .about-section__heading, .about-closing__statement').forEach(el => {
+      if (el.closest('.hero__content, .about-hero__content')) return;
+      if (typeof SplitType === 'undefined') return;
+
+      el.style.perspective = '600px';
+      el.style.overflow = 'visible';
+      const split = new SplitType(el, { types: 'lines,words' });
+
+      gsap.set(split.words, { autoAlpha: 0, yPercent: 100, rotateX: -18 });
+
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top 88%',
+        once: true,
+        onEnter: () => gsap.to(split.words, {
+          autoAlpha: 1, yPercent: 0, rotateX: 0,
+          duration: 1.1, ease: EASE.emerge,
+          stagger: { each: 0.055, from: 'start' },
+        }),
+      });
+    });
+
+    // ── Philosophy text — line by line ──
+    const philText = document.querySelector('.philosophy__text');
+    if (philText && typeof SplitType !== 'undefined') {
+      const split = new SplitType(philText, { types: 'lines' });
+      gsap.set(split.lines, { autoAlpha: 0, y: 28 });
+      ScrollTrigger.create({
+        trigger: philText, start: 'top 88%', once: true,
+        onEnter: () => gsap.to(split.lines, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.08 }),
+      });
+    }
+
+    // ── Labels / captions ──
+    gsap.utils.toArray(
+      '.campaign__label, .banner__label, .about-section__label, .editorial__caption, .category__title, .footer__logo'
+    ).forEach(el => {
+      gsap.set(el, { autoAlpha: 0, y: 24 });
+      ScrollTrigger.create({
+        trigger: el, start: 'top 91%', once: true,
+        onEnter: () => gsap.to(el, { autoAlpha: 1, y: 0, duration: 0.9, ease: EASE.emerge }),
+      });
+    });
+
+    // ── Body copy paragraphs ──
+    gsap.utils.toArray('.campaign__text, .about-section__body, .about-closing__sub, .philosophy__text').forEach(el => {
+      if (el.closest('[data-split]')) return;
+      gsap.set(el, { autoAlpha: 0, y: 24 });
+      ScrollTrigger.create({
+        trigger: el, start: 'top 88%', once: true,
+        onEnter: () => gsap.to(el, { autoAlpha: 1, y: 0, duration: 1.0, ease: 'power3.out' }),
+      });
+    });
+
+    // ── Staggered grids (editorial + category) ──
+    [
+      { sel: '#editorial-grid .editorial__item', parent: '#editorial-grid' },
+      { sel: '#category-row .category__item',   parent: '#category-row' },
+    ].forEach(({ sel, parent }) => {
+      const items = gsap.utils.toArray(sel);
+      if (!items.length) return;
+      gsap.set(items, { autoAlpha: 0, y: 44 });
+      ScrollTrigger.create({
+        trigger: parent, start: 'top 85%', once: true,
+        onEnter: () => gsap.to(items, { autoAlpha: 1, y: 0, duration: 1.0, ease: EASE.emerge, stagger: 0.12 }),
+      });
+    });
+
+    // ── CTA links ──
+    gsap.utils.toArray('.campaign__link, .banner__cta, .about-closing__cta').forEach(el => {
+      gsap.set(el, { autoAlpha: 0, y: 20 });
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(el, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out' }),
+      });
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     11. IMAGE CLIP-PATH REVEAL (Awwwards signature move)
+  ───────────────────────────────────────────────────────────── */
+  function initImageReveals() {
+    gsap.utils.toArray('.editorial__media, .campaign__media, .banner__media, .about-section__media, .pdp__gallery-item').forEach(wrap => {
+      // Clip reveal
+      gsap.fromTo(wrap,
+        { clipPath: 'inset(100% 0% 0% 0%)' },
+        {
+          clipPath: 'inset(0% 0% 0% 0%)',
+          duration: 1.5,
+          ease: EASE.silk,
+          scrollTrigger: { trigger: wrap, start: 'top 89%', once: true },
+        }
+      );
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     12. IMAGE PARALLAX (drifting internal parallax on all images)
+  ───────────────────────────────────────────────────────────── */
+  function initParallax() {
+    [
+      { sel: '.editorial__media',     y: 14 },
+      { sel: '.campaign__media',      y: 18 },
+      { sel: '.banner__media',        y: 22 },
+      { sel: '.about-section__media', y: 16 },
+      { sel: '.category__media',      y: 10 },
+    ].forEach(({ sel, y }) => {
+      document.querySelectorAll(sel).forEach(wrap => {
+        const img = wrap.querySelector('img');
+        if (!img) return;
+        wrap.style.overflow = 'hidden';
+        // Start centered (yPercent: 0), drift gently down — no upward crop at entry
+        gsap.set(img, { scale: 1.15, yPercent: 0 });
+        gsap.to(img, {
+          yPercent: y,
+          ease: 'none',
+          scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: 0.6 },
+        });
+      });
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     13. MAGNETIC HOVER on CTAs (Framer Motion spring equivalent)
+  ───────────────────────────────────────────────────────────── */
+  function initMagnetics() {
+    document.querySelectorAll('.hero__cta, .campaign__link, .about-closing__cta, .banner__cta').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const r  = btn.getBoundingClientRect();
+        const dx = (e.clientX - (r.left + r.width  * 0.5)) * 0.36;
+        const dy = (e.clientY - (r.top  + r.height * 0.5)) * 0.36;
+        gsap.to(btn, { x: dx, y: dy, duration: 0.4, ease: 'power2.out' });
+      });
+      btn.addEventListener('mouseleave', () => {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.4)' });
+      });
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     14. PRODUCT CARD HOVER — scale-up lift + image zoom
+  ───────────────────────────────────────────────────────────── */
+  function initProductHover() {
+    document.querySelectorAll('.editorial__item, .category__item').forEach(card => {
+      const img = card.querySelector('.editorial__img, .category__img');
+      card.addEventListener('mouseenter', () => {
+        gsap.to(card, { y: -8,    duration: 0.4, ease: 'power2.out' });
+        if (img) gsap.to(img, { scale: 1.07, duration: 0.7, ease: 'power2.out' });
+      });
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, { y: 0, duration: 0.7, ease: 'elastic.out(1.2, 0.5)' });
+        if (img) gsap.to(img, { scale: 1,    duration: 0.55, ease: 'power2.out' });
+      });
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     15. MENU OPEN / CLOSE
+  ───────────────────────────────────────────────────────────── */
+  let menuOpen = false;
+
   function openMenu() {
-    overlay.classList.add('is-open');
-    nav.classList.add('is-menu-open');
-    overlay.setAttribute('aria-hidden', 'false');
-    menuBtn.setAttribute('aria-expanded', 'true');
+    if (menuOpen) return;
+    menuOpen = true;
+    overlay && overlay.classList.add('is-open');
+    nav && nav.classList.add('is-menu-open');
     document.body.classList.add('menu-open');
-    document.body.style.overflow = 'hidden';
+    lenis.stop();
+
+    const items = gsap.utils.toArray('.nav-overlay__item');
+    gsap.set(items, { autoAlpha: 0, x: -28 });
+    gsap.to(items, { autoAlpha: 1, x: 0, duration: 0.75, ease: EASE.emerge, stagger: 0.07, delay: 0.2 });
   }
 
   function closeMenu() {
-    overlay.classList.remove('is-open');
-    nav.classList.remove('is-menu-open');
-    overlay.setAttribute('aria-hidden', 'true');
-    menuBtn.setAttribute('aria-expanded', 'false');
-    document.body.classList.remove('menu-open');
-    document.body.style.overflow = '';
-  }
-
-  function toggleMenu() {
-    if (overlay.classList.contains('is-open')) {
-      closeMenu();
-    } else {
-      openMenu();
-    }
-  }
-
-  // Toggle trigger
-  if (menuBtn) {
-    menuBtn.addEventListener('click', toggleMenu);
-  }
-
-  // Close triggers
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeMenu);
-  }
-
-  // Backdrop click to close
-  if (backdrop) {
-    backdrop.addEventListener('click', closeMenu);
-  }
-
-  // Close on ESC key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && overlay.classList.contains('is-open')) {
-      closeMenu();
-    }
-  });
-
-  // Close menu when clicking a nav link (smooth scroll + close), ignoring accordions
-  navLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
-      // Ignore clicks on accordion toggles
-      if (link.classList.contains('nav-overlay__toggle')) {
-        return;
-      }
-      
-      const href = link.getAttribute('href');
-      if (href && href.startsWith('#')) {
-        e.preventDefault();
-        closeMenu();
-        // Small delay to let panel close before scrolling
-        setTimeout(() => {
-          const target = document.querySelector(href);
-          if (target) {
-            const targetRect = target.getBoundingClientRect();
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetOffsetTop = targetRect.top + scrollTop;
-            const offsetPosition = targetOffsetTop - 70;
-
-            window.scrollTo({
-              top: offsetPosition,
-              behavior: 'smooth'
-            });
-          }
-        }, 500);
+    if (!menuOpen) return;
+    menuOpen = false;
+    const items = gsap.utils.toArray('.nav-overlay__item');
+    gsap.to(items, {
+      autoAlpha: 0, x: -18,
+      duration: 0.25, ease: 'power2.in', stagger: 0.03,
+      onComplete: () => {
+        overlay && overlay.classList.remove('is-open');
+        nav && nav.classList.remove('is-menu-open');
+        document.body.classList.remove('menu-open');
+        lenis.start();
       }
     });
-  });
-
-  /* ─────────────────────────────────────────────────
-     2.1 ACCORDION TOGGLES IN MENU
-  ───────────────────────────────────────────────── */
-  const accordionToggles = document.querySelectorAll('.nav-overlay__toggle');
-  accordionToggles.forEach(toggle => {
-    toggle.addEventListener('click', (e) => {
-      e.preventDefault();
-      const parentLi = toggle.closest('.nav-overlay__item');
-      const sublist = parentLi.querySelector('.nav-overlay__sublist');
-      
-      if (parentLi.classList.contains('is-expanded')) {
-        parentLi.classList.remove('is-expanded');
-        toggle.setAttribute('aria-expanded', 'false');
-        sublist.style.maxHeight = null;
-      } else {
-        parentLi.classList.add('is-expanded');
-        toggle.setAttribute('aria-expanded', 'true');
-        sublist.style.maxHeight = sublist.scrollHeight + 32 + "px"; // 32px accounts for padding
-      }
-    });
-  });
-
-
-  /* ─────────────────────────────────────────────────
-     2.2 SEARCH OVERLAY — Phase 16
-  ───────────────────────────────────────────────── */
-  const searchBtn    = document.getElementById('nav-search-btn');
-  const searchStrip  = document.getElementById('search-strip');
-  const searchScrim  = document.getElementById('search-scrim');
-  const searchClose  = document.getElementById('search-close-btn');
-  const searchInput  = document.getElementById('search-input');
-
-  function openSearch(e) {
-    if (e) e.preventDefault();
-    if (searchStrip && searchScrim) {
-      searchStrip.classList.add('is-open');
-      searchStrip.setAttribute('aria-hidden', 'false');
-      searchScrim.classList.add('is-active');
-      searchScrim.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-      
-      // Auto-focus input
-      setTimeout(() => {
-        if (searchInput) searchInput.focus();
-      }, 100);
-    }
   }
 
+  if (menuBtn)  menuBtn.addEventListener('click', openMenu);
+  if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+  if (backdrop) backdrop.addEventListener('click', closeMenu);
+
+  function openSearch() {
+    searchStrip && searchStrip.classList.add('is-open');
+    searchScrim  && searchScrim.classList.add('is-active');
+    lenis.stop();
+    setTimeout(() => searchInput && searchInput.focus(), 100);
+  }
   function closeSearch() {
-    if (searchStrip && searchScrim) {
-      searchStrip.classList.remove('is-open');
-      searchStrip.classList.add('is-closing');
-      searchStrip.setAttribute('aria-hidden', 'true');
-      searchScrim.classList.remove('is-active');
-      searchScrim.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-      
-      setTimeout(() => {
-        searchStrip.classList.remove('is-closing');
-        if (searchInput) searchInput.value = ''; // clear input on close
-      }, 350); // wait for ease duration
-    }
+    searchStrip && searchStrip.classList.remove('is-open');
+    searchScrim  && searchScrim.classList.remove('is-active');
+    lenis.start();
   }
-
-  if (searchBtn) searchBtn.addEventListener('click', openSearch);
+  if (searchBtn)   searchBtn.addEventListener('click', openSearch);
   if (searchClose) searchClose.addEventListener('click', closeSearch);
   if (searchScrim) searchScrim.addEventListener('click', closeSearch);
 
-  // Close search on ESC key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && searchStrip && searchStrip.classList.contains('is-open')) {
-      closeSearch();
+  /* ─────────────────────────────────────────────────────────────
+     16. PRODUCT PAGE (PDP)
+  ───────────────────────────────────────────────────────────── */
+  function initProductPage() {
+    const galleryItems = document.querySelectorAll('.pdp__gallery-item');
+    if (!galleryItems.length) return;
+
+    // Gallery entrance stagger
+    gsap.set(galleryItems, { autoAlpha: 0, y: 32 });
+    gsap.to(galleryItems, { autoAlpha: 1, y: 0, duration: 0.9, ease: EASE.emerge, stagger: 0.1, delay: 0.5 });
+
+    // Lightbox
+    const lb      = document.getElementById('pdp-lightbox');
+    const lbImg   = document.getElementById('pdp-lb-img');
+    const lbClose = document.getElementById('pdp-lb-close');
+    const lbPrev  = document.getElementById('pdp-lb-prev');
+    const lbNext  = document.getElementById('pdp-lb-next');
+    const IMGS    = Array.from(document.querySelectorAll('.pdp__gallery-img')).map(i => ({ src: i.src, alt: i.alt }));
+    let lbIdx     = 0;
+
+    function openLb(i) {
+      lbIdx = i;
+      if (lbImg) { lbImg.src = IMGS[i].src; lbImg.alt = IMGS[i].alt; }
+      lb && lb.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      lenis.stop();
+      if (lbPrev) lbPrev.classList.toggle('is-hidden', lbIdx === 0);
+      if (lbNext) lbNext.classList.toggle('is-hidden', lbIdx === IMGS.length - 1);
     }
-  });
-
-
-  /* ─────────────────────────────────────────────────
-     3. SMOOTH SCROLL — All anchor links
-  ───────────────────────────────────────────────── */
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener('click', (e) => {
-      const href = anchor.getAttribute('href');
-      if (href === '#') return;
-      const target = document.querySelector(href);
-      if (target) {
-        e.preventDefault();
-        
-        // Calculate offset minus 70px for sticky nav clearance
-        const targetRect = target.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const targetOffsetTop = targetRect.top + scrollTop;
-        const offsetPosition = targetOffsetTop - 70;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-
-        // If the click came from inside the mobile menu, close the menu
-        if (typeof closeMenu === 'function' && document.body.classList.contains('menu-open')) {
-          closeMenu();
-        }
-      }
-    });
-  });
-
-
-  /* ─────────────────────────────────────────────────
-     4. SHOPPING BAG COUNT
-     (Placeholder — ready for cart integration)
-  ───────────────────────────────────────────────── */
-  function updateBagCount(count) {
-    if (!bagCount) return;
-    bagCount.textContent = count;
-    if (count > 0) {
-      bagCount.classList.add('has-items');
-      document.getElementById('nav-bag-btn').setAttribute('aria-label', `Shopping bag (${count} item${count > 1 ? 's' : ''})`);
-    } else {
-      bagCount.classList.remove('has-items');
-      document.getElementById('nav-bag-btn').setAttribute('aria-label', 'Shopping bag (empty)');
+    function closeLb() {
+      lb && lb.classList.remove('is-open');
+      document.body.style.overflow = '';
+      lenis.start();
     }
-  }
+    galleryItems.forEach((item, i) => item.addEventListener('click', () => openLb(i)));
+    if (lbClose) lbClose.addEventListener('click', closeLb);
+    if (lbPrev)  lbPrev.addEventListener('click',  () => { if (lbIdx > 0)                openLb(lbIdx - 1); });
+    if (lbNext)  lbNext.addEventListener('click',  () => { if (lbIdx < IMGS.length - 1) openLb(lbIdx + 1); });
 
-  // Initialize at 0
-  updateBagCount(0);
-
-
-  /* ─────────────────────────────────────────────────
-     5. SCROLL REVEAL ANIMATIONS
-     IntersectionObserver to trigger standard entrance
-     animations exactly once per element.
-  ───────────────────────────────────────────────── */
-  if ('IntersectionObserver' in window) {
-    const revealElements = document.querySelectorAll('.reveal');
-    const revealObserver = new IntersectionObserver(
-      (entries, observer) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('revealed');
-            // Element animated, stop observing to prevent running again
-            observer.unobserve(entry.target);
-            
-            // Optional: after animation duration completes, remove will-change 
-            // for performance cleanup (0.7s duration + max 0.45s stagger delay)
-            setTimeout(() => {
-              entry.target.style.willChange = 'auto';
-            }, 1200);
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.15, // Trigger when 15% visible
-      }
-    );
-
-    revealElements.forEach((el) => revealObserver.observe(el));
-  }
-
-
-  /* ─────────────────────────────────────────────────
-     6. SCROLL PROGRESS INDICATOR
-  ───────────────────────────────────────────────── */
-  const scrollProgress = document.getElementById('scroll-progress');
-  
-  if (scrollProgress) {
-    window.addEventListener('scroll', () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.body.scrollHeight;
-      const winHeight = window.innerHeight;
-      const scrollPercent = scrollTop / (docHeight - winHeight);
-      const scrollPercentRounded = Math.round(scrollPercent * 100);
-      scrollProgress.style.width = scrollPercentRounded + '%';
-    });
-  }
-
-
-  /* ─────────────────────────────────────────────────
-     7. FOOTER MOBILE ACCORDION (Phase 17)
-  ───────────────────────────────────────────────── */
-  const footerToggles = document.querySelectorAll('.footer__col-toggle');
-  footerToggles.forEach(toggle => {
-    toggle.addEventListener('click', (e) => {
-      // Only execute if on mobile (screen width <= 768px)
-      if (window.innerWidth <= 768) {
-        e.preventDefault();
-        const parentCol = toggle.closest('.footer__col');
-        const sublist = parentCol.querySelector('.footer__list');
-        
-        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-        if (isExpanded) {
-          toggle.setAttribute('aria-expanded', 'false');
-          sublist.style.maxHeight = null;
-        } else {
-          toggle.setAttribute('aria-expanded', 'true');
-          sublist.style.maxHeight = sublist.scrollHeight + "px";
-        }
-      }
-    });
-  });
-
-  // Reset max-height if window resizes back to desktop to prevent breaking layout
-  window.addEventListener('resize', () => {
-    if (window.innerWidth > 768) {
-      document.querySelectorAll('.footer__col.is-accordion .footer__list').forEach(list => {
-        list.style.maxHeight = null;
+    // Accordions
+    document.querySelectorAll('.pdp__accordion-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const body   = btn.closest('.pdp__accordion').querySelector('.pdp__accordion-body');
+        const isOpen = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', !isOpen);
+        body.style.display = isOpen ? 'none' : 'block';
       });
-      footerToggles.forEach(t => t.setAttribute('aria-expanded', 'false'));
-    }
-  });
+    });
 
-
-  /* ─────────────────────────────────────────────────
-     8. PARALLAX EFFECTS (Phase 19)
-  ───────────────────────────────────────────────── */
-  const pBanner = document.getElementById('collection-banner');
-  const pBannerImg = document.querySelector('.banner__img');
-  
-  let parallaxTicking = false;
-  let bannerInView = false;
-  let parallaxScrollY = window.scrollY;
-
-  // Utilize IntersectionObserver to cap banner calculation overhead
-  if (pBanner) {
-    const bannerObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        bannerInView = entry.isIntersecting;
+    // Size selector
+    document.querySelectorAll('.pdp__size-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pdp__size-btn').forEach(b => b.classList.remove('is-selected'));
+        btn.classList.add('is-selected');
       });
-    }, { rootMargin: "200px 0px" });
-    bannerObserver.observe(pBanner);
+    });
+
+    // Add to bag
+    const addBtn = document.getElementById('pdp-add-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        const orig = addBtn.textContent;
+        addBtn.textContent = 'Added ✓';
+        addBtn.disabled = true;
+        setTimeout(() => { addBtn.textContent = orig; addBtn.disabled = false; }, 1500);
+      });
+    }
   }
 
-  function updateParallax() {
-    // Only apply on non-mobile interfaces explicitly
-    if (window.innerWidth > 768) {
-      // 1. Hero Parallax (Rate: 0.3)
-      if (heroImg) {
-        // Stop tracking if scrolling past the component to save perf
-        if (parallaxScrollY <= window.innerHeight + 100) {
-          heroImg.style.transform = `translate3d(0, ${parallaxScrollY * 0.3}px, 0)`;
-        }
-      }
-      
-      // 2. Banner Parallax (Rate: 0.2)
-      if (pBannerImg && bannerInView && pBanner) {
-        // Track offset strictly relative to the bottom of the viewport entering the banner space
-        const bannerRect = pBanner.getBoundingClientRect();
-        const offset = window.innerHeight - bannerRect.top;
-        pBannerImg.style.transform = `translate3d(0, ${offset * 0.2}px, 0)`;
-      }
-    } else {
-      // Hard reset on mobile breakpoints completely unsetting transforms mapped by JS
-      if (heroImg) heroImg.style.transform = '';
-      if (pBannerImg) pBannerImg.style.transform = '';
-    }
-    parallaxTicking = false;
+  /* ─────────────────────────────────────────────────────────────
+     17. NAV IMAGE SWAP (Odd Ritual DNA)
+  ───────────────────────────────────────────────────────────── */
+  function initNavImageSwap() {
+    const imgEl = document.getElementById('nav-overlay-img');
+    if (!imgEl) return;
+
+    const map = {
+      'Shop':             'assets/rings_collection.png',
+      'Collections':      'assets/pendants_collection.png',
+      'Our Philosophy':   'assets/lifestyle_banner.png',
+      'The Steel':        'assets/ring_1_detail.png',
+      'Craftsmanship':    'assets/lifestyle_banner.png',
+      'Contact':          'assets/pendants_collection.png',
+      'Rings':            'assets/rings_collection.png',
+      'Pendants':         'assets/pendants_collection.png',
+      'Bracelets':        'assets/bracelets_collection.png',
+      'Limited Editions': 'assets/limited_1_front.png',
+    };
+
+    document.querySelectorAll('.nav-overlay__link, .nav-overlay__sublink').forEach(link => {
+      link.addEventListener('mouseenter', () => {
+        const key = link.textContent.trim();
+        if (!map[key]) return;
+        gsap.to(imgEl, {
+          autoAlpha: 0, duration: 0.18,
+          onComplete: () => { imgEl.src = map[key]; gsap.to(imgEl, { autoAlpha: 1, duration: 0.28 }); }
+        });
+      });
+    });
   }
 
-  // Bind to passive scroll
-  window.addEventListener('scroll', () => {
-    parallaxScrollY = window.scrollY;
-    if (!parallaxTicking) {
-      window.requestAnimationFrame(updateParallax);
-      parallaxTicking = true;
-    }
-  }, { passive: true });
+  /* ─────────────────────────────────────────────────────────────
+     18. ABOUT SECTION REVEALS (directional slide-in)
+  ───────────────────────────────────────────────────────────── */
+  function initAboutReveals() {
+    document.querySelectorAll('.about-reveal--left').forEach(el => {
+      gsap.fromTo(el,
+        { autoAlpha: 0, x: -64 },
+        { autoAlpha: 1, x: 0, duration: 1.2, ease: EASE.emerge,
+          scrollTrigger: { trigger: el, start: 'top 86%', once: true } }
+      );
+    });
+    document.querySelectorAll('.about-reveal--right').forEach(el => {
+      gsap.fromTo(el,
+        { autoAlpha: 0, x: 64 },
+        { autoAlpha: 1, x: 0, duration: 1.2, ease: EASE.emerge,
+          scrollTrigger: { trigger: el, start: 'top 86%', once: true } }
+      );
+    });
+    document.querySelectorAll('.about-reveal--up, .about-reveal:not(.about-reveal--left):not(.about-reveal--right)').forEach(el => {
+      gsap.fromTo(el,
+        { autoAlpha: 0, y: 52, scale: 0.97 },
+        { autoAlpha: 1, y: 0, scale: 1, duration: 1.2, ease: EASE.emerge,
+          scrollTrigger: { trigger: el, start: 'top 88%', once: true } }
+      );
+    });
+  }
 
-  /* ─────────────────────────────────────────────────
-     9. DEBUG — Log initialized
-  ───────────────────────────────────────────────── */
-  console.log('%cRADICAL · Phase 1 initialized', 'font-family:serif; font-size:14px; color:#1A1A1A; font-weight:bold;');
+  /* ─────────────────────────────────────────────────────────────
+     19. FOOTER ACCORDION
+  ───────────────────────────────────────────────────────────── */
+  function initFooter() {
+    document.querySelectorAll('.footer__col-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const col    = btn.closest('.footer__col');
+        const isOpen = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', !isOpen);
+        col.classList.toggle('is-open', !isOpen);
+      });
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     20. ORCHESTRATION
+  ───────────────────────────────────────────────────────────── */
+  function init() {
+    initPageEntrance();      // ← runs first: slides transition overlay off
+    initPreloader();         // homepage only
+    initScrollProgress();
+    initHero();
+    initReveals();
+    initImageReveals();
+    initParallax();
+    initMagnetics();
+    initProductHover();
+    initProductPage();
+    initNavImageSwap();
+    initAboutReveals();
+    initFooter();
+    initPageTransition();    // ← runs last so other click handlers fire first
+
+    setTimeout(() => ScrollTrigger.refresh(), 200);
+  }
+
+  if (document.fonts) {
+    document.fonts.ready.then(init);
+  } else {
+    window.addEventListener('load', init);
+  }
 
 })();

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>document.documentElement.classList.add('js-enabled')</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="RADICAL Men's Jewellery. Steel wearables built for men who choose alignment over noise. Identity-driven jewellery for the disciplined modern man." />
@@ -15,15 +16,16 @@
   <link rel="stylesheet" href="styles.css" />
 
   <style>
-    /* Prevent Flash of Unstyled Content (FOUC) */
-    body {
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
+    .preloader { position: fixed; inset: 0; z-index: 9999; background: #000; display: flex; align-items: center; justify-content: center; will-change: transform; }
   </style>
 </head>
 
 <body>
+
+  <!-- Preloader (Odd Ritual DNA) -->
+  <div id="preloader" class="preloader" aria-hidden="true">
+    <span class="preloader__brand">RADICAL</span>
+  </div>
 
   <!-- ============================================================
        SCROLL PROGRESS BAR
@@ -33,7 +35,7 @@
   <!-- ============================================================
        STICKY NAVIGATION
   ============================================================ -->
-  <header id="main-nav" class="nav" role="banner">
+  <header id="main-nav" class="nav is-transparent" role="banner">
     <div class="nav__inner">
 
       <!-- LEFT: Hamburger + Search -->
@@ -130,6 +132,12 @@
 
       </ul>
     </div>
+
+    <!-- Image panel (Odd Ritual DNA) — desktop only -->
+    <div class="nav-overlay__img-panel" aria-hidden="true">
+      <img id="nav-overlay-img" src="assets/lifestyle_banner.png" alt="" />
+    </div>
+
   </div>
 
 
@@ -159,19 +167,6 @@
     <!-- 1. HERO ------------------------------------------------ -->
     <section id="hero" class="section section--hero section--full-bleed" aria-label="RADICAL founding collection hero">
 
-      <!-- Background image container (swap src when real photo is ready) -->
-      <div class="hero__media" aria-hidden="true">
-        <img
-          class="hero__img"
-          src="assets/hero.png"
-          alt="RADICAL Founding Collection — premium steel jewellery"
-          role="presentation"
-        />
-        <!-- Placeholder hidden when image src is populated -->
-      </div>
-
-      <!-- Dark gradient overlay -->
-      <div class="hero__overlay" aria-hidden="true"></div>
 
       <!-- Text overlay — bottom-center -->
       <div class="hero__content">
@@ -189,8 +184,15 @@
 
       </div>
 
+      <!-- Scroll indicator (Odd Ritual DNA) -->
+      <div class="hero__scroll-hint" aria-hidden="true">
+        <div class="hero__scroll-hint-line"></div>
+        <span class="hero__scroll-hint-label">Scroll</span>
+      </div>
+
     </section>
 
+    <div id="content-wrapper">
     <!-- 2. EDITORIAL GRID ------------------------------------- -->
     <section id="editorial-grid" class="section section--editorial" aria-label="Collection editorial grid">
       <div class="editorial__inner">
@@ -207,8 +209,8 @@
                 alt="RADICAL Rings Collection — sculptural steel rings for men"
                 role="presentation"
               />
+              <p class="editorial__caption">Rings</p>
             </div>
-            <p class="editorial__caption">Rings</p>
             </a>
           </article>
 
@@ -222,8 +224,8 @@
                 alt="RADICAL Pendants Collection — surgical steel pendants for men"
                 role="presentation"
               />
+              <p class="editorial__caption">Pendants</p>
             </div>
-            <p class="editorial__caption">Pendants</p>
             </a>
           </article>
 
@@ -293,9 +295,8 @@
             <a href="product.html" class="category__link">
               <div class="category__media">
                 <img class="category__img" src="assets/rings_collection.png" alt="Rings" role="presentation" />
-                <div class="category__placeholder" aria-hidden="true">[IMAGE]</div>
+                <p class="category__title">Rings</p>
               </div>
-              <p class="category__title">Rings</p>
             </a>
           </li>
 
@@ -303,8 +304,8 @@
             <a href="product-pendant.html" class="category__link">
               <div class="category__media">
                 <img class="category__img" src="assets/pendants_collection.png" alt="Pendants" role="presentation" />
+                <p class="category__title">Pendants</p>
               </div>
-              <p class="category__title">Pendants</p>
             </a>
           </li>
 
@@ -312,8 +313,8 @@
             <a href="product-bracelet.html" class="category__link">
               <div class="category__media">
                 <img class="category__img" src="assets/bracelets_collection.png" alt="Bracelets" role="presentation" />
+                <p class="category__title">Bracelets</p>
               </div>
-              <p class="category__title">Bracelets</p>
             </a>
           </li>
 
@@ -321,8 +322,8 @@
             <a href="product-limited.html" class="category__link">
               <div class="category__media">
                 <img class="category__img" src="assets/limited_1_front.png" alt="Limited Editions" role="presentation" />
+                <p class="category__title">Limited Editions</p>
               </div>
-              <p class="category__title">Limited Editions</p>
             </a>
           </li>
 
@@ -442,7 +443,19 @@
 
       </div>
     </footer>
+    </div> <!-- /#content-wrapper -->
 
+  <!-- Page transition overlay -->
+  <div id="page-transition" class="page-transition" aria-hidden="true"></div>
+
+  <!-- Animation Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+  <script src="https://unpkg.com/split-type"></script>
+
+  <script src="motion.config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

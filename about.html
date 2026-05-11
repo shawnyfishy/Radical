@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>document.documentElement.classList.add('js-enabled')</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="RADICAL builds steel jewellery as weapons for identity. Philosophy-led, warrior-rooted, designed for men who choose alignment over noise." />
@@ -13,12 +14,6 @@
 
   <link rel="stylesheet" href="styles.css" />
 
-  <style>
-    body {
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-  </style>
 </head>
 
 <body>
@@ -288,7 +283,16 @@
   </footer>
 
 
+  <!-- Animation Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+  <script src="https://unpkg.com/split-type"></script>
+
+  <div id="page-transition" class="page-transition" aria-hidden="true"></div>
+
+  <script src="motion.config.js"></script>
   <script src="script.js"></script>
-  <script src="about.js"></script>
 </body>
 </html>
