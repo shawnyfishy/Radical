@@ -1,6 +1,6 @@
-/* ============================================================
-   RADICAL — MEN'S JEWELLERY
-   Global Stylesheet · Phase 1: Shell & Navigation
+﻿/* ============================================================
+   RADICAL â€” MEN'S JEWELLERY
+   Global Stylesheet Â· Phase 1: Shell & Navigation
    ============================================================ */
 
 /* ------------------------------------------------------------
@@ -13,7 +13,7 @@
 }
 
 :root {
-  /* ── Brand Colors ──────────────────────────── */
+  /* â”€â”€ Brand Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --color-bg:           #F6F6F6;       /* Exact Dior editorial off-white */
   --color-bg-alt:       #EEEEEE;       /* Dior alternate neutral */
   --color-text:         #1A1A1A;       /* Primary text / charcoal */
@@ -24,7 +24,7 @@
   --color-white:        #FFFFFF;       /* Pure white */
   --color-overlay:      rgba(26,26,26,0.35); /* Dark image overlay */
 
-  /* ── Typography ────────────────────────────── */
+  /* â”€â”€ Typography â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --font-body:    "Cormorant Garamond", serif;
   --font-brand:   "Cormorant Garamond", serif;
   --font-ui:      "Questrial", sans-serif;
@@ -33,7 +33,7 @@
   --font-size-nav-brand: 24px;
   --line-height-body:    1.6;
 
-  /* ── Navigation ────────────────────────────── */
+  /* â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --nav-height:          60px;
   --nav-height-scrolled: 48px;
   --nav-bg:              var(--color-white);
@@ -45,7 +45,7 @@
   --nav-icon-gap:        16px;
   --nav-transition:      0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
 
-  /* ── Spacing System ────────────────────────── */
+  /* â”€â”€ Spacing System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --space-4:    4px;
   --space-8:    8px;
   --space-12:   12px;
@@ -58,12 +58,12 @@
   --space-80:   80px;
   --space-100:  100px;
 
-  /* ── Layout ────────────────────────────────── */
+  /* â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --max-width-content:  1440px;
   --gutter-desktop:     48px;
   --gutter-mobile:      20px;
 
-  /* ── Animation ─────────────────────────────── */
+  /* â”€â”€ Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --ease-brand:    cubic-bezier(0.31, 0, 0.13, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --duration-fast: 0.2s;
@@ -195,7 +195,7 @@ ul, ol { list-style: none; }
   box-shadow: var(--nav-shadow-scrolled);
 }
 
-/* Hidden state — added by JS (scroll down) */
+/* Hidden state â€” added by JS (scroll down) */
 .nav.is-hidden {
   transform: translateY(-100%);
   transition:
@@ -261,7 +261,7 @@ ul, ol { list-style: none; }
   transition: transform var(--duration-fast) var(--ease-standard);
 }
 
-/* ── Hamburger Morphing Icon ───────────────────────────────── */
+/* â”€â”€ Hamburger Morphing Icon â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hamburger-top,
 .hamburger-mid,
 .hamburger-bot {
@@ -282,7 +282,7 @@ ul, ol { list-style: none; }
   transform: translateY(-5.3px) rotate(-45deg);
 }
 
-/* Brand wordmark — CENTER */
+/* Brand wordmark â€” CENTER */
 .nav__brand {
   font-family: var(--font-brand);
   font-weight: 700;
@@ -507,7 +507,7 @@ ul, ol { list-style: none; }
   background-position: 0% 100%;
 }
 
-/* ── Entrance Animation — Staggered Fade Up ────────────────── */
+/* â”€â”€ Entrance Animation â€” Staggered Fade Up â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .nav-overlay.is-open .nav-overlay__link {
   opacity: 1;
   transform: translateY(0);
@@ -531,7 +531,7 @@ ul, ol { list-style: none; }
 
 
 /* ------------------------------------------------------------
-   4. SECTION SKELETONS — PLACEHOLDER STYLES
+   4. SECTION SKELETONS â€” PLACEHOLDER STYLES
    ------------------------------------------------------------ */
 .section {
   position: relative;
@@ -543,7 +543,7 @@ ul, ol { list-style: none; }
   max-width: 100%;
 }
 
-/* Hero — replaced by .hero__* component below */
+/* Hero â€” replaced by .hero__* component below */
 .section--hero {
   height: 100vh;
   min-height: 600px;
@@ -563,12 +563,12 @@ ul, ol { list-style: none; }
 .editorial__img {
   transition: scale 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
-/* Philosophy block — replaced by .philosophy__* component below */
+/* Philosophy block â€” replaced by .philosophy__* component below */
 .section--philosophy {
   background-color: var(--color-bg);
 }
 
-/* Collection banner — replaced by .banner__* component below */
+/* Collection banner â€” replaced by .banner__* component below */
 .section--banner {
   height: 70vh;
   overflow: hidden;
@@ -580,7 +580,7 @@ ul, ol { list-style: none; }
   padding: 48px 0;
 }
 
-/* Campaign — replaced by .campaign__* component below */
+/* Campaign â€” replaced by .campaign__* component below */
 .section--campaign {
   background-color: var(--color-bg-alt);
 }
@@ -592,7 +592,7 @@ ul, ol { list-style: none; }
 .product-card__img {
   transition: scale 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
-/* Footer — replaced by .footer__* component below */
+/* Footer â€” replaced by .footer__* component below */
 .section--footer {
   background-color: #1A1A1A;
 }
@@ -661,10 +661,10 @@ body.menu-open {
   overflow: hidden;
 }
 
-/* ── Scroll Reveal System ─────────────────────────────────────
+/* â”€â”€ Scroll Reveal System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    GSAP sets initial states via autoAlpha. CSS never hides elements.
    This ensures content is always visible if JS fails or is slow.
-─────────────────────────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .reveal, .about-reveal {
   will-change: opacity, transform;
 }
@@ -688,30 +688,30 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   8. HERO SECTION — Phase 2
+   8. HERO SECTION â€” Phase 2
    ------------------------------------------------------------ */
 
 /**
  * Layout:
- *   .section--hero               → 100vh shell (overflow hidden)
- *     .hero__media               → fills 100% of parent, relative
- *       .hero__img               → absolute fill, object-fit: cover
- *       .hero__media-placeholder → shown only when img.src is empty
- *     .hero__overlay             → the dark gradient (bottom → transparent)
- *     .hero__content             → text block, absolute, bottom-center
- *       .hero__label             → small season label
- *       .hero__headline          → large display headline
- *       .hero__cta               → ghost button
+ *   .section--hero               â†’ 100vh shell (overflow hidden)
+ *     .hero__media               â†’ fills 100% of parent, relative
+ *       .hero__img               â†’ absolute fill, object-fit: cover
+ *       .hero__media-placeholder â†’ shown only when img.src is empty
+ *     .hero__overlay             â†’ the dark gradient (bottom â†’ transparent)
+ *     .hero__content             â†’ text block, absolute, bottom-center
+ *       .hero__label             â†’ small season label
+ *       .hero__headline          â†’ large display headline
+ *       .hero__cta               â†’ ghost button
  */
 
-/* ── Hero Shell ───────────────────────────────────────────── */
+/* â”€â”€ Hero Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #hero {
   background-color: #000000;
   position: relative;
   z-index: 1;
 }
 
-/* ── Content Wrapper (Depth Effect overlap) ──────────────── */
+/* â”€â”€ Content Wrapper (Depth Effect overlap) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #content-wrapper {
   position: relative;
   z-index: 10;
@@ -720,7 +720,7 @@ body.menu-open {
   box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
 }
 
-/* ── Text content block ────────────────────────────────────── */
+/* â”€â”€ Text content block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hero__content {
   position: absolute;
   bottom: 0;
@@ -738,7 +738,7 @@ body.menu-open {
   align-items: center;
 }
 
-/* ── Label ────────── */
+/* â”€â”€ Label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hero__label {
   font-family: var(--font-brand);
   font-weight: 500;
@@ -757,7 +757,7 @@ body.menu-open {
     transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) 0.8s;
 }
 
-/* ── Headline ─────── */
+/* â”€â”€ Headline â”€â”€â”€â”€â”€â”€â”€ */
 .hero__headline {
   font-family: var(--font-brand);
   font-weight: 700;
@@ -778,7 +778,7 @@ body.menu-open {
     transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) 1.0s;
 }
 
-/* ── CTA Ghost Button ─ */
+/* â”€â”€ CTA Ghost Button â”€ */
 .hero__cta {
   display: inline-flex;
   align-items: center;
@@ -823,7 +823,7 @@ body.menu-open {
     border-color 0.35s ease;
 }
 
-/* ── Scroll indicator (optional micro-detail) ──────────────── */
+/* â”€â”€ Scroll indicator (optional micro-detail) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hero__scroll-hint {
   position: absolute;
   bottom: 28px;
@@ -863,7 +863,7 @@ body.menu-open {
 }
 
 
-/* ── Hero responsive overrides ─────────────────────────────── */
+/* â”€â”€ Hero responsive overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   .section--hero {
     height: 100svh;  /* svh = small viewport height (accounts for mobile chrome) */
@@ -911,24 +911,24 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   9. EDITORIAL GRID — Phase 3
+   9. EDITORIAL GRID â€” Phase 3
    ------------------------------------------------------------ */
 
-/* ── Section shell ──────────────────────────────────────────── */
+/* â”€â”€ Section shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .section--editorial {
   min-height: auto;
   background-color: var(--color-bg);
   padding: 48px 0;
 }
 
-/* ── Inner layout — horizontal padding only ─────────────────── */
+/* â”€â”€ Inner layout â€” horizontal padding only â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .editorial__inner {
   max-width: none;
   margin: 0;
   padding: 0 40px;
 }
 
-/* ── 2-column grid — gap between panels ────────────────────── */
+/* â”€â”€ 2-column grid â€” gap between panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .editorial__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -937,13 +937,13 @@ body.menu-open {
   width: 100%;
 }
 
-/* ── Individual grid item ──────────────────────────────────── */
+/* â”€â”€ Individual grid item â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .editorial__item {
   display: block;
   height: 100%;
 }
 
-/* ── Image cell — fills the full grid cell ─────────────────── */
+/* â”€â”€ Image cell â€” fills the full grid cell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .editorial__media {
   position: relative;
   width: 100%;
@@ -980,7 +980,7 @@ body.menu-open {
   z-index: 1;
 }
 
-/* ── Caption — inside image, bottom-left ───────────────────── */
+/* â”€â”€ Caption â€” inside image, bottom-left â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .editorial__caption {
   position: absolute;
   bottom: 32px;
@@ -999,9 +999,9 @@ body.menu-open {
   color: #ffffff;
 }
 
-/* ── Scroll-in entrance animation handled by Utility .reveal ── */
+/* â”€â”€ Scroll-in entrance animation handled by Utility .reveal â”€â”€ */
 
-/* ── Editorial responsive ──────────────────────────────────── */
+/* â”€â”€ Editorial responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 @media (max-width: 768px) {
   .editorial__inner {
@@ -1021,10 +1021,10 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   10. PHILOSOPHY TEXT — Phase 4
+   10. PHILOSOPHY TEXT â€” Phase 4
    ------------------------------------------------------------ */
 
-/* ── Inner layout ──────────────────────────────────────────── */
+/* â”€â”€ Inner layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .philosophy__inner {
   max-width: 680px;
   margin: 0 auto;
@@ -1034,7 +1034,7 @@ body.menu-open {
   align-items: center;
 }
 
-/* ── Brand mark placeholder ────────────────────────────────── */
+/* â”€â”€ Brand mark placeholder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .philosophy__mark {
   display: flex;
   justify-content: center;
@@ -1046,7 +1046,7 @@ body.menu-open {
   display: block;
 }
 
-/* ── Body text ─────────────────────────────────────────────── */
+/* â”€â”€ Body text â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .philosophy__text {
   font-family: var(--font-body);
   font-size: 28px;
@@ -1058,14 +1058,14 @@ body.menu-open {
   margin: 0;
 }
 
-/* ── IntersectionObserver Entrance ─────────────────────────── */
+/* â”€â”€ IntersectionObserver Entrance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #philosophy-text.is-visible .philosophy__mark,
 #philosophy-text.is-visible .philosophy__text {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* ── Responsive overrides ──────────────────────────────────── */
+/* â”€â”€ Responsive overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   .philosophy__inner {
     padding: 80px var(--gutter-mobile);
@@ -1083,10 +1083,10 @@ body.menu-open {
 }
 
 /* ------------------------------------------------------------
-   11. COLLECTION BANNER — Phase 5
+   11. COLLECTION BANNER â€” Phase 5
    ------------------------------------------------------------ */
 
-/* ── Media shell ───────────────────────────────────────────── */
+/* â”€â”€ Media shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .banner__media {
   position: absolute;
   inset: 0;
@@ -1138,7 +1138,7 @@ body.menu-open {
   will-change: transform;
 }
 
-/* ── Gradient overlay ──────────────────────────────────────── */
+/* â”€â”€ Gradient overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .banner__overlay {
   position: absolute;
   inset: 0;
@@ -1151,7 +1151,7 @@ body.menu-open {
   z-index: 1;
 }
 
-/* ── Text content block ────────────────────────────────────── */
+/* â”€â”€ Text content block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .banner__content {
   position: absolute;
   bottom: 0;
@@ -1169,7 +1169,7 @@ body.menu-open {
   align-items: center;
 }
 
-/* ── Label ─────────────────────────────────────────────────── */
+/* â”€â”€ Label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .banner__label {
   font-family: var(--font-brand);
   font-weight: 400;
@@ -1180,7 +1180,7 @@ body.menu-open {
   margin-bottom: 12px;
 }
 
-/* ── Headline ──────────────────────────────────────────────── */
+/* â”€â”€ Headline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .banner__headline {
   font-family: var(--font-brand);
   font-weight: 700;
@@ -1192,7 +1192,7 @@ body.menu-open {
   margin-bottom: 24px;
 }
 
-/* ── CTA Ghost Button ──────────────────────────────────────── */
+/* â”€â”€ CTA Ghost Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .banner__cta {
   /* Borrowing transitions from hero__cta, just overriding entrance */
   transition:
@@ -1203,7 +1203,7 @@ body.menu-open {
     border-color 0.35s ease;
 }
 
-/* ── Entrance Animation ────────────────────────────────────── */
+/* â”€â”€ Entrance Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #collection-banner.is-visible .banner__label,
 #collection-banner.is-visible .banner__headline,
 #collection-banner.is-visible .banner__cta {
@@ -1212,7 +1212,7 @@ body.menu-open {
 }
 
 
-/* ── Responsive overrides ──────────────────────────────────── */
+/* â”€â”€ Responsive overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   .section--banner {
     height: 50vh;
@@ -1244,17 +1244,17 @@ body.menu-open {
 }
 
 /* ------------------------------------------------------------
-   12. CATEGORY ROW — Phase 6
+   12. CATEGORY ROW â€” Phase 6
    ------------------------------------------------------------ */
 
-/* ── Inner layout — side padding matches editorial ──────────── */
+/* â”€â”€ Inner layout â€” side padding matches editorial â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .category__inner {
   max-width: none;
   margin: 0;
   padding: 0 40px;
 }
 
-/* ── 2×2 grid — gaps between panels ────────────────────────── */
+/* â”€â”€ 2Ã—2 grid â€” gaps between panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .category__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1266,7 +1266,7 @@ body.menu-open {
   margin: 0;
 }
 
-/* ── List item / Link ──────────────────────────────────────── */
+/* â”€â”€ List item / Link â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .category__item {
   display: block;
   height: 100%;
@@ -1279,7 +1279,7 @@ body.menu-open {
   overflow: hidden;
 }
 
-/* ── Media — fills the full grid cell ──────────────────────── */
+/* â”€â”€ Media â€” fills the full grid cell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .category__media {
   position: relative;
   width: 100%;
@@ -1304,7 +1304,7 @@ body.menu-open {
   transform: scale(1.04);
 }
 
-/* ── Category Title — inside image, bottom-left ────────────── */
+/* â”€â”€ Category Title â€” inside image, bottom-left â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .category__title {
   position: absolute;
   bottom: 32px;
@@ -1334,7 +1334,7 @@ body.menu-open {
   z-index: 1;
 }
 
-/* ── Responsive overrides ──────────────────────────────────── */
+/* â”€â”€ Responsive overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   .category__inner {
     padding: 0 20px;
@@ -1353,10 +1353,10 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   13. CAMPAIGN SECTION — Phase 7
+   13. CAMPAIGN SECTION â€” Phase 7
    ------------------------------------------------------------ */
 
-/* ── Inner layout ──────────────────────────────────────────── */
+/* â”€â”€ Inner layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .campaign__inner {
   max-width: var(--max-width-content);
   margin: 0 auto;
@@ -1366,15 +1366,15 @@ body.menu-open {
   align-items: center;
 }
 
-/* ── Header ────────────────────────────────────────────────── */
+/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .campaign__header {
   text-align: center;
   margin-bottom: 48px;
 }
 
-/* ── Scroll Entrance Animation handled by .reveal ── */
+/* â”€â”€ Scroll Entrance Animation handled by .reveal â”€â”€ */
 
-/* ── Media 16:9 ────────────────────────────────────────────── */
+/* â”€â”€ Media 16:9 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .campaign__media {
   position: relative;
   width: 100%;
@@ -1426,7 +1426,7 @@ body.menu-open {
   user-select: none;
 }
 
-/* ── Body Copy & CTA ───────────────────────────────────────── */
+/* â”€â”€ Body Copy & CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .campaign__body {
   text-align: center;
   max-width: 600px;
@@ -1467,9 +1467,9 @@ body.menu-open {
   color: #8A8A8A;
 }
 
-/* ── Scroll Entrance Animation handled by .reveal ── */
+/* â”€â”€ Scroll Entrance Animation handled by .reveal â”€â”€ */
 
-/* ── Responsive ────────────────────────────────────────────── */
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   .campaign__inner {
     padding: 60px var(--gutter-mobile) 80px;
@@ -1588,10 +1588,10 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   5. FOOTER — Phase 8
+   5. FOOTER â€” Phase 8
    ------------------------------------------------------------ */
 
-/* ── Section Shell ─────────────────────────────────────────── */
+/* â”€â”€ Section Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .section--footer {
   background-color: #1A1A1A;
   color: #CCCCCC;
@@ -1603,7 +1603,7 @@ body.menu-open {
   padding: 60px 40px;
 }
 
-/* ── Top Brand Logo ────────────────────────────────────────── */
+/* â”€â”€ Top Brand Logo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .footer__brand {
   text-align: center;
   margin-bottom: 40px;
@@ -1618,7 +1618,7 @@ body.menu-open {
   text-transform: uppercase;
 }
 
-/* ── 4-Column Navigation ───────────────────────────────────── */
+/* â”€â”€ 4-Column Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .footer__nav {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1663,7 +1663,7 @@ body.menu-open {
   color: #FFFFFF;
 }
 
-/* ── Bottom Legal / Copyright ──────────────────────────────── */
+/* â”€â”€ Bottom Legal / Copyright â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .footer__bottom {
   border-top: 1px solid #333333;
   padding-top: 24px;
@@ -1676,7 +1676,7 @@ body.menu-open {
   color: #666666;
 }
 
-/* ── Responsive Overrides ──────────────────────────────────── */
+/* â”€â”€ Responsive Overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 @media (max-width: 768px) {
   :root {
@@ -1714,7 +1714,7 @@ body.menu-open {
   .hero__cta { padding: 10px 24px; font-size: 10px; }
   .hero__content { padding-bottom: 50px; }
 
-  /* Editorial Grid Mobile — handled in component block */
+  /* Editorial Grid Mobile â€” handled in component block */
 
   /* Philosophy Text Mobile */
   .philosophy__inner {
@@ -1831,7 +1831,7 @@ body.menu-open {
 }
 
 /* ------------------------------------------------------------
-   PHASE 18 — TACTILE BUTTON FIX
+   PHASE 18 â€” TACTILE BUTTON FIX
    ------------------------------------------------------------ */
 
 /* Button Press Tactile Feedback */
@@ -1849,11 +1849,11 @@ body.menu-open {
 
 
 /* ============================================================
-   PHASE 24 — PRODUCT DETAIL PAGE (PDP)
+   PHASE 24 â€” PRODUCT DETAIL PAGE (PDP)
    ============================================================ */
 
 /* ------------------------------------------------------------
-   PDP LAYOUT — Two-column grid: 55% left / 45% right
+   PDP LAYOUT â€” Two-column grid: 55% left / 45% right
    ------------------------------------------------------------ */
 .pdp {
   display: grid;
@@ -1865,7 +1865,7 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   PDP GALLERY — Left column, stacked images
+   PDP GALLERY â€” Left column, stacked images
    ------------------------------------------------------------ */
 /* Editorial item link wrapper */
 .editorial__item-link {
@@ -1876,7 +1876,7 @@ body.menu-open {
 }
 .editorial__item-link:hover { opacity: 1; }
 
-/* .pdp__gallery-col — no styles needed; images bleed full column width */
+/* .pdp__gallery-col â€” no styles needed; images bleed full column width */
 
 .pdp__gallery-stack {
   display: flex;
@@ -1915,7 +1915,7 @@ body.menu-open {
   pointer-events: none;
 }
 
-/* Real image — fades in when loaded */
+/* Real image â€” fades in when loaded */
 .pdp__gallery-img {
   position: absolute;
   inset: 0;
@@ -1934,7 +1934,7 @@ body.menu-open {
   transform: scale(1.02);
 }
 
-/* Mobile carousel dots — hidden on desktop */
+/* Mobile carousel dots â€” hidden on desktop */
 .pdp__carousel-dots {
   display: none;
   justify-content: center;
@@ -1961,7 +1961,7 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   PDP INFO — Right column, sticky
+   PDP INFO â€” Right column, sticky
    ------------------------------------------------------------ */
 .pdp__info-col {
   position: sticky;
@@ -2259,7 +2259,7 @@ body.menu-open {
   aspect-ratio: 4 / 5;
 }
 
-/* Close button — top right, same style as nav overlay */
+/* Close button â€” top right, same style as nav overlay */
 .pdp-lightbox__close {
   position: fixed;
   top: 24px;
@@ -2284,7 +2284,7 @@ body.menu-open {
   opacity: 0.6;
 }
 
-/* Nav arrows — fixed at viewport vertical center */
+/* Nav arrows â€” fixed at viewport vertical center */
 .pdp-lightbox__prev,
 .pdp-lightbox__next {
   position: fixed;
@@ -2322,7 +2322,7 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   PDP — MOBILE (below 768px)
+   PDP â€” MOBILE (below 768px)
    ------------------------------------------------------------ */
 @media (max-width: 768px) {
 
@@ -2388,11 +2388,11 @@ body.menu-open {
 
 
 /* ============================================================
-   PHASE 25 — ABOUT / PHILOSOPHY PAGE
+   PHASE 25 â€” ABOUT / PHILOSOPHY PAGE
    ============================================================ */
 
 /* ------------------------------------------------------------
-   ABOUT HERO — Full-screen opening, dark editorial
+   ABOUT HERO â€” Full-screen opening, dark editorial
    ------------------------------------------------------------ */
 .about-hero {
   position: relative;
@@ -2492,7 +2492,7 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   ABOUT SECTION — Alternating editorial layout
+   ABOUT SECTION â€” Alternating editorial layout
    ------------------------------------------------------------ */
 .about-section {
   display: grid;
@@ -2596,7 +2596,7 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   ABOUT CLOSING — Dark statement block
+   ABOUT CLOSING â€” Dark statement block
    ------------------------------------------------------------ */
 .about-closing {
   background: #1A1A1A;
@@ -2683,7 +2683,7 @@ body.menu-open {
 
 
 /* ------------------------------------------------------------
-   ABOUT — MOBILE (below 768px)
+   ABOUT â€” MOBILE (below 768px)
    ------------------------------------------------------------ */
 @media (max-width: 768px) {
 
@@ -2755,9 +2755,9 @@ body.menu-open {
   }
 }
 
-/* ─────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Awwwards-Level Animation Utilities
-   ───────────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 /* 1. Lenis Smooth Scroll Setup */
 html.lenis, html.lenis body {
@@ -2831,7 +2831,7 @@ html.lenis, html.lenis body {
    ODD RITUAL DNA ADDITIONS
    ============================================================ */
 
-/* ── Preloader ─────────────────────────────────────────────── */
+/* â”€â”€ Preloader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .preloader {
   position: fixed;
   inset: 0;
@@ -2861,7 +2861,7 @@ html.lenis, html.lenis body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Nav Overlay Image Panel (Odd Ritual DNA) ──────────────── */
+/* â”€â”€ Nav Overlay Image Panel (Odd Ritual DNA) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .nav-overlay__img-panel {
   position: absolute;
   top: 10px;
@@ -2891,14 +2891,14 @@ html.lenis, html.lenis body {
   .nav-overlay__img-panel { display: none; }
 }
 
-/* ── SplitType word overflow clip ──────────────────────────── */
+/* â”€â”€ SplitType word overflow clip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hero__headline .word {
   display: inline-block;
   overflow: hidden;
   padding-bottom: 0.05em;
 }
 
-/* ── Editorial dual-image hover swap ───────────────────────── */
+/* â”€â”€ Editorial dual-image hover swap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .editorial__img--hover {
   position: absolute;
   inset: 0;
@@ -2919,7 +2919,7 @@ html.lenis, html.lenis body {
 }
 
 
-/* ── Page Transition Overlay (horizontal slide) ────────────── */
+/* â”€â”€ Page Transition Overlay (horizontal slide) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .page-transition {
   position: fixed;
   inset: 0;
@@ -2930,7 +2930,7 @@ html.lenis, html.lenis body {
   will-change: transform;
 }
 
-/* ── SplitType — line overflow clip ───────────────────────── */
+/* â”€â”€ SplitType â€” line overflow clip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .split-line-wrap {
   overflow: hidden;
   display: block;
@@ -2942,7 +2942,7 @@ h1, h2, h3,
   transform-style: preserve-3d;
 }
 
-/* ── Clip-path pre-state (ensures no flash on non-GSAP load) ── */
+/* â”€â”€ Clip-path pre-state (ensures no flash on non-GSAP load) â”€â”€ */
 .editorial__media,
 .campaign__media,
 .banner__media,
@@ -2951,7 +2951,7 @@ h1, h2, h3,
   will-change: clip-path;
 }
 
-/* ── Banner media ensure position ─────────────────────────── */
+/* â”€â”€ Banner media ensure position â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .banner__media {
   position: absolute;
   inset: 0;
@@ -2964,44 +2964,29 @@ h1, h2, h3,
 }
 
 /* ============================================================
-   STORE — Cart Drawer, Auth Modal, Checkout, Account
+   STORE — Cart Drawer · Auth Modal · Checkout · Account
    ============================================================ */
 
-/* ── Nav bag count badge ──────────────────────────────────── */
-.nav__bag-count {
-  display: none;
-  position: absolute;
-  top: -6px;
-  right: -8px;
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: var(--color-text);
-  color: var(--color-white);
-  font-family: var(--font-ui);
-  font-size: 10px;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-#nav-bag-btn { position: relative; }
-
-/* ── Cart Overlay ─────────────────────────────────────────── */
-.cart-overlay {
+/* ── Shared overlay backdrop ─────────────────────────────── */
+.cart-overlay,
+.auth-overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(10, 10, 10, 0.45);
   z-index: 900;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
-.cart-overlay.is-active { display: block; }
+.cart-overlay.is-active { display: block; z-index: 900; }
+.auth-overlay.is-active { display: block; z-index: 1000; }
 
 /* ── Cart Drawer ──────────────────────────────────────────── */
 .cart-drawer {
   position: fixed;
   top: 0;
   right: 0;
-  width: 420px;
+  width: 400px;
   max-width: 100vw;
   height: 100%;
   background: var(--color-white);
@@ -3009,7 +2994,8 @@ h1, h2, h3,
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none;
 }
 .cart-drawer.is-open { transform: translateX(0); }
 
@@ -3017,304 +3003,372 @@ h1, h2, h3,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
+  padding: 28px 32px 24px;
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 .cart-drawer__title {
   font-family: var(--font-brand);
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
+  color: var(--color-text);
 }
 .cart-drawer__close {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-text);
+  color: var(--color-text-muted);
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.6;
-  transition: opacity 0.2s;
+  transition: color 0.2s;
 }
-.cart-drawer__close:hover { opacity: 1; }
+.cart-drawer__close:hover { color: var(--color-text); }
 
 .cart-drawer__body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 24px;
+  padding: 0 32px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }
+.cart-drawer__body::-webkit-scrollbar { width: 3px; }
+.cart-drawer__body::-webkit-scrollbar-thumb { background: var(--color-border); }
+
 .cart-drawer__footer {
-  padding: 16px 24px 24px;
+  padding: 20px 32px 32px;
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
-.cart__loading, .cart__empty {
+.cart__loading {
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: 13px;
+  color: var(--color-text-faint);
+  text-align: center;
+  padding: 48px 0;
+  letter-spacing: 0.06em;
+}
+.cart__empty {
+  font-family: var(--font-brand);
+  font-size: 18px;
+  font-weight: 400;
   color: var(--color-text-muted);
   text-align: center;
-  padding: 40px 0;
+  padding: 56px 0;
+  letter-spacing: 0.04em;
 }
 
 /* Cart Item */
 .cart__item {
-  display: flex;
-  gap: 14px;
-  padding: 16px 0;
+  display: grid;
+  grid-template-columns: 72px 1fr 16px;
+  gap: 0 16px;
+  align-items: start;
+  padding: 24px 0;
   border-bottom: 1px solid var(--color-border-light);
-  position: relative;
 }
+.cart__item:last-child { border-bottom: none; }
+
 .cart__item-img {
-  width: 80px;
-  height: 80px;
-  flex-shrink: 0;
+  grid-row: span 2;
+  width: 72px;
+  height: 88px;
   background: var(--color-bg-alt);
   overflow: hidden;
+  flex-shrink: 0;
 }
 .cart__item-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
-.cart__item-info { flex: 1; min-width: 0; }
+
+.cart__item-info { min-width: 0; }
 .cart__item-name {
   font-family: var(--font-brand);
-  font-size: 15px;
-  font-weight: 500;
-  margin-bottom: 2px;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  margin-bottom: 3px;
+  line-height: 1.3;
 }
 .cart__item-variant {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--color-text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 .cart__item-price {
   font-family: var(--font-ui);
-  font-size: 14px;
-  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--color-text);
+  letter-spacing: 0.03em;
 }
+
 .cart__item-qty {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  margin-top: 12px;
 }
 .cart__qty-btn {
   background: none;
-  border: 1px solid var(--color-border);
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  padding: 0;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s;
+  transition: color 0.15s;
   font-family: var(--font-ui);
 }
-.cart__qty-btn:hover { background: var(--color-bg-alt); }
-.cart__item-qty span {
+.cart__qty-btn:hover { color: var(--color-text); }
+.cart__item-qty > span {
   font-family: var(--font-ui);
-  font-size: 14px;
-  min-width: 20px;
+  font-size: 13px;
+  min-width: 18px;
   text-align: center;
+  color: var(--color-text);
 }
+
 .cart__item-remove {
-  position: absolute;
-  top: 16px;
-  right: 0;
+  grid-column: 3;
+  grid-row: 1;
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-text-muted);
-  opacity: 0.5;
-  transition: opacity 0.2s;
-  padding: 4px;
+  color: var(--color-text-faint);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  margin-top: 2px;
 }
-.cart__item-remove:hover { opacity: 1; }
+.cart__item-remove:hover { color: var(--color-text); }
 
 /* Cart Footer */
 .cart__subtotal {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.cart__subtotal > span:first-child {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.cart__subtotal > span:last-child {
   font-family: var(--font-brand);
-  font-size: 17px;
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
 }
 .cart__shipping-note {
   font-family: var(--font-ui);
-  font-size: 12px;
-  color: var(--color-text-muted);
-  margin-bottom: 16px;
+  font-size: 11px;
+  color: var(--color-text-faint);
+  letter-spacing: 0.04em;
+  margin-bottom: 20px;
 }
 .cart__checkout-btn {
   display: block;
   width: 100%;
-  padding: 14px;
+  height: 50px;
   background: var(--color-text);
   color: var(--color-white);
-  font-family: var(--font-ui);
-  font-size: 13px;
-  letter-spacing: 0.1em;
+  font-family: var(--font-brand);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 3px;
   text-transform: uppercase;
   text-align: center;
   text-decoration: none;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
   margin-bottom: 10px;
 }
-.cart__checkout-btn:hover { opacity: 0.8; }
+.cart__checkout-btn:hover { background-color: #333; }
+
 .cart__clear-btn {
   display: block;
   width: 100%;
-  padding: 10px;
+  padding: 0;
   background: none;
-  border: 1px solid var(--color-border);
+  border: none;
   font-family: var(--font-ui);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
-  color: var(--color-text-muted);
-  transition: border-color 0.2s, color 0.2s;
+  color: var(--color-text-faint);
+  text-align: center;
+  transition: color 0.2s;
+  margin-top: 12px;
 }
-.cart__clear-btn:hover { border-color: var(--color-text); color: var(--color-text); }
+.cart__clear-btn:hover { color: var(--color-text-muted); }
 
 /* ── Auth Modal ───────────────────────────────────────────── */
-.auth-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  z-index: 1000;
-}
-.auth-overlay.is-active { display: block; }
-
 .auth-modal {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.96);
-  width: 440px;
-  max-width: calc(100vw - 32px);
+  transform: translate(-50%, -50%) scale(0.97);
+  width: 480px;
+  max-width: calc(100vw - 40px);
   background: var(--color-white);
   z-index: 1001;
-  padding: 40px;
+  padding: 52px 48px 44px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s, transform 0.25s;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 .auth-modal.is-open {
   opacity: 1;
   pointer-events: auto;
   transform: translate(-50%, -50%) scale(1);
 }
-.auth-modal__close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 20px;
-  color: var(--color-text-muted);
-  line-height: 1;
-  padding: 4px;
-}
-.auth-modal__close:hover { color: var(--color-text); }
 
-/* Auth Tabs */
+.auth-modal__inner { position: relative; }
+
+/* ── Auth Tabs (shared between modal + account page) ─────── */
 .auth__tabs {
   display: flex;
+  gap: 32px;
   border-bottom: 1px solid var(--color-border);
-  margin-bottom: 28px;
-  gap: 0;
+  margin-bottom: 36px;
 }
 .auth__tab {
-  flex: 1;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
-  padding: 10px 0;
+  border-bottom: 1px solid transparent;
+  padding: 0 0 16px;
+  margin-bottom: -1px;
   font-family: var(--font-ui);
-  font-size: 13px;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
-  color: var(--color-text-muted);
-  margin-bottom: -1px;
+  color: var(--color-text-faint);
   transition: color 0.2s, border-color 0.2s;
 }
-.auth__tab.is-active { color: var(--color-text); border-bottom-color: var(--color-text); }
+.auth__tab.is-active {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text);
+}
+.auth__tab:hover:not(.is-active) { color: var(--color-text-muted); }
 
 .auth__panel { display: none; }
 .auth__panel.is-active { display: block; }
 
-/* Auth Form */
-.auth-form .form-group { margin-bottom: 16px; }
-.auth-form label {
+/* ── Shared form components ─────────────────────────────── */
+.form-group { margin-bottom: 18px; }
+
+.auth-form label,
+.checkout-form label,
+.auth-gate__box label {
   display: block;
   font-family: var(--font-ui);
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-size: 10px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
-.auth-form input {
+
+.auth-form input,
+.checkout-form input,
+.auth-gate__box input {
   width: 100%;
-  padding: 11px 14px;
+  padding: 13px 16px;
   border: 1px solid var(--color-border);
   background: var(--color-bg);
   font-family: var(--font-ui);
   font-size: 14px;
+  color: var(--color-text);
   outline: none;
   transition: border-color 0.2s;
   -webkit-appearance: none;
   appearance: none;
+  border-radius: 0;
 }
-.auth-form input:focus { border-color: var(--color-text); }
+.auth-form input:focus,
+.checkout-form input:focus,
+.auth-gate__box input:focus { border-color: var(--color-text); background: var(--color-white); }
+
+.checkout-form input[readonly] {
+  background: var(--color-bg-alt);
+  color: var(--color-text-muted);
+  cursor: default;
+  border-color: transparent;
+}
 
 .form-error {
   font-family: var(--font-ui);
-  font-size: 12px;
-  color: #c0392b;
-  margin-bottom: 12px;
-  min-height: 16px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #b5341e;
+  margin-bottom: 14px;
+  min-height: 14px;
 }
 
-/* ── Shared Checkout Button ───────────────────────────────── */
+/* ── Primary action button ──────────────────────────────── */
 .checkout-btn {
-  display: inline-block;
-  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 50px;
+  padding: 0 24px;
   background: var(--color-text);
   color: var(--color-white);
-  font-family: var(--font-ui);
+  font-family: var(--font-brand);
   font-size: 12px;
-  letter-spacing: 0.1em;
+  font-weight: 400;
+  letter-spacing: 3px;
   text-transform: uppercase;
   border: 1px solid var(--color-text);
   cursor: pointer;
   text-align: center;
   text-decoration: none;
-  transition: background 0.2s, color 0.2s;
-  width: 100%;
+  transition: background-color 0.2s ease;
+  margin-top: 8px;
 }
-.checkout-btn:hover { background: #333; }
+.checkout-btn:hover { background-color: #2e2e2e; }
+
 .checkout-btn--ghost {
   background: transparent;
   color: var(--color-text);
 }
 .checkout-btn--ghost:hover { background: var(--color-bg-alt); }
-.checkout-btn--sm { padding: 10px 20px; font-size: 11px; width: auto; }
+
+.checkout-btn--sm {
+  height: 40px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  width: auto;
+  display: inline-flex;
+}
 
 /* ── Checkout Page ────────────────────────────────────────── */
 .checkout-page { background: var(--color-bg); min-height: 100vh; }
@@ -3323,8 +3377,8 @@ h1, h2, h3,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
-  height: 60px;
+  padding: 0 48px;
+  height: 64px;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-white);
   position: sticky;
@@ -3333,9 +3387,9 @@ h1, h2, h3,
 }
 .checkout-header__brand {
   font-family: var(--font-brand);
-  font-size: 22px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.35em;
   text-transform: uppercase;
   text-decoration: none;
   color: var(--color-text);
@@ -3343,193 +3397,197 @@ h1, h2, h3,
 .checkout-header__steps {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: var(--font-ui);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-}
-.checkout-header__steps .step.is-active { color: var(--color-text); font-weight: 600; }
-.step-divider { color: var(--color-text-muted); }
-
-.checkout-main {
-  display: flex;
-  min-height: calc(100vh - 60px);
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 48px 24px;
-  gap: 56px;
-}
-
-.checkout-form-col { flex: 1; min-width: 0; }
-.checkout-summary-col {
-  width: 340px;
-  flex-shrink: 0;
-}
-
-.checkout-step { display: none; }
-.checkout-step.is-active { display: block; }
-.checkout-step__title {
-  font-family: var(--font-brand);
-  font-size: 26px;
-  font-weight: 400;
-  margin-bottom: 28px;
-}
-
-/* Checkout Form */
-.checkout-form .form-group { margin-bottom: 16px; }
-.checkout-form .form-row {
-  display: flex;
-  gap: 16px;
-}
-.checkout-form .form-row .form-group { flex: 1; }
-.checkout-form label {
-  display: block;
+  gap: 12px;
   font-family: var(--font-ui);
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
-  margin-bottom: 6px;
+  color: var(--color-text-faint);
 }
-.checkout-form input {
-  width: 100%;
-  padding: 11px 14px;
-  border: 1px solid var(--color-border);
-  background: var(--color-white);
-  font-family: var(--font-ui);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
-  -webkit-appearance: none;
-  appearance: none;
+.checkout-header__steps .step { transition: color 0.2s; }
+.checkout-header__steps .step.is-active { color: var(--color-text); }
+.step-divider { color: var(--color-border); }
+
+.checkout-main {
+  display: flex;
+  min-height: calc(100vh - 64px);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 56px 40px;
+  gap: 72px;
+  align-items: flex-start;
 }
-.checkout-form input:focus { border-color: var(--color-text); }
-.checkout-form input[readonly] { background: var(--color-bg-alt); color: var(--color-text-muted); cursor: default; }
-.checkout-form .checkout-btn { margin-top: 8px; }
+
+.checkout-form-col { flex: 1; min-width: 0; }
+.checkout-summary-col { width: 320px; flex-shrink: 0; position: sticky; top: 88px; }
+
+.checkout-step { display: none; }
+.checkout-step.is-active { display: block; }
+
+.checkout-step__title {
+  font-family: var(--font-brand);
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  margin-bottom: 36px;
+  color: var(--color-text);
+}
 
 .checkout-guest-toggle {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
   color: var(--color-text-muted);
+  padding: 14px 16px;
+  background: var(--color-bg-alt);
+  border-left: 2px solid var(--color-border);
 }
-.checkout-guest-toggle a { color: var(--color-text); text-decoration: underline; }
+.checkout-guest-toggle a { color: var(--color-text); text-decoration: none; border-bottom: 1px solid currentColor; }
 
-/* Payment placeholder */
-.payment-placeholder { margin-bottom: 24px; }
+.checkout-form .form-row { display: flex; gap: 16px; }
+.checkout-form .form-row .form-group { flex: 1; }
+
+/* Payment */
+.payment-placeholder { margin-bottom: 28px; }
 .payment-cod {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px;
+  gap: 16px;
+  padding: 20px;
   border: 1px solid var(--color-border);
   background: var(--color-white);
   margin-bottom: 12px;
+  cursor: pointer;
 }
-.payment-cod__icon { font-size: 24px; }
+.payment-cod__icon { font-size: 22px; flex-shrink: 0; }
 .payment-cod__title {
   font-family: var(--font-brand);
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
   margin-bottom: 2px;
 }
-.payment-cod__sub { font-family: var(--font-ui); font-size: 13px; color: var(--color-text-muted); }
-.payment-cod input[type="radio"] { margin-left: auto; accent-color: var(--color-text); }
-.payment-note {
+.payment-cod__sub {
   font-family: var(--font-ui);
   font-size: 12px;
   color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+}
+.payment-cod input[type="radio"] { margin-left: auto; accent-color: var(--color-text); }
+.payment-note {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-text-faint);
+  letter-spacing: 0.04em;
   font-style: italic;
 }
-#back-to-shipping { margin-top: 10px; }
+#back-to-shipping { margin-top: 12px; }
 
 /* Order Confirmation */
 .checkout-confirm {
   text-align: center;
-  padding: 48px 0;
+  padding: 56px 0 32px;
 }
 .checkout-confirm__icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  width: 52px;
+  height: 52px;
   background: var(--color-text);
   color: var(--color-white);
-  font-size: 24px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  margin: 0 auto 28px;
 }
 .checkout-confirm h2 {
   font-family: var(--font-brand);
-  font-size: 32px;
-  font-weight: 400;
-  margin-bottom: 10px;
+  font-size: 36px;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
 }
 .checkout-confirm p {
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--color-text-muted);
+  letter-spacing: 0.03em;
   margin-bottom: 6px;
 }
-.checkout-confirm__sub { max-width: 360px; margin: 0 auto 24px; line-height: 1.6; }
+.checkout-confirm__sub {
+  max-width: 340px;
+  margin: 0 auto 32px;
+  line-height: 1.7;
+}
 
 /* Order Summary Sidebar */
 .checkout-summary__title {
   font-family: var(--font-brand);
-  font-size: 18px;
-  font-weight: 500;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--color-border);
 }
 .checkout-summary__items { margin-bottom: 20px; }
 .checkout-summary__item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 0;
+  gap: 14px;
+  padding: 14px 0;
   border-bottom: 1px solid var(--color-border-light);
 }
+.checkout-summary__item:first-child { padding-top: 0; }
 .checkout-summary__item img {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 68px;
   object-fit: cover;
   background: var(--color-bg-alt);
   flex-shrink: 0;
+  display: block;
 }
 .checkout-summary__item > div { flex: 1; min-width: 0; }
 .checkout-summary__item p {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--color-text);
+  letter-spacing: 0.02em;
 }
-.summary-variant { color: var(--color-text-muted) !important; font-size: 12px !important; }
+.summary-variant { color: var(--color-text-muted) !important; font-size: 11px !important; }
 .checkout-summary__item > span {
-  font-family: var(--font-ui);
-  font-size: 13px;
+  font-family: var(--font-brand);
+  font-size: 16px;
+  font-weight: 400;
   flex-shrink: 0;
+  color: var(--color-text);
 }
-.checkout-summary__totals { border-top: 1px solid var(--color-border); padding-top: 16px; }
+
+.checkout-summary__totals {
+  border-top: 1px solid var(--color-border);
+  padding-top: 20px;
+}
 .summary-row {
   display: flex;
   justify-content: space-between;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
   color: var(--color-text-muted);
   margin-bottom: 10px;
 }
 .summary-row--total {
   font-family: var(--font-brand);
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 22px;
+  font-weight: 400;
   color: var(--color-text);
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid var(--color-border);
+  letter-spacing: 0.02em;
 }
 
 /* ── Account Page ─────────────────────────────────────────── */
@@ -3540,222 +3598,208 @@ h1, h2, h3,
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 60px);
-  padding: 40px 24px;
+  min-height: calc(100vh - 64px);
+  padding: 48px 24px;
 }
 .auth-gate__box {
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
   background: var(--color-white);
-  padding: 40px;
+  padding: 52px 48px 44px;
 }
-.auth-gate__box .auth__tabs { margin-bottom: 28px; }
-.auth-gate__box .form-group { margin-bottom: 16px; }
-.auth-gate__box label {
-  display: block;
-  font-family: var(--font-ui);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  margin-bottom: 6px;
-}
-.auth-gate__box input {
-  width: 100%;
-  padding: 11px 14px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  font-family: var(--font-ui);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
-  -webkit-appearance: none;
-  appearance: none;
-}
-.auth-gate__box input:focus { border-color: var(--color-text); }
+.auth-gate__box .auth__tabs { margin-bottom: 36px; }
 
 /* Account Dashboard */
 .account-dashboard {
   display: flex;
-  min-height: calc(100vh - 60px);
-  max-width: 1080px;
+  min-height: calc(100vh - 64px);
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 48px 24px;
-  gap: 48px;
+  padding: 56px 40px;
+  gap: 72px;
+  align-items: flex-start;
 }
-.account-sidebar {
-  width: 220px;
-  flex-shrink: 0;
-}
+.account-sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 88px; }
+
 .account-sidebar__name {
   font-family: var(--font-brand);
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
   margin-bottom: 4px;
+  line-height: 1.2;
 }
 .account-sidebar__email {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-muted);
-  margin-bottom: 28px;
+  letter-spacing: 0.03em;
+  margin-bottom: 36px;
 }
 .account-sidebar__nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
+  border-top: 1px solid var(--color-border);
 }
 .account-nav-btn {
   background: none;
   border: none;
+  border-bottom: 1px solid var(--color-border);
   text-align: left;
-  padding: 10px 14px;
+  padding: 14px 0;
   font-family: var(--font-ui);
-  font-size: 13px;
-  letter-spacing: 0.06em;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
   color: var(--color-text-muted);
-  transition: color 0.2s, background 0.2s;
-  border-radius: 2px;
+  transition: color 0.2s;
 }
-.account-nav-btn:hover { color: var(--color-text); background: var(--color-bg-alt); }
-.account-nav-btn.is-active { color: var(--color-text); background: var(--color-bg-alt); font-weight: 600; }
-.account-nav-btn--logout { margin-top: 16px; color: #c0392b; }
-.account-nav-btn--logout:hover { background: #fdf0ef; }
+.account-nav-btn:hover { color: var(--color-text); }
+.account-nav-btn.is-active { color: var(--color-text); }
+.account-nav-btn--logout {
+  margin-top: 24px;
+  border: none;
+  color: var(--color-text-faint);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.account-nav-btn--logout:hover { color: #b5341e; }
 
 .account-main { flex: 1; min-width: 0; }
 .account-panel { display: none; }
 .account-panel.is-active { display: block; }
 .account-panel__title {
   font-family: var(--font-brand);
-  font-size: 26px;
-  font-weight: 400;
-  margin-bottom: 28px;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  margin-bottom: 36px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
 }
 .account-empty {
-  font-family: var(--font-ui);
-  font-size: 14px;
+  font-family: var(--font-brand);
+  font-size: 18px;
+  font-weight: 300;
   color: var(--color-text-muted);
-  padding: 32px 0;
+  padding: 40px 0;
+  letter-spacing: 0.04em;
 }
 
 /* Order Cards */
-.orders-list { display: flex; flex-direction: column; gap: 16px; }
+.orders-list { display: flex; flex-direction: column; gap: 1px; background: var(--color-border-light); }
 .order-card {
   background: var(--color-white);
-  padding: 20px;
-  border: 1px solid var(--color-border);
+  padding: 24px 28px;
 }
 .order-card__head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
 }
 .order-card__id {
   font-family: var(--font-brand);
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
 }
 .order-card__status {
   font-family: var(--font-ui);
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 20px;
+  padding: 4px 10px;
 }
-.order-status--pending    { background: #fff8e1; color: #f59f00; }
-.order-status--confirmed  { background: #e8f5e9; color: #2e7d32; }
-.order-status--dispatched { background: #e3f2fd; color: #1565c0; }
-.order-status--delivered  { background: #e8f5e9; color: #2e7d32; font-weight: 600; }
-.order-status--cancelled  { background: #fce4ec; color: #c62828; }
+.order-status--pending    { background: #fdf8ec; color: #9a6e00; }
+.order-status--confirmed  { background: #f0f7f1; color: #2a6b34; }
+.order-status--dispatched { background: #eef4fb; color: #1a4f8a; }
+.order-status--delivered  { background: #f0f7f1; color: #1e5028; }
+.order-status--cancelled  { background: #fdf0ee; color: #8a2318; }
 .order-card__date {
   font-family: var(--font-ui);
-  font-size: 12px;
-  color: var(--color-text-muted);
+  font-size: 11px;
+  color: var(--color-text-faint);
+  letter-spacing: 0.04em;
   margin-left: auto;
 }
 .order-card__items p {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-muted);
+  letter-spacing: 0.02em;
   margin-bottom: 4px;
+  line-height: 1.5;
 }
 .order-card__total {
   font-family: var(--font-brand);
-  font-size: 16px;
-  font-weight: 500;
-  margin-top: 12px;
-  padding-top: 12px;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid var(--color-border-light);
 }
 
 /* Address Cards */
-.addresses-list { display: flex; flex-direction: column; gap: 12px; }
+.addresses-list { display: flex; flex-direction: column; gap: 1px; background: var(--color-border-light); }
 .address-card {
   background: var(--color-white);
-  padding: 16px 20px;
-  border: 1px solid var(--color-border);
+  padding: 20px 28px;
 }
 .address-card p {
   font-family: var(--font-ui);
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--color-text);
+  letter-spacing: 0.02em;
 }
 .default-badge {
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   background: var(--color-text);
   color: var(--color-white);
   padding: 2px 8px;
-  margin-left: 8px;
-  border-radius: 10px;
+  margin-left: 10px;
   vertical-align: middle;
 }
 .address-delete {
   background: none;
   border: none;
   font-family: var(--font-ui);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #c0392b;
-  cursor: pointer;
-  padding: 6px 0 0;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-.address-delete:hover { opacity: 1; }
-
-/* ── Add Address Form (in account page) ──────────────────── */
-.account-main .checkout-form label {
-  display: block;
-  font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
-  margin-bottom: 6px;
+  color: var(--color-text-faint);
+  cursor: pointer;
+  padding: 8px 0 0;
+  display: inline-block;
+  transition: color 0.2s;
 }
-.account-main .checkout-form .form-row {
-  display: flex;
-  gap: 16px;
-}
+.address-delete:hover { color: #b5341e; }
+
+/* Add Address Form */
+.account-main .checkout-form .form-row { display: flex; gap: 16px; }
 .account-main .checkout-form .form-row .form-group { flex: 1; }
 
 /* ── Responsive ───────────────────────────────────────────── */
-@media (max-width: 768px) {
+@media (max-width: 860px) {
+  .checkout-main,
+  .account-dashboard { flex-direction: column; padding: 32px 20px; gap: 40px; }
+  .checkout-summary-col,
+  .account-sidebar { width: 100%; position: static; }
+  .checkout-header { padding: 0 20px; }
+  .auth-gate__box { padding: 36px 28px; }
+  .auth-modal { padding: 40px 28px 32px; }
   .cart-drawer { width: 100vw; }
-  .checkout-main { flex-direction: column; padding: 24px 16px; gap: 32px; }
-  .checkout-summary-col { width: 100%; }
-  .checkout-header { padding: 0 16px; }
-  .account-dashboard { flex-direction: column; padding: 24px 16px; gap: 24px; }
-  .account-sidebar { width: 100%; }
-  .auth-gate__box { padding: 28px 20px; }
-  .auth-modal { padding: 28px 20px; }
-  .checkout-form .form-row { flex-direction: column; gap: 0; }
 }
+@media (max-width: 480px) {
+  .checkout-form .form-row { flex-direction: column; gap: 0; }
+  .checkout-confirm h2 { font-size: 28px; }
+}
+

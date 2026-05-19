@@ -119,8 +119,8 @@
 
   function updateBagCount(n) {
     if (!bagCount) return;
-    bagCount.textContent = n;
-    bagCount.style.display = n > 0 ? 'flex' : 'none';
+    bagCount.textContent = n > 0 ? n : '';
+    bagCount.classList.toggle('has-items', n > 0);
   }
 
   // ── Add-to-Bag buttons (product pages) ───────────────────────
