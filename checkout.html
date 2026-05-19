@@ -141,26 +141,31 @@
 
     // Load cart summary
     async function loadSummary() {
-      const data = await API.cart.get();
-      const items = data.items;
-      if (!items.length) { window.location.href = '/index.html'; return; }
+      try {
+        const data = await API.cart.get();
+        const items = data.items;
+        if (!items.length) { window.location.href = '/index.html'; return; }
 
-      document.getElementById('checkout-items').innerHTML = items.map(i => `
-        <div class="checkout-summary__item">
-          <img src="${i.product.images[0]}" alt="${i.product.name}" />
-          <div>
-            <p>${i.product.name}</p>
-            ${i.variant ? `<p class="summary-variant">${i.variant.label}</p>` : ''}
-            <p>Qty: ${i.quantity}</p>
+        document.getElementById('checkout-items').innerHTML = items.map(i => `
+          <div class="checkout-summary__item">
+            <img src="${i.product.images[0]}" alt="${i.product.name}" />
+            <div>
+              <p>${i.product.name}</p>
+              ${i.variant ? `<p class="summary-variant">${i.variant.label}</p>` : ''}
+              <p>Qty: ${i.quantity}</p>
+            </div>
+            <span>₹${(i.unit_price * i.quantity).toLocaleString('en-IN')}</span>
           </div>
-          <span>₹${(i.unit_price * i.quantity).toLocaleString('en-IN')}</span>
-        </div>
-      `).join('');
+        `).join('');
 
-      const shipping = data.subtotal >= 999 ? 0 : 99;
-      document.getElementById('summary-subtotal').textContent = `₹${data.subtotal.toLocaleString('en-IN')}`;
-      document.getElementById('summary-shipping').textContent = shipping === 0 ? 'Free' : `₹${shipping}`;
-      document.getElementById('summary-total').textContent    = `₹${(data.subtotal + shipping).toLocaleString('en-IN')}`;
+        const shipping = data.subtotal >= 999 ? 0 : 99;
+        document.getElementById('summary-subtotal').textContent = `₹${data.subtotal.toLocaleString('en-IN')}`;
+        document.getElementById('summary-shipping').textContent = shipping === 0 ? 'Free' : `₹${shipping}`;
+        document.getElementById('summary-total').textContent    = `₹${(data.subtotal + shipping).toLocaleString('en-IN')}`;
+      } catch {
+        document.getElementById('checkout-items').innerHTML =
+          '<p style="font-family:var(--font-ui);font-size:13px;color:var(--color-text-muted);padding:16px 0">Could not load your bag. Make sure the server is running and try again.</p>';
+      }
     }
 
     loadSummary();
