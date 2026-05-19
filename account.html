@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account — RADICAL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Questrial&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="account-page">
+
+  <div id="page-transition" class="page-transition"></div>
+
+  <header class="checkout-header">
+    <a href="/index.html" class="checkout-header__brand">RADICAL</a>
+  </header>
+
+  <!-- ── Auth Gate (shown when logged out) ───────────────────── -->
+  <div id="auth-gate" class="auth-gate">
+    <div class="auth-gate__box">
+      <div class="auth__tabs">
+        <button class="auth__tab is-active" data-tab="login">Sign In</button>
+        <button class="auth__tab" data-tab="register">Create Account</button>
+      </div>
+
+      <!-- Login -->
+      <div class="auth__panel is-active" id="auth-login">
+        <form id="auth-login-form" class="auth-form" novalidate>
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" required placeholder="you@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" required placeholder="••••••••" />
+          </div>
+          <p class="form-error" id="login-error"></p>
+          <button type="submit" class="checkout-btn">Sign In</button>
+        </form>
+      </div>
+
+      <!-- Register -->
+      <div class="auth__panel" id="auth-register">
+        <form id="auth-register-form" class="auth-form" novalidate>
+          <div class="form-group">
+            <label for="reg-name">Full Name</label>
+            <input type="text" id="reg-name" required placeholder="Arjun Sharma" />
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Email</label>
+            <input type="email" id="reg-email" required placeholder="you@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Password</label>
+            <input type="password" id="reg-password" required placeholder="Min 6 characters" />
+          </div>
+          <p class="form-error" id="reg-error"></p>
+          <button type="submit" class="checkout-btn">Create Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Account Dashboard (shown when logged in) ────────────── -->
+  <div id="account-dashboard" class="account-dashboard" style="display:none">
+
+    <aside class="account-sidebar">
+      <p class="account-sidebar__name" id="account-name">—</p>
+      <p class="account-sidebar__email" id="account-email">—</p>
+      <nav class="account-sidebar__nav">
+        <button class="account-nav-btn is-active" data-panel="orders">Orders</button>
+        <button class="account-nav-btn" data-panel="addresses">Addresses</button>
+        <button id="logout-btn" class="account-nav-btn account-nav-btn--logout">Sign Out</button>
+      </nav>
+    </aside>
+
+    <main class="account-main">
+
+      <!-- Orders panel -->
+      <div class="account-panel is-active" id="panel-orders">
+        <h2 class="account-panel__title">Your Orders</h2>
+        <div id="orders-list" class="orders-list"></div>
+      </div>
+
+      <!-- Addresses panel -->
+      <div class="account-panel" id="panel-addresses">
+        <h2 class="account-panel__title">Saved Addresses</h2>
+        <div id="addresses-list" class="addresses-list"></div>
+        <button id="add-address-btn" class="checkout-btn checkout-btn--sm" style="margin-top:24px">+ Add Address</button>
+        <form id="add-address-form" class="checkout-form" style="display:none;margin-top:24px" novalidate>
+          <div class="form-row">
+            <div class="form-group"><label>Name</label><input type="text" id="addr-name" required /></div>
+            <div class="form-group"><label>Phone</label><input type="tel" id="addr-phone" /></div>
+          </div>
+          <div class="form-group"><label>Line 1</label><input type="text" id="addr-line1" required /></div>
+          <div class="form-group"><label>Line 2</label><input type="text" id="addr-line2" /></div>
+          <div class="form-row">
+            <div class="form-group"><label>City</label><input type="text" id="addr-city" required /></div>
+            <div class="form-group"><label>State</label><input type="text" id="addr-state" required /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>PIN</label><input type="text" id="addr-postal" required /></div>
+          </div>
+          <p class="form-error" id="addr-error"></p>
+          <button type="submit" class="checkout-btn checkout-btn--sm">Save Address</button>
+          <button type="button" id="cancel-address" class="checkout-btn checkout-btn--ghost checkout-btn--sm">Cancel</button>
+        </form>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+  (async () => {
+    const API = window.RADICAL_API;
+    const params = new URLSearchParams(location.search);
+
+    function showDashboard(user) {
+      document.getElementById('auth-gate').style.display        = 'none';
+      document.getElementById('account-dashboard').style.display = 'flex';
+      document.getElementById('account-name').textContent  = user.name;
+      document.getElementById('account-email').textContent = user.email;
+      loadOrders();
+    }
+
+    // Auth tab switching
+    document.querySelectorAll('.auth__tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.auth__tab, .auth__panel').forEach(el => el.classList.remove('is-active'));
+        tab.classList.add('is-active');
+        document.getElementById(`auth-${tab.dataset.tab}`)?.classList.add('is-active');
+      });
+    });
+
+    // Login
+    document.getElementById('auth-login-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const err = document.getElementById('login-error');
+      try {
+        const data = await API.auth.login(
+          document.getElementById('login-email').value,
+          document.getElementById('login-password').value
+        );
+        API.setToken(data.token);
+        if (params.get('redirect') === 'checkout') { window.location.href = '/checkout.html'; return; }
+        showDashboard(data.user);
+      } catch (e) { err.textContent = e.message; }
+    });
+
+    // Register
+    document.getElementById('auth-register-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const err = document.getElementById('reg-error');
+      try {
+        const data = await API.auth.register(
+          document.getElementById('reg-name').value,
+          document.getElementById('reg-email').value,
+          document.getElementById('reg-password').value
+        );
+        API.setToken(data.token);
+        if (params.get('redirect') === 'checkout') { window.location.href = '/checkout.html'; return; }
+        showDashboard(data.user);
+      } catch (e) { err.textContent = e.message; }
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      API.auth.logout();
+      location.reload();
+    });
+
+    // Panel switching
+    document.querySelectorAll('.account-nav-btn[data-panel]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.account-nav-btn, .account-panel').forEach(el => el.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        document.getElementById(`panel-${btn.dataset.panel}`)?.classList.add('is-active');
+        if (btn.dataset.panel === 'addresses') loadAddresses();
+      });
+    });
+
+    // Load orders
+    async function loadOrders() {
+      const el = document.getElementById('orders-list');
+      try {
+        const { orders } = await API.orders.list();
+        if (!orders.length) { el.innerHTML = '<p class="account-empty">No orders yet.</p>'; return; }
+        el.innerHTML = orders.map(o => `
+          <div class="order-card">
+            <div class="order-card__head">
+              <span class="order-card__id">Order #${o.id}</span>
+              <span class="order-card__status order-status--${o.status}">${o.status}</span>
+              <span class="order-card__date">${new Date(o.created_at).toLocaleDateString('en-IN')}</span>
+            </div>
+            <div class="order-card__items">
+              ${o.items.map(i => `<p>${i.product_name}${i.variant_label ? ` — ${i.variant_label}` : ''} × ${i.quantity}</p>`).join('')}
+            </div>
+            <div class="order-card__total">Total: ₹${o.total.toLocaleString('en-IN')}</div>
+          </div>
+        `).join('');
+      } catch { el.innerHTML = '<p class="account-empty">Could not load orders.</p>'; }
+    }
+
+    // Load addresses
+    async function loadAddresses() {
+      const el = document.getElementById('addresses-list');
+      try {
+        const { addresses } = await API.addresses.list();
+        if (!addresses.length) { el.innerHTML = '<p class="account-empty">No saved addresses.</p>'; return; }
+        el.innerHTML = addresses.map(a => `
+          <div class="address-card">
+            <p><strong>${a.name}</strong>${a.is_default ? ' <span class="default-badge">Default</span>' : ''}</p>
+            <p>${a.line1}${a.line2 ? ', ' + a.line2 : ''}</p>
+            <p>${a.city}, ${a.state} ${a.postal_code}</p>
+            ${a.phone ? `<p>${a.phone}</p>` : ''}
+            <button class="address-delete" data-id="${a.id}">Remove</button>
+          </div>
+        `).join('');
+        el.querySelectorAll('.address-delete').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            await API.addresses.remove(btn.dataset.id);
+            loadAddresses();
+          });
+        });
+      } catch { el.innerHTML = '<p>Could not load addresses.</p>'; }
+    }
+
+    // Add address form
+    document.getElementById('add-address-btn').addEventListener('click', () => {
+      document.getElementById('add-address-form').style.display = 'block';
+      document.getElementById('add-address-btn').style.display  = 'none';
+    });
+    document.getElementById('cancel-address').addEventListener('click', () => {
+      document.getElementById('add-address-form').style.display = 'none';
+      document.getElementById('add-address-btn').style.display  = 'block';
+    });
+    document.getElementById('add-address-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      try {
+        await API.addresses.add({
+          name:        document.getElementById('addr-name').value,
+          line1:       document.getElementById('addr-line1').value,
+          line2:       document.getElementById('addr-line2').value,
+          city:        document.getElementById('addr-city').value,
+          state:       document.getElementById('addr-state').value,
+          postal_code: document.getElementById('addr-postal').value,
+          phone:       document.getElementById('addr-phone').value,
+          country:     'IN',
+        });
+        document.getElementById('add-address-form').style.display = 'none';
+        document.getElementById('add-address-btn').style.display  = 'block';
+        loadAddresses();
+      } catch (e) { document.getElementById('addr-error').textContent = e.message; }
+    });
+
+    // Check if already logged in
+    if (API.isLoggedIn()) {
+      try {
+        const { user } = await API.auth.me();
+        showDashboard(user);
+      } catch { API.clearToken(); }
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — RADICAL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Questrial&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="checkout-page">
+
+  <div id="page-transition" class="page-transition"></div>
+
+  <header class="checkout-header">
+    <a href="/index.html" class="checkout-header__brand">RADICAL</a>
+    <div class="checkout-header__steps">
+      <span class="step is-active">Shipping</span>
+      <span class="step-divider">›</span>
+      <span class="step" id="step-payment-label">Payment</span>
+    </div>
+  </header>
+
+  <main class="checkout-main">
+
+    <!-- ── Left: Form ────────────────────────────────────────── -->
+    <section class="checkout-form-col">
+
+      <!-- Step 1: Shipping -->
+      <div id="step-shipping" class="checkout-step is-active">
+        <h2 class="checkout-step__title">Shipping Information</h2>
+
+        <div class="checkout-guest-toggle">
+          <p id="checkout-auth-msg">
+            <a href="#" id="checkout-login-link">Log in</a> to autofill your saved addresses.
+          </p>
+        </div>
+
+        <form id="shipping-form" class="checkout-form" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ship-name">Full Name</label>
+              <input type="text" id="ship-name" required placeholder="Arjun Sharma" />
+            </div>
+            <div class="form-group">
+              <label for="ship-phone">Phone</label>
+              <input type="tel" id="ship-phone" placeholder="+91 98765 43210" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ship-email">Email</label>
+            <input type="email" id="ship-email" required placeholder="arjun@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="ship-line1">Address Line 1</label>
+            <input type="text" id="ship-line1" required placeholder="Flat 4B, Prestige Tower" />
+          </div>
+          <div class="form-group">
+            <label for="ship-line2">Address Line 2 (optional)</label>
+            <input type="text" id="ship-line2" placeholder="Near MG Road Metro" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ship-city">City</label>
+              <input type="text" id="ship-city" required placeholder="Bangalore" />
+            </div>
+            <div class="form-group">
+              <label for="ship-state">State</label>
+              <input type="text" id="ship-state" required placeholder="Karnataka" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ship-postal">PIN Code</label>
+              <input type="text" id="ship-postal" required placeholder="560001" />
+            </div>
+            <div class="form-group">
+              <label for="ship-country">Country</label>
+              <input type="text" id="ship-country" value="India" readonly />
+            </div>
+          </div>
+
+          <p class="form-error" id="shipping-error"></p>
+          <button type="submit" class="checkout-btn">Continue to Payment →</button>
+        </form>
+      </div>
+
+      <!-- Step 2: Payment (placeholder — Stripe will go here) -->
+      <div id="step-payment" class="checkout-step">
+        <h2 class="checkout-step__title">Payment</h2>
+        <div class="payment-placeholder">
+          <div class="payment-cod">
+            <div class="payment-cod__icon">💳</div>
+            <div>
+              <p class="payment-cod__title">Cash on Delivery</p>
+              <p class="payment-cod__sub">Pay when your order arrives. Available across India.</p>
+            </div>
+            <input type="radio" name="payment" value="cod" checked />
+          </div>
+          <p class="payment-note">Online payment via Stripe coming soon.</p>
+        </div>
+
+        <p class="form-error" id="payment-error"></p>
+        <button id="place-order-btn" class="checkout-btn">Place Order</button>
+        <button id="back-to-shipping" class="checkout-btn checkout-btn--ghost">← Back to Shipping</button>
+      </div>
+
+      <!-- Step 3: Confirmation -->
+      <div id="step-confirm" class="checkout-step">
+        <div class="checkout-confirm">
+          <div class="checkout-confirm__icon">✓</div>
+          <h2>Order Placed!</h2>
+          <p id="confirm-order-id"></p>
+          <p class="checkout-confirm__sub">You'll receive a confirmation on your email. We'll dispatch within 2–3 business days.</p>
+          <a href="/index.html" class="checkout-btn" style="margin-top:24px">Continue Shopping</a>
+          <a href="/account.html" class="checkout-btn checkout-btn--ghost" style="margin-top:12px">View Orders</a>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── Right: Order Summary ───────────────────────────────── -->
+    <aside class="checkout-summary-col">
+      <h3 class="checkout-summary__title">Order Summary</h3>
+      <div id="checkout-items" class="checkout-summary__items"></div>
+      <div class="checkout-summary__totals">
+        <div class="summary-row"><span>Subtotal</span><span id="summary-subtotal">—</span></div>
+        <div class="summary-row"><span>Shipping</span><span id="summary-shipping">—</span></div>
+        <div class="summary-row summary-row--total"><span>Total</span><span id="summary-total">—</span></div>
+      </div>
+    </aside>
+
+  </main>
+
+  <script src="api.js"></script>
+  <script>
+  (async () => {
+    const API = window.RADICAL_API;
+    let shippingData = null;
+
+    // Load cart summary
+    async function loadSummary() {
+      const data = await API.cart.get();
+      const items = data.items;
+      if (!items.length) { window.location.href = '/index.html'; return; }
+
+      document.getElementById('checkout-items').innerHTML = items.map(i => `
+        <div class="checkout-summary__item">
+          <img src="${i.product.images[0]}" alt="${i.product.name}" />
+          <div>
+            <p>${i.product.name}</p>
+            ${i.variant ? `<p class="summary-variant">${i.variant.label}</p>` : ''}
+            <p>Qty: ${i.quantity}</p>
+          </div>
+          <span>₹${(i.unit_price * i.quantity).toLocaleString('en-IN')}</span>
+        </div>
+      `).join('');
+
+      const shipping = data.subtotal >= 999 ? 0 : 99;
+      document.getElementById('summary-subtotal').textContent = `₹${data.subtotal.toLocaleString('en-IN')}`;
+      document.getElementById('summary-shipping').textContent = shipping === 0 ? 'Free' : `₹${shipping}`;
+      document.getElementById('summary-total').textContent    = `₹${(data.subtotal + shipping).toLocaleString('en-IN')}`;
+    }
+
+    loadSummary();
+
+    // Shipping form
+    document.getElementById('shipping-form').addEventListener('submit', e => {
+      e.preventDefault();
+      shippingData = {
+        name:        document.getElementById('ship-name').value,
+        phone:       document.getElementById('ship-phone').value,
+        line1:       document.getElementById('ship-line1').value,
+        line2:       document.getElementById('ship-line2').value,
+        city:        document.getElementById('ship-city').value,
+        state:       document.getElementById('ship-state').value,
+        postal_code: document.getElementById('ship-postal').value,
+        country:     'IN',
+      };
+      document.getElementById('step-shipping').classList.remove('is-active');
+      document.getElementById('step-payment').classList.add('is-active');
+      document.getElementById('step-payment-label').classList.add('is-active');
+      document.querySelector('.checkout-header__steps .step').classList.remove('is-active');
+    });
+
+    // Back button
+    document.getElementById('back-to-shipping').addEventListener('click', () => {
+      document.getElementById('step-payment').classList.remove('is-active');
+      document.getElementById('step-shipping').classList.add('is-active');
+    });
+
+    // Place order
+    document.getElementById('place-order-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('place-order-btn');
+      const err = document.getElementById('payment-error');
+      if (!shippingData) return;
+      btn.textContent = 'Placing order…';
+      btn.disabled = true;
+      try {
+        const guestEmail = document.getElementById('ship-email').value;
+        const data = await API.orders.place(shippingData, { guest_email: guestEmail });
+        document.getElementById('step-payment').classList.remove('is-active');
+        document.getElementById('step-confirm').classList.add('is-active');
+        document.getElementById('confirm-order-id').textContent = `Order #${data.order.id}`;
+      } catch (e) {
+        err.textContent = e.message;
+        btn.textContent = 'Place Order';
+        btn.disabled = false;
+      }
+    });
+
+    // Auth message
+    if (API.isLoggedIn()) {
+      document.getElementById('checkout-auth-msg').innerHTML =
+        'Checking saved addresses…';
+      try {
+        const { addresses } = await API.addresses.list();
+        const def = addresses.find(a => a.is_default) || addresses[0];
+        if (def) {
+          document.getElementById('ship-name').value    = def.name;
+          document.getElementById('ship-line1').value   = def.line1;
+          document.getElementById('ship-line2').value   = def.line2 || '';
+          document.getElementById('ship-city').value    = def.city;
+          document.getElementById('ship-state').value   = def.state;
+          document.getElementById('ship-postal').value  = def.postal_code;
+          document.getElementById('ship-phone').value   = def.phone || '';
+          document.getElementById('checkout-auth-msg').innerHTML = 'Autofilled from your saved address.';
+        } else {
+          document.getElementById('checkout-auth-msg').innerHTML = '';
+        }
+      } catch {}
+    } else {
+      document.getElementById('checkout-login-link').addEventListener('click', e => {
+        e.preventDefault();
+        window.location.href = '/account.html?redirect=checkout';
+      });
+    }
+  })();
+  </script>
+</body>
+</html>
