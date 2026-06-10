@@ -27,7 +27,7 @@
   function openCart()  { cartDrawer?.classList.add('is-open'); cartOverlay?.classList.add('is-active'); document.body.style.overflow = 'hidden'; refreshCart(); }
   function closeCart() { cartDrawer?.classList.remove('is-open'); cartOverlay?.classList.remove('is-active'); document.body.style.overflow = ''; }
 
-  bagBtn?.addEventListener('click', openCart);
+  bagBtn?.addEventListener('click', (e) => { e.preventDefault(); openCart(); });
   cartClose?.addEventListener('click', closeCart);
   cartOverlay?.addEventListener('click', closeCart);
 
@@ -84,10 +84,9 @@
         <span>₹${cartSubtotal.toLocaleString('en-IN')}</span>
       </div>
       <p class="cart__shipping-note">${cartSubtotal >= 999 ? 'Free shipping applied' : `₹${(999 - cartSubtotal).toLocaleString('en-IN')} away from free shipping`}</p>
-      <a href="/checkout.html" class="cart__checkout-btn">Proceed to Checkout</a>
+      <a href="checkout.html" class="cart__checkout-btn">Proceed to Checkout</a>
       <button class="cart__clear-btn" id="cart-clear">Clear bag</button>
     `;
-
     document.getElementById('cart-clear')?.addEventListener('click', async () => {
       await API.cart.clear();
       await refreshCart();
@@ -124,24 +123,25 @@
   }
 
   // ── Add-to-Bag buttons (product pages) ───────────────────────
-  document.querySelectorAll('[data-add-to-bag]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const productId = btn.dataset.productId;
-      const variantId = btn.dataset.variantId || null;
-      const orig = btn.textContent;
-      btn.textContent = 'Adding…';
-      btn.disabled = true;
-      try {
-        await API.cart.add(Number(productId), variantId ? Number(variantId) : null, 1);
-        btn.textContent = 'Added ✓';
-        setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1500);
-        await refreshCart();
-        openCart();
-      } catch (e) {
-        btn.textContent = e.message;
-        setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
-      }
-    });
+  document.body.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-add-to-bag]');
+    if (!btn) return;
+
+    const productId = btn.dataset.productId;
+    const variantId = btn.dataset.variantId || null;
+    const orig = btn.textContent;
+    btn.textContent = 'Adding…';
+    btn.disabled = true;
+    try {
+      await API.cart.add(Number(productId), variantId ? Number(variantId) : null, 1);
+      btn.textContent = 'Added ✓';
+      setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1500);
+      await refreshCart();
+      openCart();
+    } catch (e) {
+      btn.textContent = e.message;
+      setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+    }
   });
 
   // ── Auth Modal ────────────────────────────────────────────────

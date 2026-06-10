@@ -20,12 +20,27 @@ app.use('/api/orders',    require('./routes/orders'));
 app.use('/api/addresses', require('./routes/addresses'));
 app.use('/api/admin',     require('./routes/admin'));
 
+// ── Error logging from browser ──────────────────────────────────
+app.post('/api/log-error', (req, res) => {
+  console.log('=== BROWSER ERROR ===', req.body);
+  res.sendStatus(200);
+});
+
 // ── Health check ────────────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// ── All other routes → serve index.html (SPA-style fallback) ────
+// ── All other routes → serve corresponding HTML file or index.html (SPA-style fallback) ────
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(FRONTEND, 'index.html'));
+  const safePath = req.path.replace(/\/$/, ''); // Remove trailing slash
+  const htmlFile = safePath.endsWith('.html') ? safePath : `${safePath}.html`;
+  const fullPath = path.join(FRONTEND, htmlFile);
+
+  res.sendFile(fullPath, (err) => {
+    if (err) {
+      // Fallback to index.html if the specific HTML file doesn't exist
+      res.sendFile(path.join(FRONTEND, 'index.html'));
+    }
+  });
 });
 
 // ── Error handler ───────────────────────────────────────────────

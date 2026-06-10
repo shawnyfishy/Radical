@@ -14,7 +14,15 @@
   /* ─────────────────────────────────────────────────────────────
      1. GSAP REGISTRATION + CUSTOM EASES
   ───────────────────────────────────────────────────────────── */
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, CustomEase);
+
+  gsap.config({ force3D: true, nullTargetWarn: false, autoSleep: 60 });
+
+  // Register Custom Eases
+  CustomEase.create('loaderEase', '0.65, 0.01, 0.05, 0.99');
+  CustomEase.create('ease-3', '0.65, 0.01, 0.05, 0.99');
+  CustomEase.create('ease-2', 'M0,0 C0.071,0.505 0.192,0.726 0.318,0.852 0.45,0.984 0.504,1 1,1');
+  CustomEase.create('ease-1', 'M0,0 C0.15,0 0.15,1 1,1');
 
   // Ease aliases — GSAP native / cubic-bezier strings
   const EASE = {
@@ -22,46 +30,74 @@
     emerge:   'expo.out',                               // section entrances
     silk:     'power2.inOut',                           // transitions, swaps
     sharp:    'power3.in',                              // sharp entry
+    loader:   'loaderEase',                             // exact Odd Ritual animation curve
+    ease1:    'ease-1',
+    ease2:    'ease-2',
+    ease3:    'ease-3',
   };
+
+  // Cleanup registry — document/window listeners registered by page-specific inits
+  // are pushed here and flushed on every Barba transition to prevent stacking
+  const _cleanup = [];
+  let _productTrackRafActive = false;
+  let _isBarbaTransition = false;
+  let _scrollOverlapMM = null;
 
   /* ─────────────────────────────────────────────────────────────
      2. LENIS — SYNCED TO GSAP TICKER (single RAF loop)
   ───────────────────────────────────────────────────────────── */
-  const lenis = new Lenis({
-    lerp:        0.08,
-    smoothWheel: true,
-    syncTouch:   false,
-    duration:    1.2,
-  });
+  let lenis;
+  if (typeof Lenis !== 'undefined') {
+    lenis = new Lenis({
+      lerp:        0.08,
+      smoothWheel: true,
+      syncTouch:   false,
+      duration:    1.2,
+    });
 
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
-  gsap.ticker.lagSmoothing(0);
-  lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+    lenis.on('scroll', ScrollTrigger.update);
+  }
 
   /* ─────────────────────────────────────────────────────────────
      3. SCROLL PROGRESS BAR
   ───────────────────────────────────────────────────────────── */
+  let scrollProgressBar;
+  let heroRevealTl;
+  if (lenis) {
+    lenis.on('scroll', ({ progress }) => {
+      if (scrollProgressBar) {
+        scrollProgressBar.style.width = `${progress * 100}%`;
+      }
+    });
+  }
+
   function initScrollProgress() {
-    const bar = document.getElementById('scroll-progress');
-    if (!bar) return;
-    lenis.on('scroll', ({ progress }) => { bar.style.width = `${progress * 100}%`; });
+    scrollProgressBar = document.getElementById('scroll-progress');
   }
 
   /* ─────────────────────────────────────────────────────────────
      5. NAVIGATION (native RAF — zero layout thrash)
   ───────────────────────────────────────────────────────────── */
-  const nav      = document.getElementById('main-nav');
-  const menuBtn  = document.getElementById('nav-menu-btn');
-  const closeBtn = document.getElementById('nav-close-btn');
-  const backdrop = document.getElementById('nav-backdrop');
-  const overlay  = document.getElementById('nav-overlay');
-  const searchBtn   = document.getElementById('nav-search-btn');
-  const searchStrip = document.getElementById('search-strip');
-  const searchScrim = document.getElementById('search-scrim');
-  const searchClose = document.getElementById('search-close-btn');
-  const searchInput = document.getElementById('search-input');
-
+  let nav, menuBtn, closeBtn, backdrop, overlay, searchBtn, searchStrip, searchScrim, searchClose, searchInput;
   let lastScrollY = 0, ticking = false;
+
+  function reQueryDOMElements() {
+    nav         = document.getElementById('main-nav');
+    menuBtn     = document.getElementById('nav-menu-btn');
+    closeBtn    = document.getElementById('nav-close-btn');
+    backdrop    = document.getElementById('nav-backdrop');
+    overlay     = document.getElementById('nav-overlay');
+    searchBtn   = document.getElementById('nav-search-btn');
+    searchStrip = document.getElementById('search-strip');
+    searchScrim = document.getElementById('search-scrim');
+    searchClose = document.getElementById('search-close-btn');
+    searchInput = document.getElementById('search-input');
+  }
+
+  reQueryDOMElements();
+
   function updateNav() {
     const y = window.scrollY;
     if (nav) {
@@ -76,58 +112,169 @@
   }, { passive: true });
 
   /* ─────────────────────────────────────────────────────────────
-     6. PAGE ENTRANCE — overlay slides left off screen
+     6. PAGE ENTRANCE
   ───────────────────────────────────────────────────────────── */
   function initPageEntrance() {
-    const pt = document.getElementById('page-transition');
-    if (!pt) return;
-
-    gsap.fromTo(pt,
-      { xPercent: 0 },
-      {
-        xPercent: -100,
-        duration: 1.0,
-        ease: EASE.silk,
-        delay: 0.05,
-        onComplete: () => {
-          pt.style.pointerEvents = 'none';
-          gsap.set(pt, { xPercent: 100 });  // reset to right for next exit
-        }
-      }
-    );
+    // Handled by preloader on initial home load and Barba.js on page transitions.
   }
 
   /* ─────────────────────────────────────────────────────────────
-     7. PAGE EXIT — overlay slides in from right, then navigate
+     7. PAGE TRANSITION (Barba.js SPA)
   ───────────────────────────────────────────────────────────── */
   function initPageTransition() {
-    const pt = document.getElementById('page-transition');
-    if (!pt) return;
+    if (typeof barba === 'undefined') return;
 
-    document.addEventListener('click', (e) => {
-      const link = e.target.closest('a[href]');
-      if (!link) return;
-      const href = link.getAttribute('href');
-      if (!href ||
-          href.startsWith('http') ||
-          href.startsWith('mailto') ||
-          href.startsWith('tel') ||
-          link.target === '_blank' ||
-          (href.startsWith('#') && !href.includes('/'))) return;
+    barba.hooks.before((data) => {
+      _isBarbaTransition = true;
+      heroRevealTl = null;
+      document.documentElement.classList.add('is-transitioning');
+      if (typeof lenis !== 'undefined') lenis.stop();
 
-      e.preventDefault();
-      lenis.stop();
-      pt.style.pointerEvents = 'all';
+      // Lock all links during transition to prevent race conditions
+      document.querySelectorAll('a[href]').forEach(function(link) {
+        link.style.pointerEvents = 'none';
+      });
 
-      gsap.fromTo(pt,
-        { xPercent: 100 },
+      // Flush document/window listeners from the outgoing page
+      _cleanup.forEach(fn => fn());
+      _cleanup.length = 0;
+      _productTrackRafActive = false;
+
+      // Kill active tweens and clear ALL GSAP inline styles from the outgoing container.
+      // Without clearProps, Barba's cache stores elements frozen at their animation state
+      // (opacity:0, transform:translateY(30px) etc.), causing invisible content on revisit.
+      if (data.current.container) {
+        var outEls = data.current.container.querySelectorAll('*');
+        gsap.killTweensOf(outEls);
+        gsap.set(outEls, { clearProps: 'all' });
+      }
+
+      ScrollTrigger.getAll().forEach(t => t.kill());
+
+      // Close menu overlay if open
+      const navWrap = document.getElementById('nav-overlay');
+      if (navWrap && navWrap.getAttribute('data-nav') === 'open') {
+        navWrap.setAttribute('data-nav', 'closed');
+        navWrap.classList.remove('is-open');
+        navWrap.style.display = 'none';
+        document.body.classList.remove('menu-open');
+        const mainHeader = document.getElementById('main-nav');
+        if (mainHeader) mainHeader.classList.remove('is-menu-open');
+      }
+    });
+
+    barba.hooks.after((data) => {
+      document.documentElement.classList.remove('is-transitioning');
+      window.scrollTo(0, 0);
+      reQueryDOMElements();
+      if (typeof lenis !== 'undefined') lenis.start();
+      _isBarbaTransition = false;
+      if (heroRevealTl && heroRevealTl.paused()) heroRevealTl.play();
+
+      // Restore link pointer-events
+      document.querySelectorAll('a[href]').forEach(function(link) {
+        link.style.pointerEvents = '';
+      });
+
+      // Double-rAF ensures the browser has fully painted and calculated final layout
+      // before ScrollTrigger measures element positions. Without this, triggers fire
+      // at wrong scroll offsets because the DOM isn't settled yet.
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          ScrollTrigger.refresh(true);
+        });
+      });
+    });
+
+    barba.init({
+      preventRunning: true,
+      cacheIgnore: true,
+      timeout: 10000,
+      prevent: ({ el }) => {
+        if (!el || !el.href) return false;
+        const href = el.getAttribute('href') || '';
+        if (el.hostname && el.hostname !== window.location.hostname) return true;
+        if (href.startsWith('#')) return true;
+        if (el.hash && el.pathname === window.location.pathname) return true;
+        if (el.href === window.location.href) return true;
+        if (/account\.html|checkout\.html/.test(href)) return true;
+        return false;
+      },
+      views: [
         {
-          xPercent: 0,
-          duration: 0.72,
-          ease: EASE.silk,
-          onComplete: () => { window.location.href = href; }
+          namespace: 'shop',
+          beforeLeave() {
+            ScrollTrigger.getAll()
+              .filter(function (st) { return st.vars.id && st.vars.id.startsWith('products-'); })
+              .forEach(function (st) { st.kill(); });
+          },
+        },
+      ],
+      transitions: [
+        {
+          sync: true,
+          leave(data) {
+            const scrollY = window.scrollY || window.pageYOffset;
+            
+            // Fix leaving container at current scroll offset
+            gsap.set(data.current.container, {
+              position: 'fixed',
+              top: -scrollY,
+              left: 0,
+              width: '100%',
+              zIndex: 1
+            });
+
+            // Instantly scroll window to 0 (leaving container remains visually stable)
+            window.scrollTo(0, 0);
+            if (typeof lenis !== 'undefined') {
+              lenis.scrollTo(0, { immediate: true });
+            }
+
+            return gsap.fromTo(data.current.container,
+              { opacity: 1, y: 0 },
+              {
+                opacity: 0.4,
+                y: '20vh',
+                duration: 1.0,
+                ease: 'ease-3'
+              }
+            );
+          },
+          enter(data) {
+            // Run initialization immediately on the new container BEFORE it animates into view.
+            // This applies all GSAP initial state sets (like yPercent, opacity, clip-path)
+            // so the elements are already pre-hidden and won't flash unstyled on screen.
+            initNewPage(data.next.namespace);
+
+            let tl = gsap.timeline({
+              defaults: {
+                duration: 1.0,
+                ease: 'ease-3'
+              }
+            });
+
+            // Enter next container on top of current (at scroll 0)
+            gsap.set(data.next.container, {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              zIndex: 2,
+              y: '-20vh',
+              clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)'
+            });
+
+            tl.to(data.next.container, {
+              y: '0vh',
+              clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+              clearProps: 'all'
+            });
+
+            return tl;
+          }
         }
-      );
+      ]
     });
   }
 
@@ -138,26 +285,97 @@
     const preloader = document.getElementById('preloader');
     if (!preloader) return;
 
-    const brand = preloader.querySelector('.preloader__brand');
-    const tl = gsap.timeline();
+    // Check if we arrived via internal site navigation
+    const isNavigatingWithinSite = document.referrer && document.referrer.includes(window.location.hostname);
+    // Check if this is a page reload
+    const navEntries = performance.getEntriesByType('navigation');
+    const isReload = navEntries.length > 0 && navEntries[0].type === 'reload';
 
-    // Brand wordmark fades in
+    if (isNavigatingWithinSite && !isReload) {
+      preloader.style.display = 'none';
+      preloader.classList.add('is-done');
+      return;
+    }
+
+    const brand = preloader.querySelector('.preloader__brand');
+    const logo  = preloader.querySelector('.preloader__logo');
+    const box = preloader.querySelector('.preloader__box');
+    const boxBg = preloader.querySelector('.preloader__box-bg');
+    const imageWrap = preloader.querySelector('.preloader__image-wrap');
+    const boxImg = preloader.querySelector('.preloader__box-img');
+    
+    const tl = gsap.timeline({
+      onStart: () => {
+        if (lenis) lenis.stop();
+      },
+      onComplete: () => {
+        if (lenis) lenis.start();
+        preloader.classList.add('is-done');
+        preloader.style.display = 'none';
+        if (heroRevealTl) heroRevealTl.play();
+      }
+    });
+
+    // 1. Logo and brand staggered entrance (retaining the exact current animation)
     if (brand) {
       tl.fromTo(brand,
-        { autoAlpha: 0, y: 16 },
-        { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out' },
-        0.15
+        { autoAlpha: 0, y: 24 },
+        { autoAlpha: 1, y: 0, duration: 0.85 },
+        0.2
+      );
+    }
+    if (logo) {
+      tl.fromTo(logo,
+        { autoAlpha: 0, y: 30, scale: 0.9 },
+        { autoAlpha: 1, y: 0, scale: 1, duration: 0.85 },
+        0.6
       );
     }
 
-    // Slide the entire panel up and off screen
+    // 2. Box background and image container sweep down from top to bottom (revealing the image, covering the logo)
+    // Staggered by 15%, matching Odd Ritual
+    const sweepDuration = 1.0;
+    
+    if (boxBg) {
+      tl.fromTo(boxBg,
+        { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)' },
+        { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: sweepDuration, ease: 'power2.inOut' },
+        1.8 // Start after logo animation completes
+      );
+    }
+
+    if (imageWrap) {
+      tl.fromTo(imageWrap,
+        { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)' },
+        { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: sweepDuration, ease: 'power2.inOut' },
+        1.8 // same time as boxBg — image always covers the red
+      );
+    }
+
+    // 3. Center box collapses down (disappears from top to bottom)
+    if (box) {
+      tl.to(box, {
+        clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)',
+        duration: 1.0,
+        ease: 'power3.inOut'
+      }, 3.2); // Start after sweep is complete
+    }
+
+    // 4. Image inside slides down slightly while collapsing
+    if (boxImg) {
+      tl.to(boxImg, {
+        yPercent: 10,
+        duration: 1.0,
+        ease: 'power3.inOut'
+      }, 3.2);
+    }
+
+    // 5. Entire black preloader screen collapses down to reveal the homepage
     tl.to(preloader, {
-      yPercent: -100,
+      clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)',
       duration: 1.0,
-      ease: EASE.silk,
-      delay: 0.55,
-      onComplete: () => preloader.classList.add('is-done'),
-    });
+      ease: 'power3.inOut'
+    }, 3.2 + 1.0 * 0.3); // '<30%' equivalent of box collapse start
   }
 
   /* ─────────────────────────────────────────────────────────────
@@ -174,7 +392,7 @@
     if (label) {
       tl.fromTo(label,
         { autoAlpha: 0, y: 20 },
-        { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+        { autoAlpha: 1, y: 0, duration: 0.85, ease: 'power3.out' },
         0.1
       );
     }
@@ -191,7 +409,7 @@
         rotateX: 0,
         duration: 1.2,
         ease: EASE.emerge,
-        stagger: { each: 0.065, from: 'start' },
+        stagger: { each: 0.06, from: 'start' },
       }, 0.3);
     } else if (headline) {
       tl.fromTo(headline, { autoAlpha: 0, y: 48 }, { autoAlpha: 1, y: 0, duration: 1.2, ease: EASE.emerge }, 0.3);
@@ -199,11 +417,11 @@
 
     // Sub / about sub
     const sub = heroContent.querySelector('.about-hero__sub');
-    if (sub) tl.fromTo(sub, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out' }, '-=0.6');
+    if (sub) tl.fromTo(sub, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.85, ease: 'power3.out' }, '-=0.6');
 
     // CTA
     const cta = heroContent.querySelector('.hero__cta');
-    if (cta) tl.fromTo(cta, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out' }, '-=0.7');
+    if (cta) tl.fromTo(cta, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.85, ease: 'power3.out' }, '-=0.7');
 
     // Hero image — Ken Burns entrance
     const heroImgCover = document.querySelector('.about-hero__img');
@@ -218,61 +436,237 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
-     10. SCROLL REVEALS — Awwwards: clip-path + word stagger
+     9b. HERO SLIDER (Odd Ritual DNA)
   ───────────────────────────────────────────────────────────── */
-  function initReveals() {
-    // ── All h2/h3 — word reveal ──
-    document.querySelectorAll('h2, h3, .campaign__headline, .banner__headline, .about-section__heading, .about-closing__statement').forEach(el => {
-      if (el.closest('.hero__content, .about-hero__content')) return;
-      if (typeof SplitType === 'undefined') return;
+  function initHeroSlider() {
+    const sliderEl = document.querySelector('.hero-slider');
+    if (!sliderEl) return;
 
-      el.style.perspective = '600px';
-      el.style.overflow = 'visible';
-      const split = new SplitType(el, { types: 'lines,words' });
+    const childItems = sliderEl.querySelectorAll('.hero-slider_item');
+    const activeIndicator = sliderEl.querySelector('.is-active-indicator');
+    
+    if (!childItems.length) return;
 
-      gsap.set(split.words, { autoAlpha: 0, yPercent: 100, rotateX: -18 });
+    let activeIndex = 0;
+    const totalSlides = childItems.length;
 
-      ScrollTrigger.create({
-        trigger: el,
-        start: 'top 88%',
-        once: true,
-        onEnter: () => gsap.to(split.words, {
-          autoAlpha: 1, yPercent: 0, rotateX: 0,
-          duration: 1.1, ease: EASE.emerge,
-          stagger: { each: 0.055, from: 'start' },
-        }),
-      });
+    // Initialize states
+    childItems.forEach((item, index) => {
+      if (index === 0) {
+        item.style.display = 'flex';
+        item.classList.add('active');
+      } else {
+        item.style.display = 'none';
+        item.classList.remove('active');
+      }
     });
 
-    // ── Philosophy text — line by line ──
-    const philText = document.querySelector('.philosophy__text');
-    if (philText && typeof SplitType !== 'undefined') {
-      const split = new SplitType(philText, { types: 'lines' });
-      gsap.set(split.lines, { autoAlpha: 0, y: 28 });
-      ScrollTrigger.create({
-        trigger: philText, start: 'top 88%', once: true,
-        onEnter: () => gsap.to(split.lines, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.08 }),
+    if (activeIndicator) {
+      activeIndicator.textContent = '01';
+    }
+
+    function moveSlide(nextIndex, forwards) {
+      if (nextIndex === activeIndex) return;
+
+      const prevItem = childItems[activeIndex];
+      const nextItem = childItems[nextIndex];
+
+      // Reset display states for active and target items
+      prevItem.style.display = 'flex';
+      nextItem.style.display = 'flex';
+
+      const prevItemImg = prevItem.querySelector('.hero-slide_visual img');
+      const nextItemImg = nextItem.querySelector('.hero-slide_visual img');
+
+      let tl = gsap.timeline({
+        defaults: { duration: 1.0, ease: 'ease-2' },
+        onComplete: () => {
+          // Clean up display states after transition
+          childItems.forEach((item, idx) => {
+            if (idx !== nextIndex) {
+              item.style.display = 'none';
+              item.classList.remove('active');
+            }
+          });
+          nextItem.classList.add('active');
+        }
+      });
+
+      if (forwards) {
+        tl.fromTo(
+          nextItem,
+          { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)' },
+          { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)' }
+        );
+        tl.fromTo(
+          prevItem,
+          { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)' },
+          { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)' },
+          '<'
+        );
+        if (prevItemImg) tl.fromTo(prevItemImg, { yPercent: 0 }, { yPercent: 10 }, '<');
+        if (nextItemImg) tl.fromTo(nextItemImg, { yPercent: -10 }, { yPercent: 0 }, '<');
+      } else {
+        tl.fromTo(
+          nextItem,
+          { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)' },
+          { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)' }
+        );
+        tl.fromTo(
+          prevItem,
+          { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)' },
+          { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)' },
+          '<'
+        );
+        if (prevItemImg) tl.fromTo(prevItemImg, { yPercent: 0 }, { yPercent: -10 }, '<');
+        if (nextItemImg) tl.fromTo(nextItemImg, { yPercent: 10 }, { yPercent: 0 }, '<');
+      }
+
+      activeIndex = nextIndex;
+
+      // Update active indicator with a smooth vertical slide + fade transition
+      if (activeIndicator) {
+        gsap.to(activeIndicator, {
+          yPercent: 100,
+          opacity: 0,
+          duration: 0.3,
+          ease: 'power2.in',
+          onComplete: () => {
+            activeIndicator.textContent = '0' + (nextIndex + 1);
+            gsap.fromTo(activeIndicator,
+              { yPercent: -100, opacity: 0 },
+              { yPercent: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
+            );
+          }
+        });
+      }
+    }
+
+    // Bind active indicator cycle click and hover effect
+    if (activeIndicator) {
+      var onIndicatorClick = function() {
+        var nextIndex = activeIndex + 1;
+        if (nextIndex >= totalSlides) nextIndex = 0;
+        moveSlide(nextIndex, true);
+      };
+      var onIndicatorEnter = function() {
+        document.querySelectorAll('.slide-overlay').forEach(function(ov) { ov.classList.add('darken'); });
+      };
+      var onIndicatorLeave = function() {
+        document.querySelectorAll('.slide-overlay').forEach(function(ov) { ov.classList.remove('darken'); });
+      };
+      activeIndicator.addEventListener('click', onIndicatorClick);
+      activeIndicator.addEventListener('mouseenter', onIndicatorEnter);
+      activeIndicator.addEventListener('mouseleave', onIndicatorLeave);
+      _cleanup.push(function() {
+        activeIndicator.removeEventListener('click', onIndicatorClick);
+        activeIndicator.removeEventListener('mouseenter', onIndicatorEnter);
+        activeIndicator.removeEventListener('mouseleave', onIndicatorLeave);
       });
     }
 
-    // ── Labels / captions ──
-    gsap.utils.toArray(
-      '.campaign__label, .banner__label, .about-section__label, .editorial__caption, .category__title, .footer__logo'
-    ).forEach(el => {
-      gsap.set(el, { autoAlpha: 0, y: 24 });
-      ScrollTrigger.create({
-        trigger: el, start: 'top 91%', once: true,
-        onEnter: () => gsap.to(el, { autoAlpha: 1, y: 0, duration: 0.9, ease: EASE.emerge }),
-      });
+    // Touch swipe gestures
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    var onSliderTouchStart = function(e) { touchStartX = e.changedTouches[0].screenX; };
+    var onSliderTouchEnd = function(e) { touchEndX = e.changedTouches[0].screenX; handleGesture(); };
+    sliderEl.addEventListener('touchstart', onSliderTouchStart, { passive: true });
+    sliderEl.addEventListener('touchend', onSliderTouchEnd, { passive: true });
+    _cleanup.push(function() {
+      sliderEl.removeEventListener('touchstart', onSliderTouchStart);
+      sliderEl.removeEventListener('touchend', onSliderTouchEnd);
     });
 
-    // ── Body copy paragraphs ──
-    gsap.utils.toArray('.campaign__text, .about-section__body, .about-closing__sub, .philosophy__text').forEach(el => {
-      if (el.closest('[data-split]')) return;
-      gsap.set(el, { autoAlpha: 0, y: 24 });
+    function handleGesture() {
+      const diffX = touchEndX - touchStartX;
+      if (Math.abs(diffX) > 50) {
+        if (diffX < 0) {
+          // Swipe Left: Next slide
+          let nextIndex = activeIndex + 1;
+          if (nextIndex >= totalSlides) nextIndex = 0;
+          moveSlide(nextIndex, true);
+        } else {
+          // Swipe Right: Prev slide
+          let prevIndex = activeIndex - 1;
+          if (prevIndex < 0) prevIndex = totalSlides - 1;
+          moveSlide(prevIndex, false);
+        }
+      }
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     SHARED — Masked line reveal (Blæd-style)
+     Each line slides up from behind an overflow:hidden mask.
+     No opacity fade — the mask does all the visual work.
+  ───────────────────────────────────────────────────────────── */
+  function applyMaskReveal(el, opts) {
+    if (!el || el.dataset.splitDone) return;
+    if (typeof SplitType === 'undefined') return;
+    el.dataset.splitDone = 'true';
+
+    const o = Object.assign({ dur: 1.0, stagger: 0.1, start: 'top 88%', delay: 0 }, opts);
+    const split = new SplitType(el, { types: 'lines' });
+    if (!split.lines || !split.lines.length) return;
+
+    split.lines.forEach(line => {
+      const mask = document.createElement('div');
+      mask.className = 'line-mask';
+      line.parentNode.insertBefore(mask, line);
+      mask.appendChild(line);
+    });
+
+    gsap.set(split.lines, { yPercent: 110 });
+
+    ScrollTrigger.create({
+      trigger: el,
+      start: o.start,
+      once: true,
+      onEnter: () => gsap.to(split.lines, {
+        yPercent: 0,
+        duration: o.dur,
+        ease: 'power4.out',
+        stagger: o.stagger,
+        delay: o.delay,
+      }),
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     10. SCROLL REVEALS — masked line reveal throughout site
+  ───────────────────────────────────────────────────────────── */
+  function initReveals() {
+    // ── All headings ──
+    document.querySelectorAll('h1, h2, h3, h4').forEach(el => {
+      if (el.closest('.hero-slider, .hero__content, .about-hero__content, #preloader, .preloader, .nav')) return;
+      applyMaskReveal(el, { dur: 1.0, stagger: 0.1 });
+    });
+
+    // ── Body copy ──
+    document.querySelectorAll([
+      '.brand-intro__statement', '.campaign__text', '.banner__text',
+      '.about-section__body', '.philosophy__text', '.about-closing__sub',
+      '.pdp__description', '.product__description', '.about-closing__statement',
+    ].join(', ')).forEach(el => {
+      if (el.closest('.hero-slider, .hero__content, .preloader')) return;
+      applyMaskReveal(el, { dur: 0.85, stagger: 0.08, start: 'top 90%' });
+    });
+
+    // ── Labels / captions ──
+    document.querySelectorAll([
+      '.campaign__label', '.banner__label', '.about-section__label',
+      '.editorial__caption', '.category__title', '.footer__logo',
+    ].join(', ')).forEach(el => {
+      applyMaskReveal(el, { dur: 0.65, stagger: 0, start: 'top 91%' });
+    });
+
+    // ── CTA links ──
+    gsap.utils.toArray('.campaign__link, .banner__cta, .about-closing__cta').forEach(el => {
+      gsap.set(el, { autoAlpha: 0, y: 18 });
       ScrollTrigger.create({
-        trigger: el, start: 'top 88%', once: true,
-        onEnter: () => gsap.to(el, { autoAlpha: 1, y: 0, duration: 1.0, ease: 'power3.out' }),
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(el, { autoAlpha: 1, y: 0, duration: 0.85, ease: 'power4.out' }),
       });
     });
 
@@ -286,16 +680,7 @@
       gsap.set(items, { autoAlpha: 0, y: 44 });
       ScrollTrigger.create({
         trigger: parent, start: 'top 85%', once: true,
-        onEnter: () => gsap.to(items, { autoAlpha: 1, y: 0, duration: 1.0, ease: EASE.emerge, stagger: 0.12 }),
-      });
-    });
-
-    // ── CTA links ──
-    gsap.utils.toArray('.campaign__link, .banner__cta, .about-closing__cta').forEach(el => {
-      gsap.set(el, { autoAlpha: 0, y: 20 });
-      ScrollTrigger.create({
-        trigger: el, start: 'top 90%', once: true,
-        onEnter: () => gsap.to(el, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out' }),
+        onEnter: () => gsap.to(items, { autoAlpha: 1, y: 0, duration: 1.0, ease: 'power4.out', stagger: 0.1 }),
       });
     });
   }
@@ -304,13 +689,13 @@
      11. IMAGE CLIP-PATH REVEAL (Awwwards signature move)
   ───────────────────────────────────────────────────────────── */
   function initImageReveals() {
-    gsap.utils.toArray('.editorial__media, .campaign__media, .banner__media, .about-section__media, .pdp__gallery-item').forEach(wrap => {
+    gsap.utils.toArray('.editorial__media, .campaign__media, .banner__media, .about-section__media, .pdp__gallery-item, .manifesto-item-img-wrap').forEach(wrap => {
       // Clip reveal
       gsap.fromTo(wrap,
         { clipPath: 'inset(100% 0% 0% 0%)' },
         {
           clipPath: 'inset(0% 0% 0% 0%)',
-          duration: 1.5,
+          duration: 1.6,
           ease: EASE.silk,
           scrollTrigger: { trigger: wrap, start: 'top 89%', once: true },
         }
@@ -325,7 +710,6 @@
     [
       { sel: '.editorial__media',     y: 14 },
       { sel: '.campaign__media',      y: 18 },
-      { sel: '.banner__media',        y: 22 },
       { sel: '.about-section__media', y: 16 },
       { sel: '.category__media',      y: 10 },
     ].forEach(({ sel, y }) => {
@@ -333,7 +717,6 @@
         const img = wrap.querySelector('img');
         if (!img) return;
         wrap.style.overflow = 'hidden';
-        // Start centered (yPercent: 0), drift gently down — no upward crop at entry
         gsap.set(img, { scale: 1.15, yPercent: 0 });
         gsap.to(img, {
           yPercent: y,
@@ -342,21 +725,125 @@
         });
       });
     });
+
+    // ── Manifesto — parallax on image, fade-rise on headline ──
+    const manifestoImg = document.querySelector('.manifesto__img');
+    if (manifestoImg) {
+      gsap.to(manifestoImg, {
+        yPercent: 12,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.manifesto__visual',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 0.8,
+        },
+      });
+    }
+
+    const manifestoLines = document.querySelectorAll('.manifesto__line-inner');
+    if (manifestoLines.length) {
+      // Animate in on scroll — text is ALREADY VISIBLE in CSS (no initial hide),
+      // GSAP adds the motion on top. clipPath ensures no layout jump.
+      ScrollTrigger.create({
+        trigger: '.manifesto__copy',
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          gsap.fromTo(manifestoLines,
+            { y: 60, opacity: 0.01 },
+            { y: 0, opacity: 1, duration: 1.2, ease: 'expo.out', stagger: 0.15 }
+          );
+        },
+      });
+    }
+
+    // ── Full-bleed Lifestyle Visual Parallax ──
+    document.querySelectorAll('[data-parallax-visual]').forEach(img => {
+      const parent = img.closest('.full-bleed-visual-section');
+      if (!parent) return;
+      gsap.fromTo(img,
+        { yPercent: -10 },
+        {
+          yPercent: 10,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: parent,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true
+          }
+        }
+      );
+    });
+
+    // ── Manifesto Stacked Items Parallax ──
+    document.querySelectorAll('[data-parallax-img]').forEach(img => {
+      const parent = img.closest('.manifesto-item-img-wrap');
+      if (!parent) return;
+      parent.style.overflow = 'hidden';
+      gsap.set(img, { scale: 1.15 });
+      gsap.fromTo(img,
+        { yPercent: -8 },
+        {
+          yPercent: 8,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: parent,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true
+          }
+        }
+      );
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     12b. CARD OVERLAP SCROLL TRIGGER (Replication from Odd Ritual)
+  ───────────────────────────────────────────────────────────── */
+  function initScrollOverlap() {
+    // Revert any previous matchMedia context before creating a new one.
+    // Without this, every page visit that calls initScrollOverlap adds
+    // another persistent media-change listener that recreates ScrollTriggers on resize.
+    if (_scrollOverlapMM) { _scrollOverlapMM.revert(); _scrollOverlapMM = null; }
+    _scrollOverlapMM = gsap.matchMedia();
+    _scrollOverlapMM.add("(min-width: 992px) and (pointer: fine)", () => {
+      document.querySelectorAll('[data-scroll-overlap]').forEach(el => {
+        gsap.timeline({
+          scrollTrigger: {
+            trigger: el,
+            start: "top top",
+            end: "+=500px",
+            scrub: true,
+          }
+        }).to(el, { yPercent: 50, ease: "power1.in" });
+      });
+    });
+    _cleanup.push(function() {
+      if (_scrollOverlapMM) { _scrollOverlapMM.revert(); _scrollOverlapMM = null; }
+    });
   }
 
   /* ─────────────────────────────────────────────────────────────
      13. MAGNETIC HOVER on CTAs (Framer Motion spring equivalent)
   ───────────────────────────────────────────────────────────── */
   function initMagnetics() {
-    document.querySelectorAll('.hero__cta, .campaign__link, .about-closing__cta, .banner__cta').forEach(btn => {
-      btn.addEventListener('mousemove', (e) => {
-        const r  = btn.getBoundingClientRect();
-        const dx = (e.clientX - (r.left + r.width  * 0.5)) * 0.36;
-        const dy = (e.clientY - (r.top  + r.height * 0.5)) * 0.36;
-        gsap.to(btn, { x: dx, y: dy, duration: 0.4, ease: 'power2.out' });
-      });
-      btn.addEventListener('mouseleave', () => {
-        gsap.to(btn, { x: 0, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.4)' });
+    document.querySelectorAll('.hero__cta, .campaign__link, .about-closing__cta, .banner__cta').forEach(function(btn) {
+      var onMove = function(e) {
+        var r  = btn.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width  * 0.5)) * 0.36;
+        var dy = (e.clientY - (r.top  + r.height * 0.5)) * 0.36;
+        gsap.to(btn, { x: dx, y: dy, duration: 0.5, ease: 'power2.out' });
+      };
+      var onLeave = function() {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.65, ease: 'elastic.out(1, 0.4)' });
+      };
+      btn.addEventListener('mousemove', onMove);
+      btn.addEventListener('mouseleave', onLeave);
+      _cleanup.push(function() {
+        btn.removeEventListener('mousemove', onMove);
+        btn.removeEventListener('mouseleave', onLeave);
       });
     });
   }
@@ -365,15 +852,21 @@
      14. PRODUCT CARD HOVER — scale-up lift + image zoom
   ───────────────────────────────────────────────────────────── */
   function initProductHover() {
-    document.querySelectorAll('.editorial__item, .category__item').forEach(card => {
-      const img = card.querySelector('.editorial__img, .category__img');
-      card.addEventListener('mouseenter', () => {
-        gsap.to(card, { y: -8,    duration: 0.4, ease: 'power2.out' });
-        if (img) gsap.to(img, { scale: 1.07, duration: 0.7, ease: 'power2.out' });
-      });
-      card.addEventListener('mouseleave', () => {
-        gsap.to(card, { y: 0, duration: 0.7, ease: 'elastic.out(1.2, 0.5)' });
-        if (img) gsap.to(img, { scale: 1,    duration: 0.55, ease: 'power2.out' });
+    document.querySelectorAll('.editorial__item, .category__item').forEach(function(card) {
+      var img = card.querySelector('.editorial__img, .category__img');
+      var onEnter = function() {
+        gsap.to(card, { y: -8,   duration: 0.5,  ease: 'power2.out' });
+        if (img) gsap.to(img, { scale: 1.07, duration: 0.65, ease: 'power2.out' });
+      };
+      var onLeave = function() {
+        gsap.to(card, { y: 0,   duration: 0.65, ease: 'elastic.out(1.2, 0.5)' });
+        if (img) gsap.to(img, { scale: 1,    duration: 0.5,  ease: 'power2.out' });
+      };
+      card.addEventListener('mouseenter', onEnter);
+      card.addEventListener('mouseleave', onLeave);
+      _cleanup.push(function() {
+        card.removeEventListener('mouseenter', onEnter);
+        card.removeEventListener('mouseleave', onLeave);
       });
     });
   }
@@ -381,55 +874,133 @@
   /* ─────────────────────────────────────────────────────────────
      15. MENU OPEN / CLOSE
   ───────────────────────────────────────────────────────────── */
-  let menuOpen = false;
+  /* ─────────────────────────────────────────────────────────────
+     15. MENU OPEN / CLOSE (Staggered Dropdown Curtain)
+  ───────────────────────────────────────────────────────────── */
+  function initMenu() {
+    const navWrap = document.getElementById('nav-overlay');
+    if (!navWrap) return;
 
-  function openMenu() {
-    if (menuOpen) return;
-    menuOpen = true;
-    overlay && overlay.classList.add('is-open');
-    nav && nav.classList.add('is-menu-open');
-    document.body.classList.add('menu-open');
-    lenis.stop();
+    const mainHeader   = document.getElementById('main-nav');
+    const bgPanelFull  = navWrap.querySelector('.bg-panel_full');    // bottom image area
+    const imgsWrap     = navWrap.querySelector('.menu-img_inner');
+    const menuToggles  = document.querySelectorAll('[data-menu-toggle]');
+    const menuLinks    = navWrap.querySelectorAll('.menu-link');
+    const fadeTargets  = navWrap.querySelectorAll('[data-menu-fade]');
 
-    const items = gsap.utils.toArray('.nav-overlay__item');
-    gsap.set(items, { autoAlpha: 0, x: -28 });
-    gsap.to(items, { autoAlpha: 1, x: 0, duration: 0.75, ease: EASE.emerge, stagger: 0.07, delay: 0.2 });
-  }
+    // Use querySelectorAll to correctly get BOTH .bg-panel elements
+    // (querySelector('.bg-panel') would return .bg-panel.first twice since it matches both classes)
+    const allBgPanels = Array.from(navWrap.querySelectorAll('.bg-panel'));
 
-  function closeMenu() {
-    if (!menuOpen) return;
-    menuOpen = false;
-    const items = gsap.utils.toArray('.nav-overlay__item');
-    gsap.to(items, {
-      autoAlpha: 0, x: -18,
-      duration: 0.25, ease: 'power2.in', stagger: 0.03,
-      onComplete: () => {
-        overlay && overlay.classList.remove('is-open');
-        nav && nav.classList.remove('is-menu-open');
-        document.body.classList.remove('menu-open');
-        lenis.start();
+    let activeTl = null; // Always create a fresh timeline — never reuse a completed one
+
+    const openNav = () => {
+      if (activeTl) activeTl.kill();
+      if (lenis) lenis.stop();
+      navWrap.setAttribute('data-nav', 'open');
+      navWrap.classList.add('is-open');
+      if (mainHeader) mainHeader.classList.add('is-menu-open');
+      document.body.classList.add('menu-open');
+
+      activeTl = gsap.timeline()
+        .set(navWrap,     { display: 'block' })
+        .set(allBgPanels, { yPercent: -101 }, 0)
+        .set(bgPanelFull, { yPercent: 101  }, 0)
+        .set(menuLinks,   { yPercent: 130  }, 0)
+        .set(fadeTargets, { autoAlpha: 0, y: 10 }, 0)
+        .fromTo(allBgPanels,
+          { yPercent: -101 },
+          { yPercent: 0, duration: 0.65, ease: 'ease-3', stagger: 0.08 }, 0)
+        .fromTo(bgPanelFull,
+          { yPercent: 101 },
+          { yPercent: 0, duration: 0.65, ease: 'ease-3' }, 0.05)
+        .fromTo(imgsWrap,
+          { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)' },
+          { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: 0.5, ease: 'ease-3' }, 0.35)
+        .fromTo(menuLinks,
+          { yPercent: 130 },
+          { yPercent: 0, duration: 0.65, ease: 'ease-3', stagger: 0.08 }, 0.3)
+        .fromTo(fadeTargets,
+          { autoAlpha: 0, y: 10 },
+          { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out', stagger: 0.05 }, 0.55);
+    };
+
+    const closeNav = () => {
+      if (activeTl) activeTl.kill();
+      if (lenis) lenis.start();
+      navWrap.setAttribute('data-nav', 'closed');
+      document.body.classList.remove('menu-open');
+
+      activeTl = gsap.timeline({
+        onComplete: () => {
+          gsap.set(navWrap, { display: 'none' });
+          navWrap.classList.remove('is-open');
+          if (mainHeader) mainHeader.classList.remove('is-menu-open');
+        }
+      })
+        .to(fadeTargets, { autoAlpha: 0, duration: 0.3, ease: 'power2.out' }, 0)
+        .to(menuLinks,   { yPercent: -130, duration: 0.5, ease: 'ease-3', stagger: 0.04 }, 0)
+        .to(allBgPanels, { yPercent: -101, duration: 0.5, ease: 'ease-3', stagger: 0.07 }, 0.1)
+        .to(bgPanelFull, { yPercent: 101,  duration: 0.5, ease: 'ease-3' }, 0.1)
+        .to(imgsWrap,    { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', duration: 0.5, ease: 'ease-3' }, 0.1);
+    };
+
+    menuToggles.forEach((toggle) => {
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        const state = navWrap.getAttribute('data-nav');
+        if (state === 'open') {
+          closeNav();
+        } else {
+          openNav();
+        }
+      });
+    });
+
+    menuLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        closeNav();
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navWrap.getAttribute('data-nav') === 'open') {
+        closeNav();
       }
+    });
+
+    // Stagger dim / highlight on hover
+    const menuListItems = navWrap.querySelectorAll('.menu-list-item');
+    menuListItems.forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        menuListItems.forEach(el => {
+          if (el !== item) el.classList.add('inactive');
+        });
+      });
+      item.addEventListener('mouseleave', () => {
+        menuListItems.forEach(el => el.classList.remove('inactive'));
+      });
     });
   }
 
-  if (menuBtn)  menuBtn.addEventListener('click', openMenu);
-  if (closeBtn) closeBtn.addEventListener('click', closeMenu);
-  if (backdrop) backdrop.addEventListener('click', closeMenu);
+
 
   function openSearch() {
     searchStrip && searchStrip.classList.add('is-open');
     searchScrim  && searchScrim.classList.add('is-active');
-    lenis.stop();
+    if (lenis) lenis.stop();
     setTimeout(() => searchInput && searchInput.focus(), 100);
   }
   function closeSearch() {
     searchStrip && searchStrip.classList.remove('is-open');
     searchScrim  && searchScrim.classList.remove('is-active');
-    lenis.start();
+    if (lenis) lenis.start();
   }
-  if (searchBtn)   searchBtn.addEventListener('click', openSearch);
-  if (searchClose) searchClose.addEventListener('click', closeSearch);
-  if (searchScrim) searchScrim.addEventListener('click', closeSearch);
+  function initSearch() {
+    if (searchBtn)   searchBtn.addEventListener('click', openSearch);
+    if (searchClose) searchClose.addEventListener('click', closeSearch);
+    if (searchScrim) searchScrim.addEventListener('click', closeSearch);
+  }
 
   /* ─────────────────────────────────────────────────────────────
      16. PRODUCT PAGE (PDP)
@@ -440,7 +1011,7 @@
 
     // Gallery entrance stagger
     gsap.set(galleryItems, { autoAlpha: 0, y: 32 });
-    gsap.to(galleryItems, { autoAlpha: 1, y: 0, duration: 0.9, ease: EASE.emerge, stagger: 0.1, delay: 0.5 });
+    gsap.to(galleryItems, { autoAlpha: 1, y: 0, duration: 0.85, ease: EASE.emerge, stagger: 0.1, delay: 0.5 });
 
     // Lightbox
     const lb      = document.getElementById('pdp-lightbox');
@@ -456,14 +1027,14 @@
       if (lbImg) { lbImg.src = IMGS[i].src; lbImg.alt = IMGS[i].alt; }
       lb && lb.classList.add('is-open');
       document.body.style.overflow = 'hidden';
-      lenis.stop();
+      if (lenis) lenis.stop();
       if (lbPrev) lbPrev.classList.toggle('is-hidden', lbIdx === 0);
       if (lbNext) lbNext.classList.toggle('is-hidden', lbIdx === IMGS.length - 1);
     }
     function closeLb() {
       lb && lb.classList.remove('is-open');
       document.body.style.overflow = '';
-      lenis.start();
+      if (lenis) lenis.start();
     }
     galleryItems.forEach((item, i) => item.addEventListener('click', () => openLb(i)));
     if (lbClose) lbClose.addEventListener('click', closeLb);
@@ -480,16 +1051,62 @@
       });
     });
 
-    // Size selector
-    document.querySelectorAll('.pdp__size-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.pdp__size-btn').forEach(b => b.classList.remove('is-selected'));
-        btn.classList.add('is-selected');
-      });
-    });
-
-    // Add to bag
+    // Size selector & Add to Bag variant mapping
+    const container = document.querySelector('[data-barba="container"]');
+    const productHandle = container ? container.getAttribute('data-product-handle') : null;
     const addBtn = document.getElementById('pdp-add-btn');
+
+    if (productHandle && addBtn && typeof window.RADICAL_API !== 'undefined') {
+      const API = window.RADICAL_API;
+      let variantMap = {};
+      
+      (async () => {
+        try {
+          const { product } = await API.products.get(productHandle);
+          variantMap = Object.fromEntries((product.variants || []).map(v => [v.label, v.id]));
+          
+          const activeBtn = document.querySelector('.pdp__size-btn[aria-pressed="true"]');
+          if (activeBtn) {
+            const sizeValue = activeBtn.dataset.size;
+            const sizeLabel = productHandle === 'pendant-bar' ? `${sizeValue}` : `Size ${sizeValue}`;
+            const vid = variantMap[sizeLabel];
+            if (vid) addBtn.dataset.variantId = vid;
+          }
+        } catch (e) {
+          console.error('[RADICAL] Failed to fetch variants:', e);
+        }
+      })();
+
+      document.querySelectorAll('.pdp__size-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.pdp__size-btn').forEach(b => {
+            b.setAttribute('aria-pressed', 'false');
+            b.classList.remove('is-selected');
+          });
+          btn.setAttribute('aria-pressed', 'true');
+          btn.classList.add('is-selected');
+          
+          const sizeValue = btn.dataset.size;
+          const sizeLabel = productHandle === 'pendant-bar' ? `${sizeValue}` : `Size ${sizeValue}`;
+          const vid = variantMap[sizeLabel];
+          if (vid) {
+            addBtn.dataset.variantId = vid;
+          }
+        });
+      });
+    } else {
+      document.querySelectorAll('.pdp__size-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.pdp__size-btn').forEach(b => {
+            b.setAttribute('aria-pressed', 'false');
+            b.classList.remove('is-selected');
+          });
+          btn.setAttribute('aria-pressed', 'true');
+          btn.classList.add('is-selected');
+        });
+      });
+    }
+
     if (addBtn) {
       addBtn.addEventListener('click', () => {
         const orig = addBtn.textContent;
@@ -503,58 +1120,413 @@
   /* ─────────────────────────────────────────────────────────────
      17. NAV IMAGE SWAP (Odd Ritual DNA)
   ───────────────────────────────────────────────────────────── */
-  function initNavImageSwap() {
-    const imgEl = document.getElementById('nav-overlay-img');
-    if (!imgEl) return;
+  function initMenuImageSwap() {
+    const navWrap = document.getElementById('nav-overlay');
+    if (!navWrap) return;
 
-    const map = {
-      'Shop':             'assets/rings_collection.png',
-      'Collections':      'assets/pendants_collection.png',
-      'Our Philosophy':   'assets/lifestyle_banner.png',
-      'The Steel':        'assets/ring_1_detail.png',
-      'Craftsmanship':    'assets/lifestyle_banner.png',
-      'Contact':          'assets/pendants_collection.png',
-      'Rings':            'assets/rings_collection.png',
-      'Pendants':         'assets/pendants_collection.png',
-      'Bracelets':        'assets/bracelets_collection.png',
-      'Limited Editions': 'assets/limited_1_front.png',
-    };
+    const hoverContainer = navWrap.querySelector('[img-hover_triggers-wrap]');
+    const hoverTriggers = navWrap.querySelectorAll('[img-hover_trigger]');
+    const targetWrapper = navWrap.querySelector('[target-img_wrap]');
+    const hiddenImages = navWrap.querySelectorAll('.target-imgs_hidden img');
 
-    document.querySelectorAll('.nav-overlay__link, .nav-overlay__sublink').forEach(link => {
-      link.addEventListener('mouseenter', () => {
-        const key = link.textContent.trim();
-        if (!map[key]) return;
-        gsap.to(imgEl, {
-          autoAlpha: 0, duration: 0.18,
-          onComplete: () => { imgEl.src = map[key]; gsap.to(imgEl, { autoAlpha: 1, duration: 0.28 }); }
-        });
+    if (!hoverContainer || !targetWrapper || !hoverTriggers.length) return;
+
+    const mediaUrls = Array.from(hiddenImages).map(img => img.getAttribute('src'));
+
+    // Mouse enter container: wipe open targetWrapper
+    hoverContainer.addEventListener('mouseenter', () => {
+      gsap.fromTo(targetWrapper,
+        { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)' },
+        { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: 0.65, ease: 'expo.inOut' }
+      );
+    });
+
+    // Mouse leave container: wipe close targetWrapper and clear DOM on complete
+    hoverContainer.addEventListener('mouseleave', () => {
+      gsap.to(targetWrapper, {
+        clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)',
+        duration: 0.65,
+        ease: 'expo.inOut',
+        onComplete: () => {
+          targetWrapper.innerHTML = '';
+          currentSrc = null;
+        }
+      });
+    });
+
+    let currentSrc = null;
+
+    hoverTriggers.forEach((trigger, index) => {
+      trigger.addEventListener('mouseenter', () => {
+        const imageUrl = mediaUrls[index];
+        if (!imageUrl || imageUrl === currentSrc) return;
+
+        currentSrc = imageUrl;
+
+        // Find the previous active slide
+        const prevSlide = targetWrapper.querySelector('.menu-img_slide.is-active');
+
+        // Create new active slide container and image
+        const nextSlide = document.createElement('div');
+        nextSlide.className = 'menu-img_slide is-active';
+        const nextImg = document.createElement('img');
+        nextImg.src = imageUrl;
+
+        nextSlide.appendChild(nextImg);
+        targetWrapper.appendChild(nextSlide);
+
+        if (prevSlide) {
+          prevSlide.classList.remove('is-active');
+          const prevImg = prevSlide.querySelector('img');
+
+          // Smooth double-parallax slide transition:
+          // New slide slides down from top (yPercent: -100 -> 0)
+          gsap.fromTo(nextSlide,
+            { yPercent: -100 },
+            { yPercent: 0, duration: 0.65, ease: 'power3.inOut' }
+          );
+          // New image inside slides up from bottom (yPercent: 70 -> 0)
+          gsap.fromTo(nextImg,
+            { yPercent: 70 },
+            { yPercent: 0, duration: 0.65, ease: 'power3.inOut' }
+          );
+
+          // Old slide slides down out of view (yPercent: 0 -> 100)
+          gsap.fromTo(prevSlide,
+            { yPercent: 0 },
+            { 
+              yPercent: 100, 
+              duration: 0.65, 
+              ease: 'power3.inOut',
+              onComplete: () => prevSlide.remove() // remove old slide from DOM
+            }
+          );
+          // Old image inside slides up (yPercent: 0 -> -70)
+          if (prevImg) {
+            gsap.fromTo(prevImg,
+              { yPercent: 0 },
+              { yPercent: -70, duration: 0.65, ease: 'power3.inOut' }
+            );
+          }
+        } else {
+          // First hover: just set positions instantly
+          gsap.set(nextSlide, { yPercent: 0 });
+          gsap.set(nextImg, { yPercent: 0 });
+        }
       });
     });
   }
 
+
   /* ─────────────────────────────────────────────────────────────
-     18. ABOUT SECTION REVEALS (directional slide-in)
+     18. PRODUCT TRACK — infinite auto-scroll + drag + hover parallax
+  ───────────────────────────────────────────────────────────── */
+  function initProductTrack() {
+    const outer = document.getElementById('product-track-outer');
+    const inner = document.getElementById('product-track-inner');
+    if (!inner || !outer) return;
+
+    // Clone items for seamless infinite loop
+    const originals = Array.from(inner.querySelectorAll('.product-track__item'));
+    originals.forEach(item => {
+      const clone = item.cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      inner.appendChild(clone);
+    });
+
+    let halfW = 0;
+    const _measure = () => { halfW = inner.scrollWidth / 2; };
+    requestAnimationFrame(_measure);
+    window.addEventListener('resize', _measure, { passive: true });
+
+    // Lerped scroll: targetX = logical destination, renderX = smoothed output
+    let targetX  = 0;
+    let renderX  = 0;
+    let isDragging = false;
+    let dragged    = false;
+    let dragStartX = 0;
+    let dragBase   = 0;
+
+    const AUTO_SPEED = 0.45;  // px/frame (~27px/s at 60fps — slow, premium feel)
+    const DRAG_LERP  = 0.055; // heavy, weighted drag — track lags behind cursor
+    const IDLE_LERP  = 0.08;  // smoothing factor during auto-scroll
+
+    function getWrapped(x) {
+      if (halfW <= 0) return x;
+      return ((x % halfW) + halfW) % halfW - halfW;
+    }
+
+    _productTrackRafActive = true;
+
+    function frame() {
+      if (!_productTrackRafActive) return; // stop loop when page transitions away
+      requestAnimationFrame(frame);
+      if (halfW <= 0) return;
+
+      if (!isDragging) {
+        targetX -= AUTO_SPEED;
+      }
+
+      const lerpFactor = isDragging ? DRAG_LERP : IDLE_LERP;
+      renderX += (targetX - renderX) * lerpFactor;
+
+      // Periodic normalization to prevent floating-point drift after long sessions
+      if (halfW > 0 && Math.abs(renderX) > halfW * 200) {
+        const w = getWrapped(renderX);
+        const diff = w - renderX;
+        renderX = w;
+        targetX += diff;
+      }
+
+      inner.style.transform = 'translate3d(' + getWrapped(renderX) + 'px,0,0)';
+    }
+    requestAnimationFrame(frame);
+
+    // Mouse drag — smooth lerp following, no momentum on release
+    outer.addEventListener('mousedown', e => {
+      isDragging = true;
+      dragged    = false;
+      dragStartX = e.clientX;
+      dragBase   = renderX;
+      outer.classList.add('is-dragging');
+    });
+
+    const _trackMoveHandler = (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - dragStartX;
+      if (Math.abs(dx) > 4) dragged = true;
+      targetX = dragBase + dx;
+    };
+    document.addEventListener('mousemove', _trackMoveHandler);
+
+    function endDrag() {
+      if (!isDragging) return;
+      isDragging = false;
+      targetX = renderX; // freeze — no coasting, no momentum
+      outer.classList.remove('is-dragging');
+    }
+    document.addEventListener('mouseup', endDrag);
+    window.addEventListener('blur', endDrag);
+
+    // Register cleanup so Barba can remove these on page transition
+    _cleanup.push(
+      () => document.removeEventListener('mousemove', _trackMoveHandler),
+      () => document.removeEventListener('mouseup', endDrag),
+      () => window.removeEventListener('blur', endDrag),
+      () => window.removeEventListener('resize', _measure)
+    );
+
+    // Suppress link clicks that were drag gestures
+    inner.addEventListener('click', e => {
+      if (dragged) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+
+    // Touch
+    let ts = 0, txBase = 0;
+
+    outer.addEventListener('touchstart', e => {
+      isDragging = true;
+      dragged    = false;
+      ts     = e.touches[0].clientX;
+      txBase = renderX;
+    }, { passive: true });
+
+    outer.addEventListener('touchmove', e => {
+      const cx = e.touches[0].clientX;
+      const dx = cx - ts;
+      if (Math.abs(dx) > 4) dragged = true;
+      targetX = txBase + dx;
+    }, { passive: true });
+
+    outer.addEventListener('touchend', () => {
+      isDragging = false;
+      targetX = renderX;
+    });
+
+    // Scroll-entrance reveals
+    const label = document.querySelector('.product-track-section__label');
+    const cta   = document.querySelector('.product-track-section__cta');
+    if (label) {
+      gsap.set(label, { autoAlpha: 0, y: 12 });
+      ScrollTrigger.create({ trigger: label, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(label, { autoAlpha: 1, y: 0, duration: 0.65, ease: 'power3.out' }) });
+    }
+    if (cta) {
+      gsap.set(cta, { autoAlpha: 0, y: 12 });
+      ScrollTrigger.create({ trigger: cta, start: 'top 95%', once: true,
+        onEnter: () => gsap.to(cta, { autoAlpha: 1, y: 0, duration: 0.65, ease: 'power3.out' }) });
+    }
+
+    // Brand intro entrance
+    const logocol   = document.querySelector('.brand-intro__logo-col');
+    const statement = document.querySelector('.brand-intro__statement');
+    if (logocol) {
+      gsap.set(logocol, { autoAlpha: 0, x: -40 });
+      ScrollTrigger.create({ trigger: logocol, start: 'top 88%', once: true,
+        onEnter: () => gsap.to(logocol, { autoAlpha: 1, x: 0, duration: 1.0, ease: 'expo.out' }) });
+    }
+    if (statement) {
+      gsap.set(statement, { autoAlpha: 0, y: 30 });
+      ScrollTrigger.create({ trigger: statement, start: 'top 88%', once: true,
+        onEnter: () => gsap.to(statement, { autoAlpha: 1, y: 0, duration: 1.0, ease: 'expo.out', delay: 0.2 }) });
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     18b. HERO BACKGROUND VIDEO
+  ───────────────────────────────────────────────────────────── */
+  function initHeroVideo() {
+    const DISABLE_VIDEO_ON_MOBILE = false;
+
+    const video = document.querySelector('.hero-bg-video');
+    if (!video) return;
+
+    // Mobile: optionally replace video with poster image
+    if (DISABLE_VIDEO_ON_MOBILE && window.innerWidth < 768) {
+      video.pause();
+      const slider = document.querySelector('.hero-slider');
+      if (slider) {
+        slider.style.backgroundImage = "url('" + (video.getAttribute('poster') || '') + "')";
+        slider.style.backgroundSize = 'cover';
+        slider.style.backgroundPosition = 'center';
+      }
+      const wrapper = document.querySelector('.hero-video-wrapper');
+      if (wrapper) wrapper.style.display = 'none';
+      return;
+    }
+
+    // Skip the first second of the video on every play
+    const skipStart = () => {
+      if (video.currentTime < 1) video.currentTime = 1;
+    };
+    video.addEventListener('play', skipStart, { passive: true });
+
+    // Pause when hero is off-screen, play when any part is visible
+    const heroSection = document.getElementById('hero');
+    if (heroSection && 'IntersectionObserver' in window) {
+      const videoObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              if (video.currentTime < 1) video.currentTime = 1;
+              video.play().catch(() => {});
+            } else {
+              video.pause();
+            }
+          });
+        },
+        { threshold: 0 }
+      );
+      videoObserver.observe(heroSection);
+      _cleanup.push(function() { videoObserver.disconnect(); });
+    }
+
+    // Initial autoplay attempt — always start from the 1s mark
+    try {
+      video.currentTime = 1;
+      const p = video.play();
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => {});
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     18c. HERO STRIP REVEAL  (Blæd-style)
+     5 horizontal strips each hold a full-height copy of the video,
+     pre-positioned so each strip shows its correct portion.
+     Initially every video is offset downward so the image looks
+     fragmented. All videos race to y:0 simultaneously, assembling
+     the complete frame. Strips then fade out handing off to the
+     underlying hero video.
+  ───────────────────────────────────────────────────────────── */
+  function initHeroTileReveal() {
+    const stripsEl = document.getElementById('hero-strips');
+    if (!stripsEl) return;
+
+    if (window.innerWidth < 768) { stripsEl.remove(); return; }
+
+    const videos = gsap.utils.toArray('.hstrip__vid');
+    if (!videos.length) return;
+
+    // Each strip is 20 vh tall; its video fills the full 100 vh hero.
+    // CSS `top` already anchors each video to show the CORRECT row when y=0.
+    // We displace y so each strip shows the WRONG portion of the video —
+    // the image looks fragmented. Offsets must stay within ±(video height)
+    // so the strip's overflow window still shows actual video, not black.
+    //   sh = one strip height. Offsets in multiples of sh:
+    //   Strip 0: shift UP 3 strips → shows video row 3 (60-80 vh range)
+    //   Strip 1: shift UP 1 strip  → shows video row 2 (40-60 vh)
+    //   Strip 2: shift DOWN 2 strips → shows video row 0 (0-20 vh)
+    //   Strip 3: shift UP 1 strip  → shows video row 4 (80-100 vh)
+    //   Strip 4: shift DOWN 3 strips → shows video row 1 (20-40 vh)
+    const sh = window.innerHeight * 0.2;
+    const offsets = [-3 * sh, -sh, 2 * sh, -sh, 3 * sh];
+    videos.forEach((v, i) => gsap.set(v, { y: offsets[i] }));
+
+    const preloader = document.getElementById('preloader');
+    const isPreloaderActive = preloader && !preloader.classList.contains('is-done') && preloader.style.display !== 'none';
+
+    const shouldPause = isPreloaderActive || _isBarbaTransition;
+    heroRevealTl = gsap.timeline({ paused: shouldPause });
+    if (!shouldPause) {
+      heroRevealTl.delay(0.1);
+    }
+
+    // Phase 1: all videos race to y:0 — strips lock into the correct image
+    heroRevealTl.to(videos, {
+      y: 0,
+      duration: 1.0,
+      ease: 'expo.out',
+      stagger: 0.04,
+    });
+
+    // Phase 2: fade underlying video overlay in, then dissolve strips away.
+    // Fading the overlay and strips in opposite directions keeps brightness
+    // constant so there is no flash at the handoff.
+    const mainOverlay = document.querySelector('.hero-video-overlay');
+    if (mainOverlay) gsap.set(mainOverlay, { opacity: 0 });
+
+    heroRevealTl.to(stripsEl, {
+      opacity: 0,
+      duration: 0.5,
+      ease: 'power1.inOut',
+      onComplete: () => {
+        stripsEl.remove();
+        if (mainOverlay) gsap.set(mainOverlay, { opacity: 1, clearProps: 'opacity' });
+      },
+    }, '+=0.12');
+
+    if (mainOverlay) {
+      heroRevealTl.to(mainOverlay, {
+        opacity: 1,
+        duration: 0.5,
+        ease: 'power1.inOut',
+      }, '<');   // runs in parallel with the strips fade-out
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     19. ABOUT SECTION REVEALS
+     Images: directional slide. Text: same masked line reveal.
   ───────────────────────────────────────────────────────────── */
   function initAboutReveals() {
-    document.querySelectorAll('.about-reveal--left').forEach(el => {
+    document.querySelectorAll('.about-reveal').forEach(el => {
+      // Text elements use the shared mask reveal (already handled by initReveals
+      // for headings/body, but catch any remaining about-specific text wrappers)
+      const isMedia = el.classList.contains('about-section__media') || el.querySelector('img, video');
+      if (!isMedia) {
+        applyMaskReveal(el, { dur: 1.0, stagger: 0.08 });
+        return;
+      }
+
+      // Images / media: keep directional slide
+      const fromLeft  = el.classList.contains('about-reveal--left');
+      const fromRight = el.classList.contains('about-reveal--right');
       gsap.fromTo(el,
-        { autoAlpha: 0, x: -64 },
-        { autoAlpha: 1, x: 0, duration: 1.2, ease: EASE.emerge,
+        { autoAlpha: 0, x: fromLeft ? -64 : fromRight ? 64 : 0, y: (!fromLeft && !fromRight) ? 52 : 0, scale: (!fromLeft && !fromRight) ? 0.97 : 1 },
+        { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 1.2, ease: EASE.emerge,
           scrollTrigger: { trigger: el, start: 'top 86%', once: true } }
-      );
-    });
-    document.querySelectorAll('.about-reveal--right').forEach(el => {
-      gsap.fromTo(el,
-        { autoAlpha: 0, x: 64 },
-        { autoAlpha: 1, x: 0, duration: 1.2, ease: EASE.emerge,
-          scrollTrigger: { trigger: el, start: 'top 86%', once: true } }
-      );
-    });
-    document.querySelectorAll('.about-reveal--up, .about-reveal:not(.about-reveal--left):not(.about-reveal--right)').forEach(el => {
-      gsap.fromTo(el,
-        { autoAlpha: 0, y: 52, scale: 0.97 },
-        { autoAlpha: 1, y: 0, scale: 1, duration: 1.2, ease: EASE.emerge,
-          scrollTrigger: { trigger: el, start: 'top 88%', once: true } }
       );
     });
   }
@@ -563,6 +1535,50 @@
      19. FOOTER ACCORDION
   ───────────────────────────────────────────────────────────── */
   function initFooter() {
+    const signupForm = document.getElementById('footer-signup-form');
+    if (signupForm) {
+      signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById('footer-signup-email');
+        const nameInput = document.getElementById('footer-signup-name');
+        if (!emailInput || !nameInput) return;
+
+        const email = emailInput.value;
+        const name = nameInput.value;
+
+        // Visual feedback transition
+        const col = signupForm.parentElement;
+        gsap.to(signupForm, {
+          opacity: 0,
+          y: -10,
+          duration: 0.5,
+          ease: 'power2.out',
+          onComplete: () => {
+            signupForm.style.display = 'none';
+
+            const successMsg = document.createElement('div');
+            successMsg.className = 'footer-signup-success';
+            successMsg.style.fontFamily = 'var(--font-ui)';
+            successMsg.style.fontSize = '11px';
+            successMsg.style.letterSpacing = '2px';
+            successMsg.style.fontWeight = '700';
+            successMsg.style.lineHeight = '1.8';
+            successMsg.style.color = 'var(--color-text)';
+            successMsg.style.textTransform = 'uppercase';
+            successMsg.innerHTML = `THANK YOU, ${name.split(' ')[0]}<br>WELCOME TO THE CLUB.`;
+
+            col.appendChild(successMsg);
+
+            gsap.fromTo(successMsg,
+              { opacity: 0, y: 10 },
+              { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }
+            );
+          }
+        });
+      });
+    }
+
+    // Keep accordion support for old footer layouts during transition
     document.querySelectorAll('.footer__col-toggle').forEach(btn => {
       btn.addEventListener('click', () => {
         const col    = btn.closest('.footer__col');
@@ -574,27 +1590,185 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
-     20. ORCHESTRATION
+     19. SHOP PAGE — collection grid, card hovers, scroll anims
   ───────────────────────────────────────────────────────────── */
-  function init() {
-    initPageEntrance();      // ← runs first: slides transition overlay off
-    initPreloader();         // homepage only
-    initScrollProgress();
-    initHero();
-    initReveals();
-    initImageReveals();
-    initParallax();
-    initMagnetics();
-    initProductHover();
-    initProductPage();
-    initNavImageSwap();
-    initAboutReveals();
-    initFooter();
-    initPageTransition();    // ← runs last so other click handlers fire first
+  function initProductCardHovers(root) {
+    var scope = root || document;
+    var cards = scope.querySelectorAll('.product-card');
+    if (!cards.length) return;
 
-    setTimeout(() => ScrollTrigger.refresh(), 200);
+    var handlers = [];
+
+    cards.forEach(function (card) {
+      var wrap = card.querySelector('.product-card__image-wrap');
+      if (!wrap) return;
+
+      function onEnter() {
+        wrap.style.willChange = 'transform';
+        gsap.to(wrap, { scale: 1.03, duration: 0.55, ease: 'power2.out' });
+      }
+
+      function onLeave() {
+        gsap.to(wrap, {
+          scale: 1, duration: 0.45, ease: 'power2.inOut',
+          onComplete: function () { wrap.style.willChange = 'auto'; },
+        });
+      }
+
+      card.addEventListener('mouseenter', onEnter);
+      card.addEventListener('mouseleave', onLeave);
+      handlers.push({ card: card, onEnter: onEnter, onLeave: onLeave });
+    });
+
+    _cleanup.push(function () {
+      handlers.forEach(function (h) {
+        h.card.removeEventListener('mouseenter', h.onEnter);
+        h.card.removeEventListener('mouseleave', h.onLeave);
+      });
+    });
   }
 
+  function initShopScrollAnimations() {
+    var cards = gsap.utils.toArray('.products-grid .product-card, .featured-products__grid .product-card');
+    if (!cards.length) return;
+
+    gsap.set(cards, { y: 24, opacity: 0 });
+
+    ScrollTrigger.batch(cards, {
+      id: 'products-batch',
+      interval: 0.06,
+      batchMax: 3,
+      onEnter: function (batch) {
+        gsap.to(batch, { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', stagger: 0.08 });
+      },
+      onLeaveBack: function (batch) {
+        gsap.to(batch, { y: 24, opacity: 0, duration: 0.4, ease: 'power2.in', stagger: 0.05 });
+      },
+      start: 'top 92%',
+    });
+  }
+
+  function initShopFilters() {
+    var buttons = document.querySelectorAll('.filter-pill');
+    if (!buttons.length) return;
+
+    buttons.forEach(function (btn) {
+      var onClick = function () {
+        buttons.forEach(function (b) {
+          b.classList.remove('filter-pill--active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('filter-pill--active');
+        btn.setAttribute('aria-pressed', 'true');
+      };
+      btn.addEventListener('click', onClick);
+      _cleanup.push(function () { btn.removeEventListener('click', onClick); });
+    });
+  }
+
+  function initShopPage() {
+    var grid = document.getElementById('products-grid');
+    if (!grid) return;
+    if (typeof window.RADICAL_PRODUCTS === 'undefined') {
+      console.warn('[RADICAL] products.js not loaded — shop grid empty');
+      return;
+    }
+
+    RADICAL_PRODUCTS.renderGrid(grid);
+    RADICAL_PRODUCTS.updateProductCount();
+    initProductCardHovers(grid.closest('.shop-page'));
+    initShopScrollAnimations();
+    initShopFilters();
+  }
+
+  function initFeaturedProducts() {
+    var grid = document.querySelector('.featured-products__grid');
+    if (!grid) return;
+    if (typeof window.RADICAL_PRODUCTS === 'undefined') return;
+
+    RADICAL_PRODUCTS.renderGrid(grid, 4);
+    initProductCardHovers(grid.closest('.featured-products'));
+    initShopScrollAnimations();
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     20. ORCHESTRATION
+  ───────────────────────────────────────────────────────────── */
+  function initNewPage(namespace) {
+    const steps = [
+      ['HeroVideo',       initHeroVideo],
+      ['HeroTileReveal',  initHeroTileReveal],
+      ['Hero',            initHero],
+      ['HeroSlider',      initHeroSlider],
+      ['Reveals',         initReveals],
+      ['ImageReveals',    initImageReveals],
+      ['Parallax',        initParallax],
+      ['ScrollOverlap',   initScrollOverlap],
+      ['Magnetics',       initMagnetics],
+      ['ProductHover',    initProductHover],
+      ['ProductPage',     initProductPage],
+      ['ProductTrack',       initProductTrack],
+      ['ShopPage',           initShopPage],
+      ['FeaturedProducts',   initFeaturedProducts],
+      ['AboutReveals',       initAboutReveals],
+      ['Footer',             initFooter],
+    ];
+
+    for (const [name, fn] of steps) {
+      try {
+        fn();
+      } catch (err) {
+        console.error(`[RADICAL] init${name} crashed:`, err);
+      }
+    }
+  }
+
+  function init() {
+    const steps = [
+      ['PageEntrance',       initPageEntrance],
+      ['ScrollProgress',     initScrollProgress],
+      ['Search',             initSearch],
+      ['HeroVideo',          initHeroVideo],
+      ['HeroTileReveal',     initHeroTileReveal],
+      ['Hero',               initHero],
+      ['HeroSlider',         initHeroSlider],
+      ['Reveals',            initReveals],
+      ['ImageReveals',       initImageReveals],
+      ['Parallax',           initParallax],
+      ['ScrollOverlap',      initScrollOverlap],
+      ['Magnetics',          initMagnetics],
+      ['ProductHover',       initProductHover],
+      ['ProductPage',        initProductPage],
+      ['Menu',               initMenu],
+      ['MenuImageSwap',      initMenuImageSwap],
+      ['ProductTrack',       initProductTrack],
+      ['ShopPage',           initShopPage],
+      ['FeaturedProducts',   initFeaturedProducts],
+      ['AboutReveals',       initAboutReveals],
+      ['Footer',             initFooter],
+      ['PageTransition',     initPageTransition],
+    ];
+
+    for (const [name, fn] of steps) {
+      try {
+        fn();
+      } catch (err) {
+        console.error(`[RADICAL] init${name} crashed:`, err);
+      }
+    }
+
+    setTimeout(() => ScrollTrigger.refresh(), 200);
+    console.log('[RADICAL] All init steps completed');
+  }
+
+  // 1. Run preloader immediately to hide the black overlay ASAP
+  try {
+    initPreloader();
+  } catch (err) {
+    console.error('[RADICAL] initPreloader crashed:', err);
+  }
+
+  // 2. Initialize everything else when ready
   if (document.fonts) {
     document.fonts.ready.then(init);
   } else {
