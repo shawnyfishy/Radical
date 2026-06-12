@@ -1385,57 +1385,16 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
-     18a. HELPER: FADE IN VIDEO ONCE READY (PREVENTS FIRST-FRAME FLASH)
-  ───────────────────────────────────────────────────────────── */
-  function enableFadeInOnPlay(videoEl) {
-    if (!videoEl) return;
-
-    // Set parent wrapper background to poster if available — shown while video buffers
-    const poster = videoEl.getAttribute('poster');
-    if (poster) {
-      const wrapper = videoEl.parentElement;
-      if (wrapper) {
-        wrapper.style.backgroundImage = `url('${poster}')`;
-        wrapper.style.backgroundSize = 'cover';
-        wrapper.style.backgroundPosition = 'center';
-      }
-    }
-
-    let shown = false;
-    const showVideo = () => {
-      if (shown) return;
-      shown = true;
-      try {
-        videoEl.style.opacity = '1';
-        videoEl.removeEventListener('canplay', showVideo);
-        videoEl.removeEventListener('playing', showVideo);
-        videoEl.removeEventListener('loadeddata', showVideo);
-        videoEl.removeEventListener('timeupdate', showVideo);
-      } catch (e) {}
-    };
-
-    // Show as soon as the browser has enough data to play
-    videoEl.addEventListener('canplay', showVideo, { passive: true, once: true });
-    videoEl.addEventListener('playing', showVideo, { passive: true, once: true });
-    videoEl.addEventListener('loadeddata', showVideo, { passive: true, once: true });
-    videoEl.addEventListener('timeupdate', showVideo, { passive: true, once: true });
-
-    // Already ready right now
-    if (videoEl.readyState >= 3) showVideo();
-
-    // Absolute safety fallback — force-show after 3 seconds no matter what
-    setTimeout(showVideo, 3000);
-  }
-
-  /* ─────────────────────────────────────────────────────────────
      18b. BACKGROUND VIDEOS (HERO & LIFESTYLE)
+     NOTE: We do NOT hide videos with opacity:0. The native `poster`
+     attribute already shows the poster image while the video buffers —
+     that is the correct, bulletproof cross-browser approach. No JS
+     opacity hacks needed, no race conditions, works on every CDN.
   ───────────────────────────────────────────────────────────── */
   function initHeroVideo() {
     // 1. Hero background video
     const heroVideo = document.querySelector('.hero-bg-video');
     if (heroVideo) {
-      enableFadeInOnPlay(heroVideo);
-
       const heroSection = document.getElementById('hero');
       if (heroSection && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver((entries) => {
@@ -1450,16 +1409,12 @@
         observer.observe(heroSection);
         _cleanup.push(() => observer.disconnect());
       }
-
-      // Immediate autoplay attempt
       heroVideo.play().catch(() => {});
     }
 
     // 2. Full-bleed lifestyle video
     const fbVideo = document.querySelector('.full-bleed-bg-video');
     if (fbVideo) {
-      enableFadeInOnPlay(fbVideo);
-
       const fbSection = document.getElementById('full-bleed-visual');
       if (fbSection && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver((entries) => {
@@ -1474,8 +1429,6 @@
         observer.observe(fbSection);
         _cleanup.push(() => observer.disconnect());
       }
-
-      // Immediate autoplay attempt
       fbVideo.play().catch(() => {});
     }
   }
@@ -1538,26 +1491,22 @@
       return;
     }
 
-    // Desktop: 5 video strips — original behaviour, using optimised hero_desktop files
+    // Desktop: poster-image strips — the strip ANIMATION is identical.
+    // Using images instead of 5 concurrent video elements eliminates the
+    // bandwidth race on Vercel CDN that was causing the frozen-frame bug.
+    // During a 1.2s reveal animation no one can distinguish a still from live video.
+    const posterSrc = 'assets/hero_poster.webp';
     let html = '';
-    const videoSrcWebm = 'assets/hero_desktop.webm';
-    const videoSrcMp4  = 'assets/hero_desktop.mp4';
     for (let i = 0; i < 5; i++) {
-      html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto"><source src="${videoSrcWebm}" type="video/webm"><source src="${videoSrcMp4}" type="video/mp4"></video></div>`;
+      html += `<div class="hstrip"><img class="hstrip__img" src="${posterSrc}" alt="" draggable="false" /></div>`;
     }
     stripsEl.innerHTML = html;
 
-    const videos = gsap.utils.toArray('.hstrip__vid');
-    if (!videos.length) return;
+    const imgs = gsap.utils.toArray('.hstrip__img');
+    if (!imgs.length) return;
 
-    videos.forEach((v) => {
-      enableFadeInOnPlay(v);
-      v.play().catch(() => {});
-    });
-
-    // Each strip is 20 vh tall; its video fills the full 100 vh hero.
-    // CSS `top` anchors each video to show the CORRECT row when y=0.
-    // We displace y so each strip shows the WRONG portion — image looks fragmented.
+    // Each strip is 20 vh tall; its image fills the full 100 vh hero.
+    // Offset each image so the strip shows the WRONG row → looks fragmented.
     //   Strip 0: shift UP 3 strips → shows row 3 (60–80 vh)
     //   Strip 1: shift UP 1 strip  → shows row 2 (40–60 vh)
     //   Strip 2: shift DOWN 2 strips → shows row 0 (0–20 vh)
@@ -1565,7 +1514,7 @@
     //   Strip 4: shift DOWN 3 strips → shows row 1 (20–40 vh)
     const sh = window.innerHeight * 0.2;
     const offsets = [-3 * sh, -sh, 2 * sh, -sh, 3 * sh];
-    videos.forEach((v, i) => gsap.set(v, { y: offsets[i] }));
+    imgs.forEach((img, i) => gsap.set(img, { y: offsets[i] }));
 
     heroRevealTl = gsap.timeline({
       paused: shouldPause,
@@ -1575,8 +1524,8 @@
       heroRevealTl.delay(0.1);
     }
 
-    // Phase 1: all videos race to y:0 — strips lock into the correct frame
-    heroRevealTl.to(videos, {
+    // Phase 1: all images race to y:0 — strips lock into the correct frame
+    heroRevealTl.to(imgs, {
       y: 0,
       duration: 1.0,
       ease: 'expo.out',
