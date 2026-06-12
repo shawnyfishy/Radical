@@ -73,21 +73,10 @@
   function checkAndPlayReveal() {
     const preloader = document.getElementById('preloader');
     const isPreloaderActive = preloader && !preloader.classList.contains('is-done') && preloader.style.display !== 'none';
-    const readyToReveal = (!isPreloaderActive || isPreloaderFinished) && isVideoReady;
+    const readyToReveal = (!isPreloaderActive || isPreloaderFinished);
     if (readyToReveal && heroRevealTl && heroRevealTl.paused()) {
       heroRevealTl.play();
     }
-  }
-
-  function startVideoSafetyTimeout() {
-    if (videoSafetyTimeout) return;
-    videoSafetyTimeout = setTimeout(() => {
-      if (!isVideoReady) {
-        console.warn('[RADICAL] Video load safety timeout reached, forcing reveal');
-        isVideoReady = true;
-        checkAndPlayReveal();
-      }
-    }, 1500); // 1.5 seconds max wait after preloader is done
   }
   if (lenis) {
     lenis.on('scroll', ({ progress }) => {
@@ -338,7 +327,6 @@
         preloader.style.display = 'none';
         isPreloaderFinished = true;
         checkAndPlayReveal();
-        startVideoSafetyTimeout();
       }
     });    // 1. Logo and brand staggered entrance (retaining the exact current animation)
     if (brand) {
@@ -1401,6 +1389,18 @@
   ───────────────────────────────────────────────────────────── */
   function enableFadeInOnPlay(videoEl) {
     if (!videoEl) return;
+    
+    // Set parent wrapper background to poster if available
+    const poster = videoEl.getAttribute('poster');
+    if (poster) {
+      const wrapper = videoEl.parentElement;
+      if (wrapper) {
+        wrapper.style.backgroundImage = `url('${poster}')`;
+        wrapper.style.backgroundSize = 'cover';
+        wrapper.style.backgroundPosition = 'center';
+      }
+    }
+
     const showVideo = () => {
       try {
         if (videoEl.currentTime >= 0.95) {
@@ -1408,87 +1408,119 @@
           videoEl.removeEventListener('timeupdate', showVideo);
           videoEl.removeEventListener('playing', showVideo);
           videoEl.removeEventListener('seeked', showVideo);
+          videoEl.removeEventListener('canplay', showVideo);
+          videoEl.removeEventListener('loadeddata', showVideo);
         }
       } catch (e) {}
     };
+
     videoEl.addEventListener('timeupdate', showVideo, { passive: true });
     videoEl.addEventListener('playing', showVideo, { passive: true });
     videoEl.addEventListener('seeked', showVideo, { passive: true });
+    videoEl.addEventListener('canplay', showVideo, { passive: true });
+    videoEl.addEventListener('loadeddata', showVideo, { passive: true });
     showVideo();
   }
 
   /* ─────────────────────────────────────────────────────────────
-     18b. HERO BACKGROUND VIDEO
+     18b. BACKGROUND VIDEOS (HERO & LIFESTYLE)
   ───────────────────────────────────────────────────────────── */
   function initHeroVideo() {
-    const DISABLE_VIDEO_ON_MOBILE = false;
+    // 1. Hero background video
+    const heroVideo = document.querySelector('.hero-bg-video');
+    if (heroVideo) {
+      enableFadeInOnPlay(heroVideo);
 
-    const video = document.querySelector('.hero-bg-video');
-    if (!video) return;
+      const skipStartHero = () => {
+        try {
+          if (heroVideo.readyState >= 1 && heroVideo.currentTime < 1) {
+            heroVideo.currentTime = 1;
+          }
+        } catch (e) {}
+      };
+      heroVideo.addEventListener('play', skipStartHero, { passive: true });
 
-    // Mobile: optionally replace video with poster image
-    if (DISABLE_VIDEO_ON_MOBILE && window.innerWidth < 768) {
-      video.pause();
-      const slider = document.querySelector('.hero-slider');
-      if (slider) {
-        slider.style.backgroundImage = "url('" + (video.getAttribute('poster') || '') + "')";
-        slider.style.backgroundSize = 'cover';
-        slider.style.backgroundPosition = 'center';
-      }
-      const wrapper = document.querySelector('.hero-video-wrapper');
-      if (wrapper) wrapper.style.display = 'none';
-      return;
-    }
-
-    // Hide video until seeked to 1s
-    enableFadeInOnPlay(video);
-
-    // Skip the first second of the video on every play (with metadata safe check)
-    const skipStart = () => {
-      try {
-        if (video.readyState >= 1 && video.currentTime < 1) {
-          video.currentTime = 1;
-        }
-      } catch (e) {}
-    };
-    video.addEventListener('play', skipStart, { passive: true });
-
-    // Pause when hero is off-screen, play when any part is visible
-    const heroSection = document.getElementById('hero');
-    if (heroSection && 'IntersectionObserver' in window) {
-      const videoObserver = new IntersectionObserver(
-        (entries) => {
+      const heroSection = document.getElementById('hero');
+      if (heroSection && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               try {
-                if (video.readyState >= 1 && video.currentTime < 1) video.currentTime = 1;
+                if (heroVideo.readyState >= 1 && heroVideo.currentTime < 1) heroVideo.currentTime = 1;
               } catch (e) {}
-              video.play().catch(() => {});
+              heroVideo.play().catch(() => {});
             } else {
-              video.pause();
+              heroVideo.pause();
             }
           });
-        },
-        { threshold: 0 }
-      );
-      videoObserver.observe(heroSection);
-      _cleanup.push(function() { videoObserver.disconnect(); });
+        });
+        observer.observe(heroSection);
+        _cleanup.push(() => observer.disconnect());
+      }
+
+      // Autoplay attempt
+      const startHero = () => {
+        try {
+          if (heroVideo.readyState >= 1) {
+            if (heroVideo.currentTime < 1) heroVideo.currentTime = 1;
+          } else {
+            heroVideo.addEventListener('loadedmetadata', () => {
+              try { heroVideo.currentTime = 1; } catch (e) {}
+            }, { once: true });
+          }
+          heroVideo.play().catch(() => {});
+        } catch (err) {}
+      };
+      startHero();
     }
 
-    // Initial autoplay attempt — always start from the 1s mark safely
-    const startVideo = () => {
-      try {
-        if (video.readyState >= 1) {
-          if (video.currentTime < 1) video.currentTime = 1;
-        } else {
-          video.addEventListener('loadedmetadata', () => {
-            try { video.currentTime = 1; } catch (e) {}
-          }, { once: true });
-        }
-        video.play().catch(() => {});
-      } catch (err) {}
-    };
-    startVideo();
+    // 2. Full-bleed lifestyle video
+    const fbVideo = document.querySelector('.full-bleed-bg-video');
+    if (fbVideo) {
+      enableFadeInOnPlay(fbVideo);
+
+      const skipStartFb = () => {
+        try {
+          if (fbVideo.readyState >= 1 && fbVideo.currentTime < 1) {
+            fbVideo.currentTime = 1;
+          }
+        } catch (e) {}
+      };
+      fbVideo.addEventListener('play', skipStartFb, { passive: true });
+
+      const fbSection = document.getElementById('full-bleed-visual');
+      if (fbSection && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              try {
+                if (fbVideo.readyState >= 1 && fbVideo.currentTime < 1) fbVideo.currentTime = 1;
+              } catch (e) {}
+              fbVideo.play().catch(() => {});
+            } else {
+              fbVideo.pause();
+            }
+          });
+        });
+        observer.observe(fbSection);
+        _cleanup.push(() => observer.disconnect());
+      }
+
+      // Autoplay attempt
+      const startFb = () => {
+        try {
+          if (fbVideo.readyState >= 1) {
+            if (fbVideo.currentTime < 1) fbVideo.currentTime = 1;
+          } else {
+            fbVideo.addEventListener('loadedmetadata', () => {
+              try { fbVideo.currentTime = 1; } catch (e) {}
+            }, { once: true });
+          }
+          fbVideo.play().catch(() => {});
+        } catch (err) {}
+      };
+      startFb();
+    }
   }
 
   /* ─────────────────────────────────────────────────────────────
@@ -1504,30 +1536,7 @@
     const stripsEl = document.getElementById('hero-strips');
     if (!stripsEl) return;
 
-    // Monitor video loaded status
-    const mainVideo = document.querySelector('.hero-bg-video');
-    if (mainVideo) {
-      const onVideoReady = () => {
-        if (!isVideoReady) {
-          isVideoReady = true;
-          checkAndPlayReveal();
-        }
-      };
-      if (mainVideo.readyState >= 2) {
-        isVideoReady = true;
-      } else {
-        mainVideo.addEventListener('loadeddata', onVideoReady, { once: true });
-        mainVideo.addEventListener('canplaythrough', onVideoReady, { once: true });
-        mainVideo.addEventListener('playing', onVideoReady, { once: true });
-      }
-    } else {
-      isVideoReady = true;
-    }
 
-    // If the preloader has already finished (or was skipped), start the safety timeout immediately
-    if (isPreloaderFinished) {
-      startVideoSafetyTimeout();
-    }
 
     const isMobile = window.innerWidth < 768;
     const preloader = document.getElementById('preloader');
@@ -1567,7 +1576,7 @@
     let html = '';
     const videoSrcMp4 = 'assets/hero_desktop.mp4#t=1';
     const videoSrcWebm = 'assets/hero_desktop.webm';
-    const fallbackSrc = 'assets/RADICAL%20WEBSITE%20VIDEO%20REBOOT.mp4#t=1';
+    const fallbackSrc = 'assets/hero_desktop.mp4#t=1';
     for (let i = 0; i < 5; i++) {
       html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto"><source src="${videoSrcWebm}" type="video/webm"><source src="${videoSrcMp4}" type="video/mp4"><source src="${fallbackSrc}" type="video/mp4"></video></div>`;
     }
