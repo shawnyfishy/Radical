@@ -17,6 +17,7 @@
   gsap.registerPlugin(ScrollTrigger, CustomEase);
 
   gsap.config({ force3D: true, nullTargetWarn: false, autoSleep: 60 });
+  ScrollTrigger.config({ ignoreMobileResize: true });
 
   // Register Custom Eases
   CustomEase.create('loaderEase', '0.65, 0.01, 0.05, 0.99');
@@ -1373,6 +1374,27 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
+     18a. HELPER: FADE IN VIDEO ONCE SEEKED/PLAYING (PREVENTS FIRST-FRAME FLASH)
+  ───────────────────────────────────────────────────────────── */
+  function enableFadeInOnPlay(videoEl) {
+    if (!videoEl) return;
+    const showVideo = () => {
+      try {
+        if (videoEl.currentTime >= 0.95) {
+          videoEl.style.opacity = '1';
+          videoEl.removeEventListener('timeupdate', showVideo);
+          videoEl.removeEventListener('playing', showVideo);
+          videoEl.removeEventListener('seeked', showVideo);
+        }
+      } catch (e) {}
+    };
+    videoEl.addEventListener('timeupdate', showVideo, { passive: true });
+    videoEl.addEventListener('playing', showVideo, { passive: true });
+    videoEl.addEventListener('seeked', showVideo, { passive: true });
+    showVideo();
+  }
+
+  /* ─────────────────────────────────────────────────────────────
      18b. HERO BACKGROUND VIDEO
   ───────────────────────────────────────────────────────────── */
   function initHeroVideo() {
@@ -1395,9 +1417,16 @@
       return;
     }
 
-    // Skip the first second of the video on every play
+    // Hide video until seeked to 1s
+    enableFadeInOnPlay(video);
+
+    // Skip the first second of the video on every play (with metadata safe check)
     const skipStart = () => {
-      if (video.currentTime < 1) video.currentTime = 1;
+      try {
+        if (video.readyState >= 1 && video.currentTime < 1) {
+          video.currentTime = 1;
+        }
+      } catch (e) {}
     };
     video.addEventListener('play', skipStart, { passive: true });
 
@@ -1408,7 +1437,9 @@
         (entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
-              if (video.currentTime < 1) video.currentTime = 1;
+              try {
+                if (video.readyState >= 1 && video.currentTime < 1) video.currentTime = 1;
+              } catch (e) {}
               video.play().catch(() => {});
             } else {
               video.pause();
@@ -1421,14 +1452,20 @@
       _cleanup.push(function() { videoObserver.disconnect(); });
     }
 
-    // Initial autoplay attempt — always start from the 1s mark
-    try {
-      video.currentTime = 1;
-      const p = video.play();
-      if (p && typeof p.catch === 'function') {
-        p.catch(() => {});
-      }
-    } catch (e) { /* ignore */ }
+    // Initial autoplay attempt — always start from the 1s mark safely
+    const startVideo = () => {
+      try {
+        if (video.readyState >= 1) {
+          if (video.currentTime < 1) video.currentTime = 1;
+        } else {
+          video.addEventListener('loadedmetadata', () => {
+            try { video.currentTime = 1; } catch (e) {}
+          }, { once: true });
+        }
+        video.play().catch(() => {});
+      } catch (err) {}
+    };
+    startVideo();
   }
 
   /* ─────────────────────────────────────────────────────────────
@@ -1444,10 +1481,73 @@
     const stripsEl = document.getElementById('hero-strips');
     if (!stripsEl) return;
 
-    if (window.innerWidth < 768) { stripsEl.remove(); return; }
+    const isMobile = window.innerWidth < 768;
+    const preloader = document.getElementById('preloader');
+    const isPreloaderActive = preloader && !preloader.classList.contains('is-done') && preloader.style.display !== 'none';
+    const shouldPause = isPreloaderActive || _isBarbaTransition;
+
+    if (isMobile) {
+      // Mobile: plain black bands that slide left/right alternately (no heavy video preloading)
+      let html = '';
+      for (let i = 0; i < 5; i++) {
+        html += `<div class="hstrip is-mobile-strip" style="background-color: #000000; position: absolute; left: 0; right: 0; height: 20%;"></div>`;
+      }
+      stripsEl.innerHTML = html;
+
+      const strips = gsap.utils.toArray('.hstrip');
+      strips.forEach((s) => gsap.set(s, { xPercent: 0 }));
+
+      heroRevealTl = gsap.timeline({ paused: shouldPause });
+      if (!shouldPause) {
+        heroRevealTl.delay(0.1);
+      }
+
+      // Alternate slide reveal animation: stagger left/right sliding curtains
+      heroRevealTl.to(strips, {
+        xPercent: (i) => (i % 2 === 0 ? -100 : 100),
+        duration: 0.85,
+        ease: 'power3.inOut',
+        stagger: 0.08,
+        onComplete: () => {
+          stripsEl.remove();
+        }
+      });
+      return;
+    }
+
+    // Desktop: Dynamically insert video strips for desktop only to avoid multi-preload resource choking on mobile
+    let html = '';
+    const videoSrc = 'assets/RADICAL%20WEBSITE%20VIDEO%20REBOOT.mp4#t=1';
+    for (let i = 0; i < 5; i++) {
+      html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto"><source src="${videoSrc}" type="video/mp4"></video></div>`;
+    }
+    stripsEl.innerHTML = html;
 
     const videos = gsap.utils.toArray('.hstrip__vid');
     if (!videos.length) return;
+
+    videos.forEach((v) => {
+      enableFadeInOnPlay(v);
+      const skipStartStrip = () => {
+        try {
+          if (v.readyState >= 1 && v.currentTime < 1) {
+            v.currentTime = 1;
+          }
+        } catch (e) {}
+      };
+      v.addEventListener('play', skipStartStrip, { passive: true });
+
+      // Initial autoplay/metadata check for strips
+      try {
+        if (v.readyState >= 1) {
+          if (v.currentTime < 1) v.currentTime = 1;
+        } else {
+          v.addEventListener('loadedmetadata', () => {
+            try { v.currentTime = 1; } catch (e) {}
+          }, { once: true });
+        }
+      } catch (err) {}
+    });
 
     // Each strip is 20 vh tall; its video fills the full 100 vh hero.
     // CSS `top` already anchors each video to show the CORRECT row when y=0.
@@ -1464,10 +1564,6 @@
     const offsets = [-3 * sh, -sh, 2 * sh, -sh, 3 * sh];
     videos.forEach((v, i) => gsap.set(v, { y: offsets[i] }));
 
-    const preloader = document.getElementById('preloader');
-    const isPreloaderActive = preloader && !preloader.classList.contains('is-done') && preloader.style.display !== 'none';
-
-    const shouldPause = isPreloaderActive || _isBarbaTransition;
     heroRevealTl = gsap.timeline({ paused: shouldPause });
     if (!shouldPause) {
       heroRevealTl.delay(0.1);
