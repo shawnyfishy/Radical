@@ -1480,6 +1480,7 @@
     }
   }
 
+
   /* ─────────────────────────────────────────────────────────────
      18c. HERO STRIP REVEAL  (Blæd-style)
      5 horizontal strips each hold a full-height copy of the video,
@@ -1537,31 +1538,34 @@
       return;
     }
 
-    // Desktop: Dynamically insert image strips for desktop to avoid multi-video preload resource choking
+    // Desktop: 5 video strips — original behaviour, using optimised hero_desktop files
     let html = '';
-    const posterSrc = 'assets/hero_poster.webp';
+    const videoSrcWebm = 'assets/hero_desktop.webm';
+    const videoSrcMp4  = 'assets/hero_desktop.mp4';
     for (let i = 0; i < 5; i++) {
-      html += `<div class="hstrip"><img class="hstrip__img" src="${posterSrc}" alt="" /></div>`;
+      html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto"><source src="${videoSrcWebm}" type="video/webm"><source src="${videoSrcMp4}" type="video/mp4"></video></div>`;
     }
     stripsEl.innerHTML = html;
 
-    const images = gsap.utils.toArray('.hstrip__img');
-    if (!images.length) return;
+    const videos = gsap.utils.toArray('.hstrip__vid');
+    if (!videos.length) return;
 
-    // Each strip is 20 vh tall; its image fills the full 100 vh hero.
-    // CSS `top` already anchors each image to show the CORRECT row when y=0.
-    // We displace y so each strip shows the WRONG portion of the image —
-    // the image looks fragmented. Offsets must stay within ±(image height)
-    // so the strip's overflow window still shows actual image, not black.
-    //   sh = one strip height. Offsets in multiples of sh:
-    //   Strip 0: shift UP 3 strips → shows image row 3 (60-80 vh range)
-    //   Strip 1: shift UP 1 strip  → shows image row 2 (40-60 vh)
-    //   Strip 2: shift DOWN 2 strips → shows image row 0 (0-20 vh)
-    //   Strip 3: shift UP 1 strip  → shows image row 4 (80-100 vh)
-    //   Strip 4: shift DOWN 3 strips → shows image row 1 (20-40 vh)
+    videos.forEach((v) => {
+      enableFadeInOnPlay(v);
+      v.play().catch(() => {});
+    });
+
+    // Each strip is 20 vh tall; its video fills the full 100 vh hero.
+    // CSS `top` anchors each video to show the CORRECT row when y=0.
+    // We displace y so each strip shows the WRONG portion — image looks fragmented.
+    //   Strip 0: shift UP 3 strips → shows row 3 (60–80 vh)
+    //   Strip 1: shift UP 1 strip  → shows row 2 (40–60 vh)
+    //   Strip 2: shift DOWN 2 strips → shows row 0 (0–20 vh)
+    //   Strip 3: shift UP 1 strip  → shows row 4 (80–100 vh)
+    //   Strip 4: shift DOWN 3 strips → shows row 1 (20–40 vh)
     const sh = window.innerHeight * 0.2;
     const offsets = [-3 * sh, -sh, 2 * sh, -sh, 3 * sh];
-    images.forEach((img, i) => gsap.set(img, { y: offsets[i] }));
+    videos.forEach((v, i) => gsap.set(v, { y: offsets[i] }));
 
     heroRevealTl = gsap.timeline({
       paused: shouldPause,
@@ -1571,17 +1575,15 @@
       heroRevealTl.delay(0.1);
     }
 
-    // Phase 1: all images race to y:0 — strips lock into the correct image
-    heroRevealTl.to(images, {
+    // Phase 1: all videos race to y:0 — strips lock into the correct frame
+    heroRevealTl.to(videos, {
       y: 0,
       duration: 1.0,
       ease: 'expo.out',
       stagger: 0.04,
     });
 
-    // Phase 2: fade underlying video overlay in, then dissolve strips away.
-    // Fading the overlay and strips in opposite directions keeps brightness
-    // constant so there is no flash at the handoff.
+    // Phase 2: dissolve strips away, fade overlay back in
     const mainOverlay = document.querySelector('.hero-video-overlay');
     if (mainOverlay) gsap.set(mainOverlay, { opacity: 0 });
 
@@ -1600,7 +1602,7 @@
         opacity: 1,
         duration: 0.5,
         ease: 'power1.inOut',
-      }, '<');   // runs in parallel with the strips fade-out
+      }, '<');
     }
   }
 
