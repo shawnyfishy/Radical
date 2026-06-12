@@ -68,6 +68,7 @@
   let heroRevealTl;
   let isVideoReady = false;
   let isPreloaderFinished = false;
+  let videoSafetyTimeout = null;
 
   function checkAndPlayReveal() {
     const preloader = document.getElementById('preloader');
@@ -76,6 +77,17 @@
     if (readyToReveal && heroRevealTl && heroRevealTl.paused()) {
       heroRevealTl.play();
     }
+  }
+
+  function startVideoSafetyTimeout() {
+    if (videoSafetyTimeout) return;
+    videoSafetyTimeout = setTimeout(() => {
+      if (!isVideoReady) {
+        console.warn('[RADICAL] Video load safety timeout reached, forcing reveal');
+        isVideoReady = true;
+        checkAndPlayReveal();
+      }
+    }, 1500); // 1.5 seconds max wait after preloader is done
   }
   if (lenis) {
     lenis.on('scroll', ({ progress }) => {
@@ -326,6 +338,7 @@
         preloader.style.display = 'none';
         isPreloaderFinished = true;
         checkAndPlayReveal();
+        startVideoSafetyTimeout();
       }
     });    // 1. Logo and brand staggered entrance (retaining the exact current animation)
     if (brand) {
@@ -1511,14 +1524,10 @@
       isVideoReady = true;
     }
 
-    // Safety fallback to prevent hanging preloader
-    setTimeout(() => {
-      if (!isVideoReady) {
-        console.warn('[RADICAL] Video load timed out, forcing reveal');
-        isVideoReady = true;
-        checkAndPlayReveal();
-      }
-    }, 4500);
+    // If the preloader has already finished (or was skipped), start the safety timeout immediately
+    if (isPreloaderFinished) {
+      startVideoSafetyTimeout();
+    }
 
     const isMobile = window.innerWidth < 768;
     const preloader = document.getElementById('preloader');
@@ -1903,11 +1912,11 @@
     console.error('[RADICAL] initPreloader crashed:', err);
   }
 
-  // 2. Initialize everything else when ready
-  if (document.fonts) {
-    document.fonts.ready.then(init);
+  // 2. Initialize everything else on DOMContentLoaded to prevent heavy assets (like video loads) from blocking page interactive state
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    window.addEventListener('load', init);
+    init();
   }
 
 })();
