@@ -1385,12 +1385,12 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
-     18a. HELPER: FADE IN VIDEO ONCE SEEKED/PLAYING (PREVENTS FIRST-FRAME FLASH)
+     18a. HELPER: FADE IN VIDEO ONCE READY (PREVENTS FIRST-FRAME FLASH)
   ───────────────────────────────────────────────────────────── */
   function enableFadeInOnPlay(videoEl) {
     if (!videoEl) return;
-    
-    // Set parent wrapper background to poster if available
+
+    // Set parent wrapper background to poster if available — shown while video buffers
     const poster = videoEl.getAttribute('poster');
     if (poster) {
       const wrapper = videoEl.parentElement;
@@ -1401,25 +1401,30 @@
       }
     }
 
+    let shown = false;
     const showVideo = () => {
+      if (shown) return;
+      shown = true;
       try {
-        if (videoEl.currentTime >= 0.95) {
-          videoEl.style.opacity = '1';
-          videoEl.removeEventListener('timeupdate', showVideo);
-          videoEl.removeEventListener('playing', showVideo);
-          videoEl.removeEventListener('seeked', showVideo);
-          videoEl.removeEventListener('canplay', showVideo);
-          videoEl.removeEventListener('loadeddata', showVideo);
-        }
+        videoEl.style.opacity = '1';
+        videoEl.removeEventListener('canplay', showVideo);
+        videoEl.removeEventListener('playing', showVideo);
+        videoEl.removeEventListener('loadeddata', showVideo);
+        videoEl.removeEventListener('timeupdate', showVideo);
       } catch (e) {}
     };
 
-    videoEl.addEventListener('timeupdate', showVideo, { passive: true });
-    videoEl.addEventListener('playing', showVideo, { passive: true });
-    videoEl.addEventListener('seeked', showVideo, { passive: true });
-    videoEl.addEventListener('canplay', showVideo, { passive: true });
-    videoEl.addEventListener('loadeddata', showVideo, { passive: true });
-    showVideo();
+    // Show as soon as the browser has enough data to play
+    videoEl.addEventListener('canplay', showVideo, { passive: true, once: true });
+    videoEl.addEventListener('playing', showVideo, { passive: true, once: true });
+    videoEl.addEventListener('loadeddata', showVideo, { passive: true, once: true });
+    videoEl.addEventListener('timeupdate', showVideo, { passive: true, once: true });
+
+    // Already ready right now
+    if (videoEl.readyState >= 3) showVideo();
+
+    // Absolute safety fallback — force-show after 3 seconds no matter what
+    setTimeout(showVideo, 3000);
   }
 
   /* ─────────────────────────────────────────────────────────────
@@ -1431,23 +1436,11 @@
     if (heroVideo) {
       enableFadeInOnPlay(heroVideo);
 
-      const skipStartHero = () => {
-        try {
-          if (heroVideo.readyState >= 1 && heroVideo.currentTime < 1) {
-            heroVideo.currentTime = 1;
-          }
-        } catch (e) {}
-      };
-      heroVideo.addEventListener('play', skipStartHero, { passive: true });
-
       const heroSection = document.getElementById('hero');
       if (heroSection && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
-              try {
-                if (heroVideo.readyState >= 1 && heroVideo.currentTime < 1) heroVideo.currentTime = 1;
-              } catch (e) {}
               heroVideo.play().catch(() => {});
             } else {
               heroVideo.pause();
@@ -1458,20 +1451,8 @@
         _cleanup.push(() => observer.disconnect());
       }
 
-      // Autoplay attempt
-      const startHero = () => {
-        try {
-          if (heroVideo.readyState >= 1) {
-            if (heroVideo.currentTime < 1) heroVideo.currentTime = 1;
-          } else {
-            heroVideo.addEventListener('loadedmetadata', () => {
-              try { heroVideo.currentTime = 1; } catch (e) {}
-            }, { once: true });
-          }
-          heroVideo.play().catch(() => {});
-        } catch (err) {}
-      };
-      startHero();
+      // Immediate autoplay attempt
+      heroVideo.play().catch(() => {});
     }
 
     // 2. Full-bleed lifestyle video
@@ -1479,23 +1460,11 @@
     if (fbVideo) {
       enableFadeInOnPlay(fbVideo);
 
-      const skipStartFb = () => {
-        try {
-          if (fbVideo.readyState >= 1 && fbVideo.currentTime < 1) {
-            fbVideo.currentTime = 1;
-          }
-        } catch (e) {}
-      };
-      fbVideo.addEventListener('play', skipStartFb, { passive: true });
-
       const fbSection = document.getElementById('full-bleed-visual');
       if (fbSection && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
-              try {
-                if (fbVideo.readyState >= 1 && fbVideo.currentTime < 1) fbVideo.currentTime = 1;
-              } catch (e) {}
               fbVideo.play().catch(() => {});
             } else {
               fbVideo.pause();
@@ -1506,20 +1475,8 @@
         _cleanup.push(() => observer.disconnect());
       }
 
-      // Autoplay attempt
-      const startFb = () => {
-        try {
-          if (fbVideo.readyState >= 1) {
-            if (fbVideo.currentTime < 1) fbVideo.currentTime = 1;
-          } else {
-            fbVideo.addEventListener('loadedmetadata', () => {
-              try { fbVideo.currentTime = 1; } catch (e) {}
-            }, { once: true });
-          }
-          fbVideo.play().catch(() => {});
-        } catch (err) {}
-      };
-      startFb();
+      // Immediate autoplay attempt
+      fbVideo.play().catch(() => {});
     }
   }
 
@@ -1536,7 +1493,12 @@
     const stripsEl = document.getElementById('hero-strips');
     if (!stripsEl) return;
 
-
+    // On Barba transitions the container wipe is playing simultaneously.
+    // Hide the strips until the wipe finishes — heroRevealTl.play() is called
+    // from barba.hooks.after, at which point we make them visible again.
+    if (_isBarbaTransition) {
+      stripsEl.style.opacity = '0';
+    }
 
     const isMobile = window.innerWidth < 768;
     const preloader = document.getElementById('preloader');
@@ -1554,7 +1516,10 @@
       const strips = gsap.utils.toArray('.hstrip');
       strips.forEach((s) => gsap.set(s, { xPercent: 0 }));
 
-      heroRevealTl = gsap.timeline({ paused: shouldPause });
+      heroRevealTl = gsap.timeline({
+        paused: shouldPause,
+        onStart: () => { stripsEl.style.opacity = '1'; }
+      });
       if (!shouldPause) {
         heroRevealTl.delay(0.1);
       }
@@ -1572,62 +1537,42 @@
       return;
     }
 
-    // Desktop: Dynamically insert video strips for desktop only to avoid multi-preload resource choking on mobile
+    // Desktop: Dynamically insert image strips for desktop to avoid multi-video preload resource choking
     let html = '';
-    const videoSrcMp4 = 'assets/hero_desktop.mp4#t=1';
-    const videoSrcWebm = 'assets/hero_desktop.webm';
-    const fallbackSrc = 'assets/hero_desktop.mp4#t=1';
+    const posterSrc = 'assets/hero_poster.webp';
     for (let i = 0; i < 5; i++) {
-      html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto"><source src="${videoSrcWebm}" type="video/webm"><source src="${videoSrcMp4}" type="video/mp4"><source src="${fallbackSrc}" type="video/mp4"></video></div>`;
+      html += `<div class="hstrip"><img class="hstrip__img" src="${posterSrc}" alt="" /></div>`;
     }
     stripsEl.innerHTML = html;
 
-    const videos = gsap.utils.toArray('.hstrip__vid');
-    if (!videos.length) return;
+    const images = gsap.utils.toArray('.hstrip__img');
+    if (!images.length) return;
 
-    videos.forEach((v) => {
-      enableFadeInOnPlay(v);
-      const skipStartStrip = () => {
-        try {
-          if (v.readyState >= 1 && v.currentTime < 1) {
-            v.currentTime = 1;
-          }
-        } catch (e) {}
-      };
-      v.addEventListener('play', skipStartStrip, { passive: true });
-
-      // Initial autoplay/metadata check for strips
-      try {
-        if (v.readyState >= 1) {
-          if (v.currentTime < 1) v.currentTime = 1;
-        } else {
-          v.addEventListener('loadedmetadata', () => {
-            try { v.currentTime = 1; } catch (e) {}
-          }, { once: true });
-        }
-      } catch (err) {}
-    });    // Each strip is 20 vh tall; its video fills the full 100 vh hero.
-    // CSS `top` already anchors each video to show the CORRECT row when y=0.
-    // We displace y so each strip shows the WRONG portion of the video —
-    // the image looks fragmented. Offsets must stay within ±(video height)
-    // so the strip's overflow window still shows actual video, not black.
+    // Each strip is 20 vh tall; its image fills the full 100 vh hero.
+    // CSS `top` already anchors each image to show the CORRECT row when y=0.
+    // We displace y so each strip shows the WRONG portion of the image —
+    // the image looks fragmented. Offsets must stay within ±(image height)
+    // so the strip's overflow window still shows actual image, not black.
     //   sh = one strip height. Offsets in multiples of sh:
-    //   Strip 0: shift UP 3 strips → shows video row 3 (60-80 vh range)
-    //   Strip 1: shift UP 1 strip  → shows video row 2 (40-60 vh)
-    //   Strip 2: shift DOWN 2 strips → shows video row 0 (0-20 vh)
-    //   Strip 3: shift UP 1 strip  → shows video row 4 (80-100 vh)
-    //   Strip 4: shift DOWN 3 strips → shows video row 1 (20-40 vh)
+    //   Strip 0: shift UP 3 strips → shows image row 3 (60-80 vh range)
+    //   Strip 1: shift UP 1 strip  → shows image row 2 (40-60 vh)
+    //   Strip 2: shift DOWN 2 strips → shows image row 0 (0-20 vh)
+    //   Strip 3: shift UP 1 strip  → shows image row 4 (80-100 vh)
+    //   Strip 4: shift DOWN 3 strips → shows image row 1 (20-40 vh)
     const sh = window.innerHeight * 0.2;
     const offsets = [-3 * sh, -sh, 2 * sh, -sh, 3 * sh];
-    videos.forEach((v, i) => gsap.set(v, { y: offsets[i] }));
+    images.forEach((img, i) => gsap.set(img, { y: offsets[i] }));
 
-    heroRevealTl = gsap.timeline({ paused: shouldPause });
+    heroRevealTl = gsap.timeline({
+      paused: shouldPause,
+      onStart: () => { stripsEl.style.opacity = '1'; }
+    });
     if (!shouldPause) {
       heroRevealTl.delay(0.1);
     }
 
-    // Phase 1: all videos race to y:0 — strips lock into the correct image
-    heroRevealTl.to(videos, {
+    // Phase 1: all images race to y:0 — strips lock into the correct image
+    heroRevealTl.to(images, {
       y: 0,
       duration: 1.0,
       ease: 'expo.out',
