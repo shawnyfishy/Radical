@@ -31,6 +31,10 @@
 
   <link rel="stylesheet" href="styles.css" />
 
+  <!-- Preload hero video early for instant playback -->
+  <link rel="preload" as="video" href="assets/hero_mobile.mp4" type="video/mp4" media="(max-width: 768px)">
+  <link rel="preload" as="video" href="assets/hero_desktop.mp4" type="video/mp4" media="(min-width: 769px)">
+
   <style>
     .preloader { position: fixed; inset: 0; z-index: 9999; background: #000; display: flex; align-items: center; justify-content: center; will-change: transform; pointer-events: none; }
     .preloader__inner { display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -68,7 +72,7 @@
     <div class="nav__inner">
       <!-- LEFT: Brand Logo / Wordmark -->
       <div class="nav__left">
-        <a href="index.html" class="nav__brand" aria-label="Home">RADICAL</a>
+        <a href="/" class="nav__brand" aria-label="Home">RADICAL</a>
       </div>
       
       <!-- CENTER: Hamburger Menu Toggle -->
@@ -83,7 +87,7 @@
       </div>
 
       <div class="nav__right">
-        <a h-flip href="shop.html" class="nav__link-btn"><span class="body-upper">SHOP NOW</span></a>
+        <a h-flip href="/shop" class="nav__link-btn"><span class="body-upper">SHOP NOW</span></a>
         <a h-flip href="#cart" id="nav-bag-btn" class="nav__link-btn" aria-label="Shopping bag"><span class="body-upper">CART</span></a>
       </div>
     </div>
@@ -131,13 +135,13 @@
             <div class="menu-list_wrap">
               <div img-hover_triggers-wrap class="menu-list">
                 <div img-hover_trigger class="menu-list-item">
-                  <a href="shop.html" class="menu-link">OUR SHOP</a>
+                  <a href="/shop" class="menu-link">OUR SHOP</a>
                 </div>
                 <div img-hover_trigger class="menu-list-item">
-                  <a href="index.html" class="menu-link">HOME</a>
+                  <a href="/" class="menu-link">HOME</a>
                 </div>
                 <div img-hover_trigger class="menu-list-item">
-                  <a href="about.html" class="menu-link">ABOUT US</a>
+                  <a href="/about" class="menu-link">ABOUT US</a>
                 </div>
                 <div img-hover_trigger class="menu-list-item">
                   <a href="#footer" class="menu-link">CONTACT</a>
@@ -283,9 +287,14 @@
             muted
             loop
             playsinline
+            webkit-playsinline
             preload="auto"
             fetchpriority="high"
           >
+            <source src="assets/hero_mobile.webm" type="video/webm" media="(max-width: 768px)">
+            <source src="assets/hero_desktop.webm" type="video/webm" media="(min-width: 769px)">
+            <source src="assets/hero_mobile.mp4#t=1" type="video/mp4" media="(max-width: 768px)">
+            <source src="assets/hero_desktop.mp4#t=1" type="video/mp4" media="(min-width: 769px)">
             <source src="assets/RADICAL%20WEBSITE%20VIDEO%20REBOOT.mp4#t=1" type="video/mp4">
           </video>
           <div class="hero-video-overlay"></div>
@@ -312,7 +321,7 @@
               </div>
               <div class="site-info">
                 <div class="hero-intro_copy">
-                  <a href="product.html" class="orgc-detail w-inline-block">
+                  <a href="/product" class="orgc-detail w-inline-block">
                     <div data-text="SHOP NOW" class="detail-wrap">
                       <div class="detail-text is-hero">SHOP NOW</div>
                     </div>
@@ -328,7 +337,7 @@
               </div>
               <div class="site-info">
                 <div class="hero-intro_copy">
-                  <a href="product-pendant.html" class="orgc-detail w-inline-block">
+                  <a href="/product-pendant" class="orgc-detail w-inline-block">
                     <div data-text="SHOP NOW" class="detail-wrap">
                       <div class="detail-text is-hero">SHOP NOW</div>
                     </div>
@@ -344,7 +353,7 @@
               </div>
               <div class="site-info">
                 <div class="hero-intro_copy">
-                  <a href="product-bracelet.html" class="orgc-detail w-inline-block">
+                  <a href="/product-bracelet" class="orgc-detail w-inline-block">
                     <div data-text="SHOP NOW" class="detail-wrap">
                       <div class="detail-text is-hero">SHOP NOW</div>
                     </div>
@@ -387,7 +396,7 @@
               <img src="assets/rings_collection.png" alt="RADICAL Rings" class="product-track__img" />
               <img src="assets/rings_collection.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/rings_collection.png" />
             </div>
-            <a href="product.html" class="product-track__link">
+            <a href="/product" class="product-track__link">
               <div class="product-track__info">
                 <div class="product-track__text">
                   <div class="product-track__name">Rings</div>
@@ -409,7 +418,7 @@
               <img src="assets/pendants_collection.png" alt="RADICAL Pendants" class="product-track__img" />
               <img src="assets/pendants_collection.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/pendants_collection.png" />
             </div>
-            <a href="product-pendant.html" class="product-track__link">
+            <a href="/product-pendant" class="product-track__link">
               <div class="product-track__info">
                 <div class="product-track__text">
                   <div class="product-track__name">Pendants</div>
@@ -431,7 +440,7 @@
               <img src="assets/bracelets_collection.png" alt="RADICAL Bracelets" class="product-track__img" />
               <img src="assets/bracelets_collection.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/bracelets_collection.png" />
             </div>
-            <a href="product-bracelet.html" class="product-track__link">
+            <a href="/product-bracelet" class="product-track__link">
               <div class="product-track__info">
                 <div class="product-track__text">
                   <div class="product-track__name">Bracelets</div>
@@ -453,7 +462,7 @@
               <img src="assets/limited_1_front.png" alt="RADICAL Limited Editions" class="product-track__img" />
               <img src="assets/limited_1_front.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/limited_1_front.png" />
             </div>
-            <a href="product-limited.html" class="product-track__link">
+            <a href="/product-limited" class="product-track__link">
               <div class="product-track__info">
                 <div class="product-track__text">
                   <div class="product-track__name">Limited Editions</div>
@@ -475,7 +484,7 @@
               <img src="assets/lifestyle_banner.png" alt="RADICAL Collection" class="product-track__img" />
               <img src="assets/lifestyle_banner.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/lifestyle_banner.png" />
             </div>
-            <a href="product.html" class="product-track__link">
+            <a href="/product" class="product-track__link">
               <div class="product-track__info">
                 <div class="product-track__text">
                   <div class="product-track__name">The Collection</div>
@@ -496,7 +505,7 @@
       </div>
 
       <div class="product-track-section__footer">
-        <a href="shop.html" class="product-track-section__cta">( VIEW ALL PRODUCTS )</a>
+        <a href="/shop" class="product-track-section__cta">( VIEW ALL PRODUCTS )</a>
       </div>
     </section>
 
@@ -506,7 +515,7 @@
     <section id="split-grid-section" class="section split-grid">
       <!-- Column 1: Our Products -->
       <div class="split-col u-column-6">
-        <a href="shop.html" class="cta-block w-inline-block" overlay="trigger">
+        <a href="/shop" class="cta-block w-inline-block" overlay="trigger">
           <div class="body-upper is-desktop">
             <p>Our Products</p>
           </div>
@@ -531,7 +540,7 @@
 
       <!-- Column 2: Our Story -->
       <div class="split-col u-column-3">
-        <a href="about.html" class="cta-block w-inline-block" overlay="trigger">
+        <a href="/about" class="cta-block w-inline-block" overlay="trigger">
           <div class="body-upper is-desktop">
             <p>Our Story</p>
           </div>
@@ -634,8 +643,12 @@
           muted
           loop
           playsinline
+          webkit-playsinline
           preload="auto"
+          poster="assets/lifestyle_banner.webp"
         >
+          <source src="assets/full_bleed_optimized.webm" type="video/webm">
+          <source src="assets/full_bleed_optimized.mp4#t=1" type="video/mp4">
           <source src="assets/RADICAL%20WEBSITE%20VIDEO%20222222.mp4#t=1" type="video/mp4">
         </video>
         <div class="full-bleed-video-overlay"></div>
@@ -775,9 +788,9 @@
           <div class="footer-bottom-col">
             <span class="footer-col-header">SITE INDEX</span>
             <ul class="footer-links-list">
-              <li><a h-flip href="shop.html"><span class="body-upper">SHOP NOW</span></a></li>
-              <li><a h-flip href="index.html"><span class="body-upper">HOME</span></a></li>
-              <li><a h-flip href="about.html"><span class="body-upper">ABOUT US</span></a></li>
+              <li><a h-flip href="/shop"><span class="body-upper">SHOP NOW</span></a></li>
+              <li><a h-flip href="/"><span class="body-upper">HOME</span></a></li>
+              <li><a h-flip href="/about"><span class="body-upper">ABOUT US</span></a></li>
               <li><a h-flip href="#footer"><span class="body-upper">CONTACT</span></a></li>
             </ul>
           </div>

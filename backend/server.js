@@ -9,6 +9,23 @@ const FRONTEND = path.join(__dirname, '..');  // parent folder = RADICAL WEBSITE
 // ── Middleware ──────────────────────────────────────────────────
 app.use(express.json());
 
+// ── Local Fallback for Video Assets (Serves original files if optimized files are missing) ──
+app.use((req, res, next) => {
+  const fs = require('fs');
+  if (req.path.startsWith('/assets/')) {
+    const decodePath = decodeURIComponent(req.path);
+    const fullPath = path.join(FRONTEND, decodePath);
+    if (!fs.existsSync(fullPath)) {
+      if (req.path.includes('hero_desktop') || req.path.includes('hero_mobile')) {
+        req.url = '/assets/RADICAL%20WEBSITE%20VIDEO%20REBOOT.mp4';
+      } else if (req.path.includes('full_bleed_optimized')) {
+        req.url = '/assets/RADICAL%20WEBSITE%20VIDEO%20222222.mp4';
+      }
+    }
+  }
+  next();
+});
+
 // ── Serve frontend static files ─────────────────────────────────
 app.use(express.static(FRONTEND));
 

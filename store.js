@@ -84,7 +84,7 @@
         <span>₹${cartSubtotal.toLocaleString('en-IN')}</span>
       </div>
       <p class="cart__shipping-note">${cartSubtotal >= 999 ? 'Free shipping applied' : `₹${(999 - cartSubtotal).toLocaleString('en-IN')} away from free shipping`}</p>
-      <a href="checkout.html" class="cart__checkout-btn">Proceed to Checkout</a>
+      <a href="/checkout" class="cart__checkout-btn">Proceed to Checkout</a>
       <button class="cart__clear-btn" id="cart-clear">Clear bag</button>
     `;
     document.getElementById('cart-clear')?.addEventListener('click', async () => {
@@ -150,7 +150,7 @@
 
   accountBtn?.addEventListener('click', () => {
     if (API.isLoggedIn()) {
-      window.location.href = '/account.html';
+      window.location.href = '/account';
     } else {
       openAuth();
     }

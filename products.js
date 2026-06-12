@@ -12,7 +12,7 @@ window.RADICAL_PRODUCTS = (function () {
   const products = [
     {
       id:          'RAD-001',
-      url:         'product.html',
+      url: '/product',
       name:        'BLACK CROWN RING',
       subtitle:    'Oxidized Silver, Black Onyx',
       price:       '12,500',
@@ -29,7 +29,7 @@ window.RADICAL_PRODUCTS = (function () {
     },
     {
       id:          'RAD-002',
-      url:         'product.html',
+      url: '/product',
       name:        'BLACK SIGNET RING',
       subtitle:    'Oxidized Dark Silver, Black Onyx Cabochon',
       price:       '14,000',
@@ -46,7 +46,7 @@ window.RADICAL_PRODUCTS = (function () {
     },
     {
       id:          'RAD-003',
-      url:         'product.html',
+      url: '/product',
       name:        'GOLD & SILVER TRINITY BAND',
       subtitle:    'Two-Tone, Polished Yellow Gold & Brushed Silver',
       price:       '18,000',

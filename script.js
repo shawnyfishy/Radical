@@ -66,6 +66,17 @@
   ───────────────────────────────────────────────────────────── */
   let scrollProgressBar;
   let heroRevealTl;
+  let isVideoReady = false;
+  let isPreloaderFinished = false;
+
+  function checkAndPlayReveal() {
+    const preloader = document.getElementById('preloader');
+    const isPreloaderActive = preloader && !preloader.classList.contains('is-done') && preloader.style.display !== 'none';
+    const readyToReveal = (!isPreloaderActive || isPreloaderFinished) && isVideoReady;
+    if (readyToReveal && heroRevealTl && heroRevealTl.paused()) {
+      heroRevealTl.play();
+    }
+  }
   if (lenis) {
     lenis.on('scroll', ({ progress }) => {
       if (scrollProgressBar) {
@@ -198,7 +209,7 @@
         if (href.startsWith('#')) return true;
         if (el.hash && el.pathname === window.location.pathname) return true;
         if (el.href === window.location.href) return true;
-        if (/account\.html|checkout\.html/.test(href)) return true;
+        if (/account|checkout/.test(href)) return true;
         return false;
       },
       views: [
@@ -291,10 +302,10 @@
     // Check if this is a page reload
     const navEntries = performance.getEntriesByType('navigation');
     const isReload = navEntries.length > 0 && navEntries[0].type === 'reload';
-
     if (isNavigatingWithinSite && !isReload) {
       preloader.style.display = 'none';
       preloader.classList.add('is-done');
+      isPreloaderFinished = true;
       return;
     }
 
@@ -313,11 +324,10 @@
         if (lenis) lenis.start();
         preloader.classList.add('is-done');
         preloader.style.display = 'none';
-        if (heroRevealTl) heroRevealTl.play();
+        isPreloaderFinished = true;
+        checkAndPlayReveal();
       }
-    });
-
-    // 1. Logo and brand staggered entrance (retaining the exact current animation)
+    });    // 1. Logo and brand staggered entrance (retaining the exact current animation)
     if (brand) {
       tl.fromTo(brand,
         { autoAlpha: 0, y: 24 },
@@ -1481,6 +1491,35 @@
     const stripsEl = document.getElementById('hero-strips');
     if (!stripsEl) return;
 
+    // Monitor video loaded status
+    const mainVideo = document.querySelector('.hero-bg-video');
+    if (mainVideo) {
+      const onVideoReady = () => {
+        if (!isVideoReady) {
+          isVideoReady = true;
+          checkAndPlayReveal();
+        }
+      };
+      if (mainVideo.readyState >= 2) {
+        isVideoReady = true;
+      } else {
+        mainVideo.addEventListener('loadeddata', onVideoReady, { once: true });
+        mainVideo.addEventListener('canplaythrough', onVideoReady, { once: true });
+        mainVideo.addEventListener('playing', onVideoReady, { once: true });
+      }
+    } else {
+      isVideoReady = true;
+    }
+
+    // Safety fallback to prevent hanging preloader
+    setTimeout(() => {
+      if (!isVideoReady) {
+        console.warn('[RADICAL] Video load timed out, forcing reveal');
+        isVideoReady = true;
+        checkAndPlayReveal();
+      }
+    }, 4500);
+
     const isMobile = window.innerWidth < 768;
     const preloader = document.getElementById('preloader');
     const isPreloaderActive = preloader && !preloader.classList.contains('is-done') && preloader.style.display !== 'none';
@@ -1517,9 +1556,11 @@
 
     // Desktop: Dynamically insert video strips for desktop only to avoid multi-preload resource choking on mobile
     let html = '';
-    const videoSrc = 'assets/RADICAL%20WEBSITE%20VIDEO%20REBOOT.mp4#t=1';
+    const videoSrcMp4 = 'assets/hero_desktop.mp4#t=1';
+    const videoSrcWebm = 'assets/hero_desktop.webm';
+    const fallbackSrc = 'assets/RADICAL%20WEBSITE%20VIDEO%20REBOOT.mp4#t=1';
     for (let i = 0; i < 5; i++) {
-      html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto"><source src="${videoSrc}" type="video/mp4"></video></div>`;
+      html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto"><source src="${videoSrcWebm}" type="video/webm"><source src="${videoSrcMp4}" type="video/mp4"><source src="${fallbackSrc}" type="video/mp4"></video></div>`;
     }
     stripsEl.innerHTML = html;
 
@@ -1547,9 +1588,7 @@
           }, { once: true });
         }
       } catch (err) {}
-    });
-
-    // Each strip is 20 vh tall; its video fills the full 100 vh hero.
+    });    // Each strip is 20 vh tall; its video fills the full 100 vh hero.
     // CSS `top` already anchors each video to show the CORRECT row when y=0.
     // We displace y so each strip shows the WRONG portion of the video —
     // the image looks fragmented. Offsets must stay within ±(video height)

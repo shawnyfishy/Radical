@@ -809,6 +809,7 @@ body.menu-open {
   height: 100%;
   z-index: 0;
   overflow: hidden;
+  background-color: #000000;
 }
 
 .hero-bg-video {
@@ -5031,6 +5032,7 @@ a[href], button, [role="button"] {
   height: 100%;
   z-index: 0;
   overflow: hidden;
+  background-color: #000000;
 }
 .full-bleed-bg-video {
   position: absolute;
