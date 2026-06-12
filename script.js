@@ -1511,50 +1511,17 @@
       stripsEl.style.opacity = '0';
     }
 
-    const isMobile = window.innerWidth < 768;
     const preloader = document.getElementById('preloader');
     const isPreloaderActive = preloader && !preloader.classList.contains('is-done') && preloader.style.display !== 'none';
     const shouldPause = isPreloaderActive || _isBarbaTransition;
 
-    if (isMobile) {
-      // Mobile: plain black bands that slide left/right alternately (no heavy video preloading)
-      let html = '';
-      for (let i = 0; i < 5; i++) {
-        html += `<div class="hstrip is-mobile-strip" style="background-color: #000000; position: absolute; left: 0; right: 0; height: 20%;"></div>`;
-      }
-      stripsEl.innerHTML = html;
-
-      const strips = gsap.utils.toArray('.hstrip');
-      strips.forEach((s) => gsap.set(s, { xPercent: 0 }));
-
-      heroRevealTl = gsap.timeline({
-        paused: shouldPause,
-        onStart: () => { stripsEl.style.opacity = '1'; }
-      });
-      if (!shouldPause) {
-        heroRevealTl.delay(0.1);
-      }
-
-      // Alternate slide reveal animation: stagger left/right sliding curtains
-      heroRevealTl.to(strips, {
-        xPercent: (i) => (i % 2 === 0 ? -100 : 100),
-        duration: 0.85,
-        ease: 'power3.inOut',
-        stagger: 0.08,
-        onComplete: () => {
-          stripsEl.remove();
-        }
-      });
-      return;
-    }
-
-    // Desktop: 5 video strips — original behaviour, using optimised hero_strip files
-    let stripVideoSrc = 'assets/hero_strip.mp4';
-    if (window.heroStripPromise) {
+    // Both Mobile & Desktop use the same video strip reveal
+    let stripVideoSrc = 'assets/Radical%20Website%20Video%20Reboot(1).mp4';
+    if (window.heroVideoPromise) {
       try {
-        stripVideoSrc = await window.heroStripPromise;
+        stripVideoSrc = await window.heroVideoPromise;
       } catch (e) {
-        console.error('Failed to resolve hero strip video:', e);
+        console.error('Failed to resolve hero video promise:', e);
       }
     }
 
@@ -1617,7 +1584,7 @@
       }, '<');
     }
 
-    // Safely auto-play the reveal timeline if the preloader finished while we were resolving the promise
+    // Safely auto-play the reveal timeline if the preloader finished
     const readyToReveal = (!isPreloaderActive || isPreloaderFinished);
     if (readyToReveal && heroRevealTl && heroRevealTl.paused()) {
       heroRevealTl.play();
