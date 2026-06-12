@@ -1430,11 +1430,21 @@
   /* ─────────────────────────────────────────────────────────────
      18b. BACKGROUND VIDEOS (HERO & LIFESTYLE)
   ───────────────────────────────────────────────────────────── */
-  function initHeroVideo() {
+  async function initHeroVideo() {
     // 1. Hero background video
     const heroVideo = document.querySelector('.hero-bg-video');
     if (heroVideo) {
       enableFadeInOnPlay(heroVideo);
+
+      if (window.heroVideoPromise) {
+        try {
+          const videoSrc = await window.heroVideoPromise;
+          heroVideo.src = videoSrc;
+          heroVideo.load();
+        } catch (e) {
+          console.error('Failed to resolve hero video:', e);
+        }
+      }
 
       const heroSection = document.getElementById('hero');
       if (heroSection && 'IntersectionObserver' in window) {
@@ -1490,7 +1500,7 @@
      the complete frame. Strips then fade out handing off to the
      underlying hero video.
   ───────────────────────────────────────────────────────────── */
-  function initHeroTileReveal() {
+  async function initHeroTileReveal() {
     const stripsEl = document.getElementById('hero-strips');
     if (!stripsEl) return;
 
@@ -1538,12 +1548,19 @@
       return;
     }
 
-    // Desktop: 5 video strips — original behaviour, using optimised hero_desktop files
+    // Desktop: 5 video strips — original behaviour, using optimised hero_strip files
+    let stripVideoSrc = 'assets/hero_strip.mp4';
+    if (window.heroStripPromise) {
+      try {
+        stripVideoSrc = await window.heroStripPromise;
+      } catch (e) {
+        console.error('Failed to resolve hero strip video:', e);
+      }
+    }
+
     let html = '';
-    const videoSrcWebm = 'assets/hero_desktop.webm';
-    const videoSrcMp4  = 'assets/hero_desktop.mp4';
     for (let i = 0; i < 5; i++) {
-      html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto"><source src="${videoSrcWebm}" type="video/webm"><source src="${videoSrcMp4}" type="video/mp4"></video></div>`;
+      html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto" poster="assets/hero_poster.webp"><source src="${stripVideoSrc}" type="video/mp4"></video></div>`;
     }
     stripsEl.innerHTML = html;
 
@@ -1558,11 +1575,6 @@
     // Each strip is 20 vh tall; its video fills the full 100 vh hero.
     // CSS `top` anchors each video to show the CORRECT row when y=0.
     // We displace y so each strip shows the WRONG portion — image looks fragmented.
-    //   Strip 0: shift UP 3 strips → shows row 3 (60–80 vh)
-    //   Strip 1: shift UP 1 strip  → shows row 2 (40–60 vh)
-    //   Strip 2: shift DOWN 2 strips → shows row 0 (0–20 vh)
-    //   Strip 3: shift UP 1 strip  → shows row 4 (80–100 vh)
-    //   Strip 4: shift DOWN 3 strips → shows row 1 (20–40 vh)
     const sh = window.innerHeight * 0.2;
     const offsets = [-3 * sh, -sh, 2 * sh, -sh, 3 * sh];
     videos.forEach((v, i) => gsap.set(v, { y: offsets[i] }));
@@ -1603,6 +1615,12 @@
         duration: 0.5,
         ease: 'power1.inOut',
       }, '<');
+    }
+
+    // Safely auto-play the reveal timeline if the preloader finished while we were resolving the promise
+    const readyToReveal = (!isPreloaderActive || isPreloaderFinished);
+    if (readyToReveal && heroRevealTl && heroRevealTl.paused()) {
+      heroRevealTl.play();
     }
   }
 

@@ -16,7 +16,7 @@ app.use((req, res, next) => {
     const decodePath = decodeURIComponent(req.path);
     const fullPath = path.join(FRONTEND, decodePath);
     if (!fs.existsSync(fullPath)) {
-      if (req.path.includes('hero_desktop') || req.path.includes('hero_mobile')) {
+      if (req.path.includes('hero_desktop') || req.path.includes('hero_mobile') || req.path.includes('hero_strip')) {
         req.url = '/assets/RADICAL%20WEBSITE%20VIDEO%20REBOOT.mp4';
       } else if (req.path.includes('full_bleed_optimized')) {
         req.url = '/assets/RADICAL%20WEBSITE%20VIDEO%20222222.mp4';
