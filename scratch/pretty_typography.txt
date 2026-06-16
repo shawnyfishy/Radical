@@ -1,0 +1,80 @@
+
+[@font-face]
+  @font-face {
+  font-family:Ppneuemontrealvariable;
+  font-weight:100 700;
+  @font-face {
+  font-family:Ppeditorialnew;
+  font-weight:200;
+  @font-face {
+  font-family:Ppeditorialnew;
+  font-weight:700;
+  @font-face {
+  font-family:Ppeditorialnew;
+  font-weight:400;
+  @font-face {
+  font-family:Ppeditorialnew;
+  font-weight:200;
+  @font-face {
+  font-family:Ppeditorialnew;
+  font-weight:400;
+  @font-face {
+  font-family:Ppeditorialnew;
+  font-weight:700;
+
+[:root]
+  --_text-style---font-family: var(--_typography---font--primary-family);
+  --_text-style---font-size: var(--_typography---font-size--text-main);
+  --_text-style---line-height: var(--_typography---line-height--1);
+  --_text-style---font-weight: var(--_typography---font--primary-regular);
+  --_text-style---letter-spacing: var(--_typography---letter-spacing--0em);
+  --_typography---line-height--1: 1;
+  --_typography---font-size--h5: var(--size--1-5rem);
+  --_typography---font-size--h6: var(--size--1rem);
+  --_text-style---text-transform: var(--_typography---text-transform--none);
+  --_typography---letter-spacing--0-03em: -.03em;
+  --_typography---letter-spacing--0em: 0em;
+  --_typography---line-height--1-1: 1.1;
+  --_typography---line-height--1-3: 1.3;
+  --_typography---line-height--1-5: 1.5;
+  --_typography---font-size--text-small: .875rem;
+  --_typography---font-size--text-main: var(--size--1rem);
+  --_typography---font-size--text-large: var(--size--1-25rem);
+  --_typography---font-size--h4: var(--size--1-375rem);
+  --_typography---font-size--h3: var(--size--2-625rem);
+  --_typography---font-size--h2: var(--size--2-625rem);
+  --_typography---font-size--h1: var(--size--2-625rem);
+  --_typography---font-size--display: var(--size--7rem);
+  --_typography---text-transform--none: 0px;
+  --_typography---text-transform--uppercase: 0px;
+  --_typography---text-transform--capitalize: 0px;
+  --_typography---text-transform--lowercase: 0px
+
+[.w-commerce-commercecartopenlinkcount]
+  font-size:11px;
+  font-weight:700;
+  line-height:18px;
+
+[.w-commerce-commercecartproductname]
+  font-weight:700
+
+[.w-commerce-commercecartquantity]
+  line-height:20px;
+
+[.w-commerce-commercecartordervalue]
+  font-weight:700
+
+[.w-checkbox-input]
+  line-height:normal
+
+[.w-commerce-commerceaddtocartquantityinput]
+  line-height:20px;
+
+[.w-commerce-commercecheckoutemailinput]
+  line-height:20px;
+
+[.w-commerce-commercecheckoutshippingfullname]
+  line-height:20px;
+
+[.w-commerce-commercecheckoutshippingstreetaddress]
+  line-height:20px;

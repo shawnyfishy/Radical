@@ -1,0 +1,45 @@
+.active .hero-slider_title, {
+  .active .hero-slider_num,
+  .active .hero-slider_hover {
+  font-size: var(--size--2rem);
+  }
+}
+
+.about-footer {
+  padding-top: var(--size--1-25rem);
+  padding-bottom: var(--size--1-25rem);
+  grid-column-gap: var(--size--10rem);
+  grid-row-gap: var(--size--10rem);
+  flex-flow: column;
+  justify-content: space-between;
+  height: 100dvh;
+  display: flex;
+  }
+}
+
+.about-footer .footer-bottom {
+  grid-column-gap: var(--size--6-5rem);
+  grid-row-gap: var(--size--6-5rem);
+  flex-flow: column;
+  display: flex;
+  height: 100%;
+  justify-content: space-between;
+  }
+}
+
+footer input:-webkit-autofill, {
+  footer input:-webkit-autofill:hover,
+  footer input:-webkit-autofill:focus,
+  footer input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--swatch--light-grey) inset !important;
+  font-weight: 600;
+  color: #050fff !important;
+  }
+}
+
+footer form input, {
+  .signup-popup form input {
+  text-transform: uppercase !important;
+  }
+}
+

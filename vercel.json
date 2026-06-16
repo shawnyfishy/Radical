@@ -24,7 +24,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "/backend/server.js"
+      "destination": "/api/index"
     }
   ]
 }
