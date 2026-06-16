@@ -15,4 +15,16 @@ db.pragma('foreign_keys = ON');
 const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
 db.exec(schema);
 
+// Auto-seed if the database is empty (important for ephemeral Vercel deploys)
+try {
+  const count = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
+  if (count === 0) {
+    console.log('Database is empty. Triggering auto-seed...');
+    const { seedDatabase } = require('./seed');
+    seedDatabase(db);
+  }
+} catch (e) {
+  console.error('[RADICAL] Auto-seeding database failed:', e);
+}
+
 module.exports = db;

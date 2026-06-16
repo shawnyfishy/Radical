@@ -1,8 +1,8 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const bcrypt = require('bcryptjs');
-const db     = require('./database');
 
-console.log('Seeding database...');
+function seedDatabase(db) {
+  console.log('Seeding database...');
 
 // Clear existing products and variants for a clean seed
 try {
@@ -556,5 +556,13 @@ for (const p of products) {
   }
 }
 
-console.log('Seeding complete.');
-process.exit(0);
+  console.log('Seeding complete.');
+}
+
+if (require.main === module) {
+  const dbInstance = require('./database');
+  seedDatabase(dbInstance);
+  process.exit(0);
+}
+
+module.exports = { seedDatabase };
