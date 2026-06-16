@@ -54,7 +54,7 @@ if (!IS_VERCEL) {
 // ── Error handler ───────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error', message: err.message, stack: err.stack });
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 // Vercel imports this module and calls the exported app per-request —
