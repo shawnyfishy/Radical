@@ -31,11 +31,11 @@
 
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Hero video source — streamed natively via HTTP range requests (no blob preload).
-       Same URL is reused by the main hero video and all 5 strip clones; the browser's
-       HTTP cache (immutable, 1yr per vercel.json) makes repeat requests instant. -->
+  <!-- Hero video — desktop vs mobile variant selected at runtime -->
   <script>
-    window.HERO_VIDEO_SRC = 'assets/Radical%20Website%20Video%20Reboot(1).mp4';
+    window.HERO_VIDEO_SRC = window.innerWidth <= 768
+      ? 'assets/video/hero-mobile.mp4'
+      : 'assets/video/hero-desktop.mp4';
   </script>
 
   <style>
@@ -58,7 +58,7 @@
       <!-- 2. Box background and Image container -->
       <div class="preloader__box-bg"></div>
       <div class="preloader__image-wrap">
-        <img src="assets/preloader%20picture.jpeg" class="preloader__box-img" alt="Branding" />
+        <img src="assets/images/preloader.webp" class="preloader__box-img" alt="Branding" />
       </div>
     </div>
   </div>
@@ -106,7 +106,7 @@
       <div class="menu-bg">
         <div class="bg-panel_full">
           <div class="bg-panel_full-img">
-            <img src="assets/menu_banner.jpeg" class="img-fill" alt="Radical Jewellery" />
+            <img src="assets/images/menu-banner.webp" class="img-fill" alt="Radical Jewellery" />
             <div class="menu-extras">
               <div class="menu-bottom_layout">
                 <div data-menu-fade class="menu-footer_col logo-col">
@@ -176,13 +176,8 @@
       </div>
     </nav>
     
-    <!-- Hidden preloaded images for menu hover image swap -->
-    <div class="target-imgs_hidden" style="display:none;">
-      <img src="assets/our%20shop%20picture.jpeg" alt="Our Shop" />
-      <img src="assets/home%20picture.png" alt="Home" />
-      <img src="assets/about%20us%20picture.jpeg" alt="About Us" />
-      <img src="assets/contact%20us%20picture.jpeg" alt="Contact Us" />
-    </div>
+    <!-- Nav hover images — loaded lazily on first menu open via JS
+         (see script.js: preloadNavImages in initMenu, URL list in initMenuImageSwap) -->
   </div>
 
 
@@ -282,7 +277,7 @@
     <section id="hero" class="section section--hero section--full-bleed" aria-label="RADICAL founding collection hero">
       <div class="hero-slider" full-slider>
 
-        <!-- Fullscreen background video -->
+        <!-- Fullscreen background video — mobile/desktop variants, poster shown until video plays -->
         <div class="hero-video-wrapper" aria-hidden="true">
           <video
             class="hero-bg-video"
@@ -295,7 +290,8 @@
             fetchpriority="high"
             poster="assets/hero_poster.webp"
           >
-            <source src="assets/Radical%20Website%20Video%20Reboot(1).mp4" type="video/mp4">
+            <source media="(max-width: 768px)" src="assets/video/hero-mobile.mp4" type="video/mp4">
+            <source src="assets/video/hero-desktop.mp4" type="video/mp4">
           </video>
           <div class="hero-video-overlay"></div>
         </div>
@@ -393,8 +389,8 @@
 
           <div class="product-track__item">
             <div class="product-track__img-wrap">
-              <img src="assets/rings_collection.png" alt="RADICAL Rings" class="product-track__img" />
-              <img src="assets/rings_collection.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/rings_collection.png" />
+              <img src="assets/rings_collection.webp" alt="RADICAL Rings" class="product-track__img" />
+              <img src="assets/rings_collection.webp" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/rings_collection.webp" />
             </div>
             <a href="/product" class="product-track__link">
               <div class="product-track__info">
@@ -415,8 +411,8 @@
 
           <div class="product-track__item">
             <div class="product-track__img-wrap">
-              <img src="assets/pendants_collection.png" alt="RADICAL Pendants" class="product-track__img" />
-              <img src="assets/pendants_collection.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/pendants_collection.png" />
+              <img src="assets/pendants_collection.webp" alt="RADICAL Pendants" class="product-track__img" />
+              <img src="assets/pendants_collection.webp" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/pendants_collection.webp" />
             </div>
             <a href="/product-pendant" class="product-track__link">
               <div class="product-track__info">
@@ -437,8 +433,8 @@
 
           <div class="product-track__item">
             <div class="product-track__img-wrap">
-              <img src="assets/bracelets_collection.png" alt="RADICAL Bracelets" class="product-track__img" />
-              <img src="assets/bracelets_collection.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/bracelets_collection.png" />
+              <img src="assets/bracelets_collection.webp" alt="RADICAL Bracelets" class="product-track__img" />
+              <img src="assets/bracelets_collection.webp" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/bracelets_collection.webp" />
             </div>
             <a href="/product-bracelet" class="product-track__link">
               <div class="product-track__info">
@@ -459,8 +455,8 @@
 
           <div class="product-track__item">
             <div class="product-track__img-wrap">
-              <img src="assets/limited_1_front.png" alt="RADICAL Limited Editions" class="product-track__img" />
-              <img src="assets/limited_1_front.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/limited_1_front.png" />
+              <img src="assets/limited_1_front.webp" alt="RADICAL Limited Editions" class="product-track__img" />
+              <img src="assets/limited_1_front.webp" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/limited_1_front.webp" />
             </div>
             <a href="/product-limited" class="product-track__link">
               <div class="product-track__info">
@@ -481,8 +477,8 @@
 
           <div class="product-track__item">
             <div class="product-track__img-wrap">
-              <img src="assets/lifestyle_banner.png" alt="RADICAL Collection" class="product-track__img" />
-              <img src="assets/lifestyle_banner.png" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/lifestyle_banner.png" />
+              <img src="assets/lifestyle_banner.webp" alt="RADICAL Collection" class="product-track__img" />
+              <img src="assets/lifestyle_banner.webp" alt="" class="product-track__img-hover" aria-hidden="true" data-hover-src="assets/lifestyle_banner.webp" />
             </div>
             <a href="/product" class="product-track__link">
               <div class="product-track__info">
@@ -520,7 +516,7 @@
             <p>Our Products</p>
           </div>
           <div cta-cursor_wrap class="cta-img_wrap">
-            <img src="assets/our%20shop%20picture.jpeg" alt="RADICAL Wearables" class="g_visual_img m-absolute" />
+            <img src="assets/images/nav-shop.webp" alt="RADICAL Wearables" class="g_visual_img m-absolute" />
             <div overlay="el" class="img-overlay"></div>
             <div cta-cursor_el class="cta-hover_el">
               <div class="body-upper">COLLECTION 01 & 02</div>
@@ -545,7 +541,7 @@
             <p>Our Story</p>
           </div>
           <div cta-cursor_wrap class="cta-img_wrap">
-            <img src="assets/about%20us%20picture.jpeg" alt="RADICAL Journey" class="g_visual_img m-absolute" />
+            <img src="assets/images/nav-about.webp" alt="RADICAL Journey" class="g_visual_img m-absolute" />
             <div overlay="el" class="img-overlay"></div>
             <div cta-cursor_el class="cta-hover_el">
               <div class="body-upper">About us</div>
@@ -570,7 +566,7 @@
             <p>Our Community</p>
           </div>
           <div cta-cursor_wrap class="cta-img_wrap">
-            <img src="assets/contact%20us%20picture.jpeg" alt="RADICAL Community" class="g_visual_img m-absolute" />
+            <img src="assets/images/nav-contact.webp" alt="RADICAL Community" class="g_visual_img m-absolute" />
             <div overlay="el" class="img-overlay"></div>
             <div cta-cursor_el class="cta-hover_el">
               <div class="body-upper">Social</div>
@@ -635,19 +631,18 @@
          6. FULL-BLEED LIFESTYLE VISUAL
     ============================================================ -->
     <section id="full-bleed-visual" class="section full-bleed-visual-section">
-      <!-- Full-bleed background video -->
+      <!-- Full-bleed background video — lazy loaded via IntersectionObserver in script.js -->
       <div class="full-bleed-video-wrapper" aria-hidden="true">
         <video
           class="full-bleed-bg-video"
-          autoplay
           muted
           loop
           playsinline
           webkit-playsinline
-          preload="auto"
+          preload="none"
           poster="assets/lifestyle_banner.webp"
         >
-          <source src="assets/RADICAL WEBSITE VIDEO 222222.mp4" type="video/mp4">
+          <!-- Sources injected by IntersectionObserver in script.js when section scrolls near -->
         </video>
         <div class="full-bleed-video-overlay"></div>
       </div>
@@ -686,7 +681,7 @@
             </div>
             <div class="manifesto-item-img-col">
               <div class="manifesto-item-img-wrap">
-                <img src="assets/steel%20section.jpeg" alt="RADICAL Surgical Steel" data-parallax-img />
+                <img src="assets/images/steel.webp" alt="RADICAL Surgical Steel" data-parallax-img />
               </div>
             </div>
           </div>
@@ -703,7 +698,7 @@
             </div>
             <div class="manifesto-item-img-col">
               <div class="manifesto-item-img-wrap">
-                <img src="assets/purpose%20section.jpeg" alt="RADICAL Heritage Philosophy" data-parallax-img />
+                <img src="assets/images/purpose.webp" alt="RADICAL Heritage Philosophy" data-parallax-img />
               </div>
             </div>
           </div>
@@ -720,7 +715,7 @@
             </div>
             <div class="manifesto-item-img-col">
               <div class="manifesto-item-img-wrap">
-                <img src="assets/community%20section.jpeg" alt="RADICAL Community" data-parallax-img />
+                <img src="assets/images/community.webp" alt="RADICAL Community" data-parallax-img />
               </div>
             </div>
           </div>
@@ -737,7 +732,7 @@
             </div>
             <div class="manifesto-item-img-col">
               <div class="manifesto-item-img-wrap">
-                <img src="assets/design%20section.jpeg" alt="RADICAL Crafted in Mumbai" data-parallax-img />
+                <img src="assets/images/design.webp" alt="RADICAL Crafted in Mumbai" data-parallax-img />
               </div>
             </div>
           </div>
@@ -827,18 +822,18 @@
   <!-- Grain texture overlay -->
   <div class="grain-overlay" aria-hidden="true"></div>
 
-  <!-- Animation Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
-  <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
-  <script src="https://unpkg.com/split-type"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@barba/core"></script>
+  <!-- Animation Libraries — all versions pinned, all deferred for parallel download -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
+  <script defer src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+  <script defer src="https://unpkg.com/split-type@0.3.4/umd/index.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@barba/core@2.10.3/dist/barba.umd.js"></script>
 
-  <script src="motion.config.js"></script>
-  <script src="products.js"></script>
-  <script src="script.js"></script>
-  <script src="api.js"></script>
-  <script src="store.js"></script>
+  <script defer src="motion.config.js"></script>
+  <script defer src="products.js"></script>
+  <script defer src="script.js"></script>
+  <script defer src="api.js"></script>
+  <script defer src="store.js"></script>
 </body>
 </html>

@@ -15,23 +15,6 @@ app.use(express.json());
 // CDN directly — this app only ever receives /api/* requests there, so none
 // of this should run (and must not be bundled into the function package).
 if (!IS_VERCEL) {
-  // Local Fallback for Video Assets (serves original files if optimized files are missing)
-  app.use((req, res, next) => {
-    const fs = require('fs');
-    if (req.path.startsWith('/assets/')) {
-      const decodePath = decodeURIComponent(req.path);
-      const fullPath = path.join(FRONTEND, decodePath);
-      if (!fs.existsSync(fullPath)) {
-        if (req.path.includes('hero_desktop') || req.path.includes('hero_mobile') || req.path.includes('hero_strip')) {
-          req.url = '/assets/RADICAL%20WEBSITE%20VIDEO%20REBOOT.mp4';
-        } else if (req.path.includes('full_bleed_optimized')) {
-          req.url = '/assets/RADICAL%20WEBSITE%20VIDEO%20222222.mp4';
-        }
-      }
-    }
-    next();
-  });
-
   app.use(express.static(FRONTEND));
 }
 

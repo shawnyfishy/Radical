@@ -21,3 +21,5 @@ node_modules/
 .claude/
 .gemini/
 
+# Original asset masters (never commit — local safety net only)
+raw-assets/

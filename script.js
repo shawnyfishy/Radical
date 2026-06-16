@@ -12,8 +12,33 @@
   'use strict';
 
   /* ─────────────────────────────────────────────────────────────
+     FAILSAFE: Force page visible after 4s regardless of what fails
+     This is the wired-up implementation of videoSafetyTimeout.
+     If GSAP/Lenis/Barba fail to load, the preloader hides and the
+     page becomes visible — never stuck on a black screen.
+  ───────────────────────────────────────────────────────────── */
+  var videoSafetyTimeout = setTimeout(function() {
+    var pre = document.getElementById('preloader');
+    if (pre && !pre.classList.contains('is-done')) {
+      pre.style.display = 'none';
+      document.body.classList.add('is-done');
+      console.warn('[RADICAL] Preloader failsafe triggered — check library loads');
+    }
+  }, 4000);
+
+  /* ─────────────────────────────────────────────────────────────
      1. GSAP REGISTRATION + CUSTOM EASES
   ───────────────────────────────────────────────────────────── */
+
+  // Guard: if GSAP failed to load, page must still become visible
+  if (typeof gsap === 'undefined') {
+    console.warn('[RADICAL] GSAP failed to load — animations disabled');
+    var pre = document.getElementById('preloader');
+    if (pre) pre.style.display = 'none';
+    document.body.classList.add('is-done');
+    return;
+  }
+
   gsap.registerPlugin(ScrollTrigger, CustomEase);
 
   gsap.config({ force3D: true, nullTargetWarn: false, autoSleep: 60 });
@@ -68,7 +93,7 @@
   let heroRevealTl;
   let isVideoReady = false;
   let isPreloaderFinished = false;
-  let videoSafetyTimeout = null;
+  // videoSafetyTimeout is wired up at the top of this IIFE as a hard failsafe.
 
   function checkAndPlayReveal() {
     const preloader = document.getElementById('preloader');
@@ -906,7 +931,25 @@
 
     let activeTl = null; // Always create a fresh timeline — never reuse a completed one
 
+    let navImagesPreloaded = false;
+    const preloadNavImages = () => {
+      if (navImagesPreloaded) return;
+      navImagesPreloaded = true;
+      // Lazy-load nav hover images on first menu open (removed from display:none HTML block)
+      const navImgSrcs = [
+        'assets/images/nav-shop.webp',
+        'assets/images/home.webp',
+        'assets/images/nav-about.webp',
+        'assets/images/nav-contact.webp',
+      ];
+      navImgSrcs.forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
+    };
+
     const openNav = () => {
+      preloadNavImages(); // lazy-load hover images on first open
       if (activeTl) activeTl.kill();
       if (lenis) lenis.stop();
       navWrap.setAttribute('data-nav', 'open');
@@ -1360,11 +1403,20 @@
     const hoverContainer = navWrap.querySelector('[img-hover_triggers-wrap]');
     const hoverTriggers = navWrap.querySelectorAll('[img-hover_trigger]');
     const targetWrapper = navWrap.querySelector('[target-img_wrap]');
-    const hiddenImages = navWrap.querySelectorAll('.target-imgs_hidden img');
 
     if (!hoverContainer || !targetWrapper || !hoverTriggers.length) return;
 
-    const mediaUrls = Array.from(hiddenImages).map(img => img.getAttribute('src'));
+    // Matches the menu-link order: OUR SHOP, HOME, ABOUT US, CONTACT.
+    // Previously sourced from a hidden <img class="target-imgs_hidden"> block
+    // in index.html that was removed when nav images moved to JS-driven lazy
+    // preload (preloadNavImages in initMenu) — that block was never replaced,
+    // so this list is now the single source of truth.
+    const mediaUrls = [
+      'assets/images/nav-shop.webp',
+      'assets/images/home.webp',
+      'assets/images/nav-about.webp',
+      'assets/images/nav-contact.webp',
+    ];
 
     // Mouse enter container: wipe open targetWrapper
     hoverContainer.addEventListener('mouseenter', () => {
@@ -1755,65 +1807,57 @@
       tryPlayHero();
     }
 
-    // 2. Full-bleed lifestyle video
-    const fbVideo = document.querySelector('.full-bleed-bg-video');
-    if (fbVideo) {
-      enableFadeInOnPlay(fbVideo);
+    // 2. Full-bleed lifestyle video — lazy: inject <source> and play only when
+    //    the section is within ~1 viewport of scrolling into view.
+    const fbSection = document.getElementById('full-bleed-visual');
+    const fbVideo   = fbSection && fbSection.querySelector('.full-bleed-bg-video');
+    if (fbVideo && 'IntersectionObserver' in window) {
+      let fbLoaded = false;
 
-      let fbIntersecting = false; // default false as full-bleed is further down the page
-      const tryPlayFb = () => {
-        if (fbIntersecting) {
-          fbVideo.play().catch(() => {});
+      const loadAndPlayFb = () => {
+        if (!fbLoaded) {
+          fbLoaded = true;
+          // Inject mobile/desktop source
+          const isMobile = window.innerWidth <= 768;
+          const src = isMobile ? 'assets/video/full-bleed-mobile.mp4' : 'assets/video/full-bleed-desktop.mp4';
+          const source = document.createElement('source');
+          source.src  = src;
+          source.type = 'video/mp4';
+          fbVideo.appendChild(source);
+          fbVideo.load();
+          enableFadeInOnPlay(fbVideo);
         }
+        fbVideo.play().catch(() => {});
       };
 
-      fbVideo.addEventListener('canplay', tryPlayFb);
-      fbVideo.addEventListener('canplaythrough', tryPlayFb);
-      fbVideo.addEventListener('loadedmetadata', tryPlayFb);
-
-      const fbSection = document.getElementById('full-bleed-visual');
-      if (fbSection && 'IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            fbIntersecting = entry.isIntersecting;
-            if (fbIntersecting) {
-              fbVideo.play().catch(() => {});
-            } else {
-              fbVideo.pause();
-            }
-          });
+      const fbObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            loadAndPlayFb();
+          } else {
+            fbVideo.pause();
+          }
         });
-        observer.observe(fbSection);
-        _cleanup.push(() => {
-          observer.disconnect();
-          fbVideo.removeEventListener('canplay', tryPlayFb);
-          fbVideo.removeEventListener('canplaythrough', tryPlayFb);
-          fbVideo.removeEventListener('loadedmetadata', tryPlayFb);
-        });
-      }
+      }, { rootMargin: '100% 0px' }); // trigger 1 viewport before section reaches view
 
-      // Immediate autoplay attempt
-      tryPlayFb();
+      fbObserver.observe(fbSection);
+      _cleanup.push(() => fbObserver.disconnect());
     }
   }
 
 
   /* ─────────────────────────────────────────────────────────────
-     18c. HERO STRIP REVEAL  (Blæd-style)
-     5 horizontal strips each hold a full-height copy of the video,
-     pre-positioned so each strip shows its correct portion.
-     Initially every video is offset downward so the image looks
-     fragmented. All videos race to y:0 simultaneously, assembling
-     the complete frame. Strips then fade out handing off to the
+     18c. HERO STRIP REVEAL (Blæd-style)
+     5 horizontal strips each hold a live clone of the hero video,
+     pre-offset so each strip shows the wrong portion of the frame —
+     the image looks fragmented. All strips race to y:0 simultaneously,
+     assembling the correct frame, then dissolve to hand off to the
      underlying hero video.
   ───────────────────────────────────────────────────────────── */
   function initHeroTileReveal() {
     const stripsEl = document.getElementById('hero-strips');
     if (!stripsEl) return;
 
-    // On Barba transitions the container wipe is playing simultaneously.
-    // Hide the strips until the wipe finishes — heroRevealTl.play() is called
-    // from barba.hooks.after, at which point we make them visible again.
     if (_isBarbaTransition) {
       stripsEl.style.opacity = '0';
     }
@@ -1822,21 +1866,31 @@
     const isPreloaderActive = preloader && !preloader.classList.contains('is-done') && preloader.style.display !== 'none';
     const shouldPause = isPreloaderActive || _isBarbaTransition;
 
-    // Both Mobile & Desktop use the same video strip reveal. Streamed natively
-    // (no blob preload) — the browser's HTTP cache makes the 2nd-5th strip
-    // requests for this same URL effectively free.
-    const stripVideoSrc = window.HERO_VIDEO_SRC || 'assets/Radical%20Website%20Video%20Reboot(1).mp4';
+    // Grab hero video + overlay BEFORE building strips so we can
+    // pre-show the video (poster covers it while buffering) and
+    // hide the overlay for the crossfade.
+    const heroVideo   = document.querySelector('.hero-bg-video');
+    const mainOverlay = document.querySelector('.hero-video-overlay');
 
+    // Force video to opacity:1 immediately — its poster image is visible
+    // while the video buffers, which exactly matches the strip poster image.
+    // This prevents any black gap when strips dissolve.
+    if (heroVideo) heroVideo.style.opacity = '1';
+    if (mainOverlay) gsap.set(mainOverlay, { opacity: 0 });
+
+    // Build 5 video strips — each a clone of the same hero video, sharing
+    // the browser's HTTP cache so there's effectively one network fetch.
+    const stripVideoSrc = window.HERO_VIDEO_SRC || 'assets/video/hero-desktop.mp4';
     let html = '';
     for (let i = 0; i < 5; i++) {
       html += `<div class="hstrip"><video class="hstrip__vid" autoplay muted loop playsinline preload="auto" poster="assets/hero_poster.webp"><source src="${stripVideoSrc}" type="video/mp4"></video></div>`;
     }
     stripsEl.innerHTML = html;
 
-    const videos = gsap.utils.toArray('.hstrip__vid');
-    if (!videos.length) return;
+    const strips = gsap.utils.toArray('.hstrip__vid');
+    if (!strips.length) return;
 
-    videos.forEach((v) => {
+    strips.forEach((v) => {
       enableFadeInOnPlay(v);
 
       // Skip the first 2 seconds so strips assemble into the same frame
@@ -1850,57 +1904,48 @@
       v.play().catch(() => {});
     });
 
-    // Each strip is 20 vh tall; its video fills the full 100 vh hero.
-    // CSS `top` anchors each video to show the CORRECT row when y=0.
-    // We displace y so each strip shows the WRONG portion — image looks fragmented.
     const sh = window.innerHeight * 0.2;
     const offsets = [-3 * sh, -sh, 2 * sh, -sh, 3 * sh];
-    videos.forEach((v, i) => gsap.set(v, { y: offsets[i] }));
+    strips.forEach((s, i) => gsap.set(s, { y: offsets[i] }));
 
     heroRevealTl = gsap.timeline({
       paused: shouldPause,
-      onStart: () => { stripsEl.style.opacity = '1'; }
+      onStart: () => {
+        stripsEl.style.opacity = '1';
+        gsap.set(strips, { willChange: 'transform, opacity' });
+      },
+      onComplete: () => {
+        gsap.set(strips, { clearProps: 'willChange' });
+      },
     });
-    if (!shouldPause) {
-      heroRevealTl.delay(0.1);
-    }
+    if (!shouldPause) heroRevealTl.delay(0.1);
 
-    // Phase 1: all videos race to y:0 — strips lock into the correct frame
-    heroRevealTl.to(videos, {
+    // ── Phase 1: strips slide to y:0 — video assembles into the correct frame ────
+    heroRevealTl.to(strips, {
       y: 0,
-      duration: 1.0,
+      duration: 0.85,
       ease: 'expo.out',
-      stagger: 0.04,
+      stagger: 0.035,
     });
 
-    // Phase 2: dissolve strips away, fade overlay back in
-    const mainOverlay = document.querySelector('.hero-video-overlay');
-    if (mainOverlay) gsap.set(mainOverlay, { opacity: 0 });
-
+    // ── Phase 2: true crossfade — strips dissolve + overlay fades in simultaneously ──
+    // No +=pause. Starts the frame the last strip lands.
+    // '<' on the overlay tween means both run at the same time: seamless.
     heroRevealTl.to(stripsEl, {
       opacity: 0,
       duration: 0.5,
-      ease: 'power1.inOut',
-      onComplete: () => {
-        stripsEl.remove();
-        if (mainOverlay) gsap.set(mainOverlay, { opacity: 1, clearProps: 'opacity' });
-      },
-    }, '+=0.12');
+      ease: 'power2.inOut',
+      onComplete: () => { stripsEl.remove(); },
+    });
 
     if (mainOverlay) {
       heroRevealTl.to(mainOverlay, {
         opacity: 1,
         duration: 0.5,
-        ease: 'power1.inOut',
-      }, '<');
+        ease: 'power2.inOut',
+      }, '<'); // simultaneous with strip dissolve — true crossfade
     }
 
-    // Safely auto-play the reveal timeline if the preloader finished.
-    // Must also confirm we're not mid-Barba-transition — otherwise this fires
-    // immediately (since isPreloaderActive is permanently false after the first
-    // page load) and the strip reveal plays while the page wipe-in is still
-    // animating, causing visible stutter. barba.hooks.after is the sole trigger
-    // for the Barba case (it flips _isBarbaTransition to false first).
     const readyToReveal = (!isPreloaderActive || isPreloaderFinished) && !_isBarbaTransition;
     if (readyToReveal && heroRevealTl && heroRevealTl.paused()) {
       heroRevealTl.play();

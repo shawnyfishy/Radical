@@ -1,0 +1,33 @@
+# RADICAL — Vercel Deployment Exclusions
+# These files exist locally for reference/development but must NOT
+# be deployed to production (they add weight, expose internal docs,
+# or are development-only utilities).
+
+# Original asset masters — large unoptimised originals, kept locally only
+raw-assets/
+
+# Development scripts
+scripts/
+
+# Internal business documents (never expose publicly)
+RADICAL-Men's Jewellery.pdf
+RADICAL_D2C_Reverse_Costing_All_Products.xlsx
+assets/products material descirption.docx
+scraped_full.html
+
+# Unused font files (not referenced by any @font-face in styles.css)
+assets/fonts/
+
+# Node development dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Git / IDE / system files
+.git/
+.gemini/
+.claude/
+.DS_Store
+Thumbs.db
