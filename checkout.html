@@ -131,11 +131,17 @@
 
   </main>
 
-  <script defer src="api.js"></script>
+  <script src="api.js"></script>
   <script>
   (async () => {
     const API = window.RADICAL_API;
     let shippingData = null;
+
+    // Orders are recorded by appending a row to a Google Sheet via this
+    // Apps Script Web App — no local order database involved.
+    const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby-7UlBa-iX7VVi0NcOmvisUOjKscCZX7Ai7HUpI9SusSIt2RG258ln0CPHBllUCFfTQA/exec';
+
+    let cartSummary = { items: [], subtotal: 0, shipping: 0, total: 0 };
 
     // Load cart summary
     async function loadSummary() {
@@ -157,6 +163,8 @@
         `).join('');
 
         const shipping = data.subtotal >= 999 ? 0 : 99;
+        cartSummary = { items, subtotal: data.subtotal, shipping, total: data.subtotal + shipping };
+
         document.getElementById('summary-subtotal').textContent = `₹${data.subtotal.toLocaleString('en-IN')}`;
         document.getElementById('summary-shipping').textContent = shipping === 0 ? 'Free' : `₹${shipping}`;
         document.getElementById('summary-total').textContent    = `₹${(data.subtotal + shipping).toLocaleString('en-IN')}`;
@@ -193,21 +201,68 @@
       document.getElementById('step-shipping').classList.add('is-active');
     });
 
-    // Place order
+    // Place order — writes a row straight to the delivery team's Google Sheet
     document.getElementById('place-order-btn').addEventListener('click', async () => {
       const btn = document.getElementById('place-order-btn');
       const err = document.getElementById('payment-error');
       if (!shippingData) return;
       btn.textContent = 'Placing order…';
       btn.disabled = true;
+      err.textContent = '';
+
+      const orderId = 'RAD' + Date.now().toString(36).toUpperCase();
+      const guestEmail = document.getElementById('ship-email').value;
+
+      const items = cartSummary.items.map(i => ({
+        name:        i.product.name,
+        variant:     i.variant ? i.variant.label : '',
+        quantity:    i.quantity,
+        unit_price:  i.unit_price,
+        line_total:  i.unit_price * i.quantity,
+      }));
+      const itemsSummary = items.map(i =>
+        `${i.name}${i.variant ? ' (' + i.variant + ')' : ''} x${i.quantity}`
+      ).join('; ');
+
+      const nameParts = shippingData.name.trim().split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      const cityStateCountry = `${shippingData.city}, ${shippingData.state}, India`;
+      const formattedDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+      const payload = {
+        first_name:         firstName,
+        last_name:          lastName,
+        email:              guestEmail,
+        phone:              shippingData.phone,
+        address_line1:      shippingData.line1,
+        address_line2:      shippingData.line2 || '',
+        city_state_country: cityStateCountry,
+        zipcode:            shippingData.postal_code,
+        product_name:       itemsSummary,
+        total_amount:       `₹${cartSummary.total.toLocaleString('en-IN')}`,
+        date_and_time:      formattedDate,
+        order_id:           orderId,
+        payment_method:     'Cash on Delivery',
+      };
+
       try {
-        const guestEmail = document.getElementById('ship-email').value;
-        const data = await API.orders.place(shippingData, { guest_email: guestEmail });
+        await fetch(SHEET_WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify(payload)
+        });
+
+        // Best-effort — the sheet row is the source of truth, so a cart-clear
+        // failure shouldn't block the confirmation screen.
+        try { await API.cart.clear(); } catch {}
+
         document.getElementById('step-payment').classList.remove('is-active');
         document.getElementById('step-confirm').classList.add('is-active');
-        document.getElementById('confirm-order-id').textContent = `Order #${data.order.id}`;
+        document.getElementById('confirm-order-id').textContent = `Order #${orderId}`;
       } catch (e) {
-        err.textContent = e.message;
+        console.error('[RADICAL] order submission failed:', e);
+        err.textContent = 'Could not submit your order. Please check your connection and try again.';
         btn.textContent = 'Place Order';
         btn.disabled = false;
       }

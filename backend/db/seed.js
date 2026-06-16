@@ -5,13 +5,21 @@ const db     = require('./database');
 console.log('Seeding database...');
 
 // Clear existing products and variants for a clean seed
+try {
+  db.prepare('DELETE FROM order_items').run();
+  db.prepare('DELETE FROM orders').run();
+  db.prepare('DELETE FROM cart_items').run();
+} catch (e) {
+  console.log('Note: Tables order_items/orders/cart_items could not be cleared:', e.message);
+}
 db.prepare('DELETE FROM variants').run();
 db.prepare('DELETE FROM products').run();
 try {
   db.prepare("DELETE FROM sqlite_sequence WHERE name='products'").run();
   db.prepare("DELETE FROM sqlite_sequence WHERE name='variants'").run();
+  db.prepare("DELETE FROM sqlite_sequence WHERE name='orders'").run();
 } catch (e) {}
-console.log('Cleared old products and variants, and reset autoincrement.');
+console.log('Cleared old products, variants, orders, cart, and reset autoincrement.');
 
 // Admin user
 const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get(process.env.ADMIN_EMAIL);
@@ -32,7 +40,7 @@ const products = [
     compare_price: 1999,
     description: 'Matte black finish over surgical steel, structured like a heavy industrial chain link. Solid weight.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/chainlink ring/black/chainlink ring - black.jpeg']
+    images: ['assets/products/chainlink-ring/black/front.webp']
   },
   {
     name: 'Chainlink Ring - Silver',
@@ -42,7 +50,7 @@ const products = [
     compare_price: 1999,
     description: 'Brushed surgical steel band, structured like a heavy industrial chain link. Architectural strength.',
     material: 'Material : Brass, Silver plated\nColor : Oxydised Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/chainlink ring/silver/chainlink ring - silver.jpeg']
+    images: ['assets/products/chainlink-ring/silver/front.webp']
   },
   {
     name: 'Compass Chain - Black',
@@ -52,7 +60,7 @@ const products = [
     compare_price: 11499,
     description: 'Matte black steel chain featuring an engraved compass motif. Worn to navigate your own path.',
     material: 'White rodium plated setting with round  black ceramic stones necklace\nColor : Silver, Black',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/compass cuff/black/compass cuff - black.jpeg']
+    images: ['assets/products/compass-cuff/black/front.webp']
   },
   {
     name: 'Compass Chain - Silver',
@@ -62,7 +70,7 @@ const products = [
     compare_price: 11499,
     description: 'Brushed steel chain featuring an engraved compass motif. Architectural design for daily wear.',
     material: 'Solitare necklace set in white rodium.\nMaterial : Brass, Silver plated, AAA grade CZ\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/compass cuff/silver/compass cuff - silver.jpeg']
+    images: ['assets/products/compass-cuff/silver/front.webp']
   },
   {
     name: 'Crown Tennis Bracelet - Black on Black',
@@ -72,7 +80,7 @@ const products = [
     compare_price: 11499,
     description: 'Black-coated surgical steel band set with midnight onyx stones in a crown bezel.',
     material: 'Black rodium plated setting with round  black ceramic stones.\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/crown tennis bracelet/black on black/crown tennis bracelet - black on black.jpeg']
+    images: ['assets/products/crown-tennis-bracelet/black-on-black/front.webp']
   },
   {
     name: 'Crown Tennis Bracelet - Black on Silver',
@@ -82,7 +90,7 @@ const products = [
     compare_price: 11499,
     description: 'Brushed steel band set with polished black onyx stones in a crown bezel setting.',
     material: 'White rodium plated setting with round  black ceramic stones\nColor : Silver, Black',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/crown tennis bracelet/black on silver/crown tennis bracelet - black on silver.jpeg']
+    images: ['assets/products/crown-tennis-bracelet/black-on-silver/front.webp']
   },
   {
     name: 'Crown Tennis Bracelet - Diamond on Silver',
@@ -92,7 +100,7 @@ const products = [
     compare_price: 11499,
     description: 'Brushed steel band set with brilliant white stones in a crown bezel setting.',
     material: 'Solitare bracelet set in white rodium.\nMaterial : Brass, Silver plated, AAA grade CZ\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/crown tennis bracelet/diamond on silver/crown tennis bracelet - diamond on silver.jpeg']
+    images: ['assets/products/crown-tennis-bracelet/diamond-on-silver/front.webp']
   },
   {
     name: 'Diamond Vault Ring - Black on Silver',
@@ -102,7 +110,7 @@ const products = [
     compare_price: 3499,
     description: 'Architectural steel vault ring featuring inset black onyx stones.',
     material: 'Pave Set CZ Wide Band Ring\nWhite rodium plated ring with round black ceramic stones',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/diamond vault ring/black on silver/diamond vault ring - black on silver.jpeg']
+    images: ['assets/products/diamond-vault-ring/black-on-silver/front.webp']
   },
   {
     name: 'Diamond Vault Ring - Diamond on Black',
@@ -112,7 +120,7 @@ const products = [
     compare_price: 3499,
     description: 'Matte black steel vault ring set with brilliant white diamond-cut stones.',
     material: 'Pave Set CZ Wide Band Ring\nMaterial : Brass, Black Gold, Cubic Zirconia\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/diamond vault ring/diamond on black/diamond vault ring - diamond on black.jpeg']
+    images: ['assets/products/diamond-vault-ring/diamond-on-black/front.webp']
   },
   {
     name: 'Diamond Vault Ring - Diamond on Silver',
@@ -122,7 +130,7 @@ const products = [
     compare_price: 3499,
     description: 'Brushed steel vault ring set with brilliant white diamond-cut stones.',
     material: 'Pave Set CZ Wide Band Ring\nWhite rodium plated ring with high grade cubic zirco',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/diamond vault ring/diamond on silver/diamond vault ring - diamond on silver.jpeg']
+    images: ['assets/products/diamond-vault-ring/diamond-on-silver/front.webp']
   },
   {
     name: 'Eclipse Ring - Black',
@@ -132,7 +140,7 @@ const products = [
     compare_price: 1999,
     description: 'Matte black band with a central offset groove representing a partial eclipse.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/eclipse ring/black/eclipse ring - black.jpeg']
+    images: ['assets/products/eclipse-ring/black/front.webp']
   },
   {
     name: 'Eclipse Ring - Silver',
@@ -142,7 +150,7 @@ const products = [
     compare_price: 1999,
     description: 'Polished surgical steel band with a central offset groove representing a partial eclipse.',
     material: 'Material : Brass, Silver plated\nColor : Oxydised Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/eclipse ring/silver/eclipse ring - silver.jpeg']
+    images: ['assets/products/eclipse-ring/silver/front.webp']
   },
   {
     name: 'Eclipse Signet Ring - Gold',
@@ -152,7 +160,7 @@ const products = [
     compare_price: 2499,
     description: 'Gold-plated steel signet ring with an eclipse carving on the face.',
     material: 'Material : Brass, Gold plated\nColor : Gold',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/eclipse signet ring/gold/eclipse signet ring - gold.jpeg']
+    images: ['assets/products/eclipse-signet-ring/gold/front.webp']
   },
   {
     name: 'Eclipse Signet Ring - Silver',
@@ -162,7 +170,7 @@ const products = [
     compare_price: 2499,
     description: 'Brushed surgical steel signet ring with an eclipse carving on the face.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/eclipse signet ring/silver/eclipse signet ring - silver.jpeg']
+    images: ['assets/products/eclipse-signet-ring/silver/front.webp']
   },
   {
     name: 'Eternal Knot Ring - Black',
@@ -173,8 +181,8 @@ const products = [
     description: 'Intricately woven Celtic eternal knot design in a matte black finish.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
     images: [
-      'assets/RADICAL FINAL WEBSITE PCITURES/eternal knot ring/black/eternal knot ring - black.jpeg',
-      'assets/RADICAL FINAL WEBSITE PCITURES/eternal knot ring/black/eternal knot ring black - close up.jpeg'
+      'assets/products/eternal-knot-ring/black/front.webp',
+      'assets/products/eternal-knot-ring/black/closeup.webp'
     ]
   },
   {
@@ -185,7 +193,7 @@ const products = [
     compare_price: 1999,
     description: 'Intricately woven Celtic eternal knot design in brushed surgical steel.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/eternal knot ring/silver/eternal knot ring - silver.jpeg']
+    images: ['assets/products/eternal-knot-ring/silver/front.webp']
   },
   {
     name: 'Guardian Pendant - Black on Black',
@@ -195,7 +203,7 @@ const products = [
     compare_price: 2499,
     description: 'Black-coated shield pendant set with a central black onyx cabochon. Hand-finished.',
     material: 'Material : Brass, Black Gold, Black Enamel\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/gaurdian pendant/black on black/gaurdian pendant - black on black.jpeg']
+    images: ['assets/products/guardian-pendant/black-on-black/front.webp']
   },
   {
     name: 'Guardian Pendant - Black on Silver',
@@ -205,7 +213,7 @@ const products = [
     compare_price: 2499,
     description: 'Steel shield pendant set with a central black onyx cabochon.',
     material: 'Material : Brass, Silver plated, Black Enamel\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/gaurdian pendant/black on silver/gaurdian pendant - black on silver.jpeg']
+    images: ['assets/products/guardian-pendant/black-on-silver/front.webp']
   },
   {
     name: 'Guardian Pendant - Diamond on Silver',
@@ -215,7 +223,7 @@ const products = [
     compare_price: 2499,
     description: 'Steel shield pendant set with a central brilliant white stone.',
     material: 'Material : Brass, Silver plated, AAA grade CZ\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/gaurdian pendant/diamond on silver/gaurdian pendant - diamond on silver.jpeg']
+    images: ['assets/products/guardian-pendant/diamond-on-silver/front.webp']
   },
   {
     name: 'Imperial Eye Ring - Black Gem',
@@ -225,7 +233,7 @@ const products = [
     compare_price: 2499,
     description: 'Deeply engraved eye motif signet ring, set with a central black onyx stone.',
     material: 'Material : Brass, Silver plated, Black Onyx\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/imperial eye ring/black gem/imperial eye ring - black gem.jpeg']
+    images: ['assets/products/imperial-eye-ring/black-gem/front.webp']
   },
   {
     name: 'Imperial Eye Ring - Diamond Gem',
@@ -235,7 +243,7 @@ const products = [
     compare_price: 2499,
     description: 'Deeply engraved eye motif signet ring, set with a central brilliant white gem.',
     material: 'Material : Brass, Silver plated, AAA grade CZ\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/imperial eye ring/diamond gem/imperial eye ring - diamond gem.jpeg']
+    images: ['assets/products/imperial-eye-ring/diamond-gem/front.webp']
   },
   {
     name: 'Infinite Loop Pendant - Black',
@@ -246,8 +254,8 @@ const products = [
     description: 'Continuous twist Möbius pendant in a matte black surgical steel finish.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
     images: [
-      'assets/RADICAL FINAL WEBSITE PCITURES/infinite loop pendant/black/infinite loop pendant - black.jpeg',
-      'assets/RADICAL FINAL WEBSITE PCITURES/infinite loop pendant/black/infinite loop pendant black- close up.jpeg'
+      'assets/products/infinite-loop-pendant/black/front.webp',
+      'assets/products/infinite-loop-pendant/black/closeup.webp'
     ]
   },
   {
@@ -258,7 +266,7 @@ const products = [
     compare_price: 2999,
     description: 'Continuous twist Möbius pendant in brushed 316L surgical steel.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/infinite loop pendant/silver/infinite loop pendant - silver.jpeg']
+    images: ['assets/products/infinite-loop-pendant/silver/front.webp']
   },
   {
     name: 'Legacy Tag Pendant - Black with Diamond',
@@ -268,7 +276,7 @@ const products = [
     compare_price: 2499,
     description: 'Matte black military-style dog tag set with a brilliant white stone.',
     material: 'Material : Brass, Black Gold, AAA grade CZ\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/legacy tag pendant/black with diamond/legacy tag pendant - black with diamond.jpeg']
+    images: ['assets/products/legacy-tag-pendant/black-with-diamond/front.webp']
   },
   {
     name: 'Legacy Tag Pendant - Silver with Black Gems',
@@ -278,7 +286,7 @@ const products = [
     compare_price: 2499,
     description: 'Brushed steel dog tag pendant set with double black onyx gems.',
     material: 'Material : Brass, Silver plated, Black ceramic stones\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/legacy tag pendant/silver with black gems/legacy tag pendant - silver with black gems.jpeg']
+    images: ['assets/products/legacy-tag-pendant/silver-with-black-gems/front.webp']
   },
   {
     name: 'Legacy Tag Pendant - Silver with Diamond',
@@ -288,7 +296,7 @@ const products = [
     compare_price: 2499,
     description: 'Brushed steel dog tag pendant set with a central brilliant white gem.',
     material: 'Material : Brass, Silver plated, AAA grade CZ\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/legacy tag pendant/silver with diamond/legacy tag pendant - silver with diamond.jpeg']
+    images: ['assets/products/legacy-tag-pendant/silver-with-diamond/front.webp']
   },
   {
     name: 'Monument Pendant',
@@ -299,8 +307,8 @@ const products = [
     description: 'Solid steel pillar pendant inspired by brutalist architecture. Heavy, balanced weight.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
     images: [
-      'assets/RADICAL FINAL WEBSITE PCITURES/monument pendant/monument pendant.jpeg',
-      'assets/RADICAL FINAL WEBSITE PCITURES/monument pendant/monument pendant - close up.jpeg'
+      'assets/products/monument-pendant/front.webp',
+      'assets/products/monument-pendant/closeup.webp'
     ]
   },
   {
@@ -311,7 +319,7 @@ const products = [
     compare_price: 2499,
     description: 'Compass star design in a matte black finish, worn as a point of reference.',
     material: 'Material : Brass, Black Gold, AAA grade CZ\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/northstar pendant/black/northstar pendant - black.jpeg']
+    images: ['assets/products/northstar-pendant/black/front.webp']
   },
   {
     name: 'Northstar Pendant - Silver',
@@ -321,7 +329,7 @@ const products = [
     compare_price: 2499,
     description: 'Compass star design in brushed surgical steel, a classic emblem of direction.',
     material: 'Material : Brass, Silver plated, AAA grade CZ\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/northstar pendant/silver/northstar pendant - silver.jpeg']
+    images: ['assets/products/northstar-pendant/silver/front.webp']
   },
   {
     name: 'Obsidian Grid Pendant - Gold',
@@ -331,7 +339,7 @@ const products = [
     compare_price: 2999,
     description: '18K Gold plated steel framing a textured black obsidian tile.',
     material: 'Material : Brass, Gold plated, Black Enamel.\nColor : Gold',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/obsidian grid pendant/gold/obsidian grid pendant - gold.jpeg']
+    images: ['assets/products/obsidian-grid-pendant/gold/front.webp']
   },
   {
     name: 'Obsidian Grid Pendant - Silver',
@@ -341,7 +349,7 @@ const products = [
     compare_price: 2999,
     description: 'Surgical steel frame holding a textured black obsidian stone tile.',
     material: 'Material : Brass, Silver plated, Black Enamel.\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/obsidian grid pendant/silver/obsidian grid pendant - silver.jpeg']
+    images: ['assets/products/obsidian-grid-pendant/silver/front.webp']
   },
   {
     name: 'Obsidian Monarch Ring',
@@ -352,8 +360,8 @@ const products = [
     description: 'Heavy signet ring featuring a polished flat black obsidian slab.',
     material: 'Material : Brass, Silver plated, Black Obsidian\nColor : Silver',
     images: [
-      'assets/RADICAL FINAL WEBSITE PCITURES/obsidian monarch ring/obsidian monarch ring.jpeg',
-      'assets/RADICAL FINAL WEBSITE PCITURES/obsidian monarch ring/obsidian monarch ring - close up.jpeg'
+      'assets/products/obsidian-monarch-ring/front.webp',
+      'assets/products/obsidian-monarch-ring/closeup.webp'
     ]
   },
   {
@@ -364,7 +372,7 @@ const products = [
     compare_price: 2499,
     description: 'Matte black steel frame holding a solid black onyx cylinder core.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/onyx core pendant/black/onyc core pendant - black.jpeg']
+    images: ['assets/products/onyx-core-pendant/black/front.webp']
   },
   {
     name: 'Onyx Core Pendant - Silver',
@@ -374,7 +382,7 @@ const products = [
     compare_price: 2499,
     description: 'Brushed surgical steel frame holding a solid black onyx cylinder core.',
     material: 'Material : Brass, Silver plated, Black Enamel.\nColor : Oxydised Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/onyx core pendant/silver/onyx core pendant - silver.jpeg']
+    images: ['assets/products/onyx-core-pendant/silver/front.webp']
   },
   {
     name: 'Path Finder Pendant - Black',
@@ -384,7 +392,7 @@ const products = [
     compare_price: 2499,
     description: 'Minimal geometric arrow pendant in a matte black finish.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/path finder pendant/black/path finder pendant - black.jpeg']
+    images: ['assets/products/path-finder-pendant/black/front.webp']
   },
   {
     name: 'Path Finder Pendant - Gold',
@@ -394,7 +402,7 @@ const products = [
     compare_price: 2499,
     description: 'Minimal geometric arrow pendant plated in 18K yellow gold.',
     material: 'Material : Brass, Gold plated\nColor : Gold',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/path finder pendant/gold/path finder pendant - gold.jpeg']
+    images: ['assets/products/path-finder-pendant/gold/front.webp']
   },
   {
     name: 'Path Finder Pendant - Silver',
@@ -404,7 +412,7 @@ const products = [
     compare_price: 2499,
     description: 'Minimal geometric arrow pendant in brushed surgical-grade steel.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/path finder pendant/silver/path finder pendant - silver.jpeg']
+    images: ['assets/products/path-finder-pendant/silver/front.webp']
   },
   {
     name: 'Rune Shield Ring - Black',
@@ -414,7 +422,7 @@ const products = [
     compare_price: 1999,
     description: 'Matte black steel band carved with ancient protective runes.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/rune shield ring/black/rune shield ring - black.jpeg']
+    images: ['assets/products/rune-shield-ring/black/front.webp']
   },
   {
     name: 'Rune Shield Ring - Silver',
@@ -424,7 +432,7 @@ const products = [
     compare_price: 1999,
     description: 'Surgical-grade steel band carved with ancient protective runes.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/rune shield ring/silver/rune shield ring - silver.jpeg']
+    images: ['assets/products/rune-shield-ring/silver/front.webp']
   },
   {
     name: 'Serpent Ascend Ring - Black',
@@ -434,7 +442,7 @@ const products = [
     compare_price: 1999,
     description: 'Coiled serpent design representing wisdom and renewal in a matte black finish.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/serpent ascend ring/black/serpent ascend ring - black.jpeg']
+    images: ['assets/products/serpent-ascend-ring/black/front.webp']
   },
   {
     name: 'Serpent Ascend Ring - Silver',
@@ -444,7 +452,7 @@ const products = [
     compare_price: 1999,
     description: 'Coiled serpent design representing wisdom and renewal in brushed steel.',
     material: 'Material : Brass, Silver plated\nColor : Oxydised Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/serpent ascend ring/silver/serpent ascend ring - silver.jpeg']
+    images: ['assets/products/serpent-ascend-ring/silver/front.webp']
   },
   {
     name: 'Spear Pendant - Black',
@@ -454,7 +462,7 @@ const products = [
     compare_price: 2999,
     description: 'Brutalist spear tip pendant in a matte black surgical steel finish.',
     material: 'Material : Brass, Black Gold, Black Onyx.\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/spear pendant/black/spear pendant - black.jpeg']
+    images: ['assets/products/spear-pendant/black/front.webp']
   },
   {
     name: 'Spear Pendant - Silver',
@@ -464,7 +472,7 @@ const products = [
     compare_price: 2999,
     description: 'Brutalist spear tip pendant in hand-finished brushed surgical steel.',
     material: 'Material : Brass, Silver plated, AAA grade CZ\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/spear pendant/silver/spear pendant - silver.jpeg']
+    images: ['assets/products/spear-pendant/silver/front.webp']
   },
   {
     name: 'Spear Pendant - Silver with Black Stone',
@@ -474,7 +482,7 @@ const products = [
     compare_price: 2999,
     description: 'Brutalist spear tip pendant in silver steel, set with a raw black onyx stone.',
     material: 'Material : Brass, Silver plated, Black Onyx.\nColor : Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/spear pendant/silver with black stone/spear pendant - silver with black stone.jpeg']
+    images: ['assets/products/spear-pendant/silver-with-black-stone/front.webp']
   },
   {
     name: 'Tennis Black Stone Chain',
@@ -485,8 +493,8 @@ const products = [
     description: 'Continuous collar chain set with round brilliant-cut midnight onyx gems.',
     material: 'Material : Brass, Silver plated, Black Onyx.\nColor : Oxydised Silver',
     images: [
-      'assets/RADICAL FINAL WEBSITE PCITURES/tennis black stone chain/tennis black stone chain.jpeg',
-      'assets/RADICAL FINAL WEBSITE PCITURES/tennis black stone chain/tennis black stone chain close up.jpeg'
+      'assets/products/tennis-black-stone-chain/front.webp',
+      'assets/products/tennis-black-stone-chain/closeup.webp'
     ]
   },
   {
@@ -497,7 +505,7 @@ const products = [
     compare_price: 1999,
     description: 'Engraved Yggdrasil World Tree band in a textured matte black finish.',
     material: 'Material : Brass, Black Gold, Black Onyx.\nColor : Black Gold / Gun metal',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/world tree ring/black/world tree ring - black.jpeg']
+    images: ['assets/products/world-tree-ring/black/front.webp']
   },
   {
     name: 'World Tree Ring - Silver',
@@ -507,7 +515,7 @@ const products = [
     compare_price: 1999,
     description: 'Engraved Yggdrasil World Tree band in textured brushed surgical steel.',
     material: 'Material : Brass, Silver plated\nColor : Oxydised Silver',
-    images: ['assets/RADICAL FINAL WEBSITE PCITURES/world tree ring/silver/world tree ring silver.jpeg']
+    images: ['assets/products/world-tree-ring/silver/front.webp']
   }
 ];
 

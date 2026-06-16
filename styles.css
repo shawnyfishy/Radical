@@ -2187,10 +2187,11 @@ body.menu-open {
 
 /* Breadcrumb */
 .pdp__breadcrumb {
-  font-family: var(--font-body);
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-size: 11px;
   color: #999;
-  letter-spacing: 0.3px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
 .pdp__breadcrumb a {
@@ -2206,10 +2207,11 @@ body.menu-open {
 
 /* Product name */
 .pdp__name {
-  font-family: var(--font-brand);
-  font-weight: 700;
+  font-family: var(--font-ui);
+  font-weight: 500;
   font-size: 24px;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
   color: var(--color-text);
   margin-top: 16px;
   line-height: 1.2;
@@ -2217,8 +2219,10 @@ body.menu-open {
 
 /* Price */
 .pdp__price {
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
+  font-weight: 700;
   font-size: 16px;
+  letter-spacing: 0.5px;
   color: var(--color-text);
   margin-top: 8px;
   display: flex;
@@ -2235,7 +2239,7 @@ body.menu-open {
 
 .pdp__price .price-discounted {
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 /* Thin divider */
@@ -2247,10 +2251,10 @@ body.menu-open {
 
 /* Short description */
 .pdp__description {
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.7;
-  color: #4A4A4A;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
 }
 
 
@@ -2262,8 +2266,9 @@ body.menu-open {
 }
 
 .pdp__sizes-label {
-  font-family: var(--font-brand);
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 11px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--color-text);
@@ -2281,9 +2286,9 @@ body.menu-open {
   height: 40px;
   border: 1px solid #CCCCCC;
   background: none;
-  font-family: var(--font-brand);
-  font-weight: 400;
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 12px;
   color: var(--color-text);
   display: flex;
   align-items: center;
@@ -2311,8 +2316,9 @@ body.menu-open {
 }
 
 .pdp__colors-label {
-  font-family: var(--font-brand);
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 11px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--color-text);
@@ -2364,10 +2370,10 @@ body.menu-open {
   height: 50px;
   background: var(--color-text);
   color: var(--color-white);
-  font-family: var(--font-brand);
-  font-weight: 400;
-  font-size: 14px;
-  letter-spacing: 3px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   border: none;
   cursor: pointer;
@@ -2392,8 +2398,10 @@ body.menu-open {
 .pdp__find-store {
   display: block;
   text-align: center;
-  font-family: var(--font-body);
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   color: #6A6A6A;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -2428,9 +2436,9 @@ body.menu-open {
   align-items: center;
   justify-content: space-between;
   padding: 16px 0;
-  font-family: var(--font-brand);
-  font-weight: 400;
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 12px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--color-text);
@@ -2460,10 +2468,10 @@ body.menu-open {
 }
 
 .pdp__accordion-content p {
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.7;
-  color: #4A4A4A;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
   margin-bottom: 4px;
 }
 
