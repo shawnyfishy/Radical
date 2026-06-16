@@ -2092,6 +2092,12 @@
     var cards = gsap.utils.toArray('.products-grid .product-card, .featured-products__grid .product-card');
     if (!cards.length) return;
 
+    if (window.innerWidth < 992) {
+      // On mobile, bypass scroll animations to prevent layout shifts and keep cards visible immediately
+      gsap.set(cards, { y: 0, opacity: 1 });
+      return;
+    }
+
     gsap.set(cards, { y: 24, opacity: 0 });
 
     ScrollTrigger.batch(cards, {
@@ -2259,5 +2265,12 @@
   } else {
     init();
   }
+
+  // 3. Refresh ScrollTrigger once all assets (images, fonts, stylesheets) are fully loaded to fix layout shift bugs
+  window.addEventListener('load', () => {
+    if (typeof ScrollTrigger !== 'undefined') {
+      ScrollTrigger.refresh();
+    }
+  });
 
 })();
