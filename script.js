@@ -1018,77 +1018,243 @@
      16. PRODUCT PAGE (PDP)
   ───────────────────────────────────────────────────────────── */
   function initProductPage() {
-    const galleryItems = document.querySelectorAll('.pdp__gallery-item');
-    if (!galleryItems.length) return;
-
-    // Gallery entrance stagger
-    gsap.set(galleryItems, { autoAlpha: 0, y: 32 });
-    gsap.to(galleryItems, { autoAlpha: 1, y: 0, duration: 0.85, ease: EASE.emerge, stagger: 0.1, delay: 0.5 });
-
-    // Lightbox
-    const lb      = document.getElementById('pdp-lightbox');
-    const lbImg   = document.getElementById('pdp-lb-img');
-    const lbClose = document.getElementById('pdp-lb-close');
-    const lbPrev  = document.getElementById('pdp-lb-prev');
-    const lbNext  = document.getElementById('pdp-lb-next');
-    const IMGS    = Array.from(document.querySelectorAll('.pdp__gallery-img')).map(i => ({ src: i.src, alt: i.alt }));
-    let lbIdx     = 0;
-
-    function openLb(i) {
-      lbIdx = i;
-      if (lbImg) { lbImg.src = IMGS[i].src; lbImg.alt = IMGS[i].alt; }
-      lb && lb.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
-      if (lenis) lenis.stop();
-      if (lbPrev) lbPrev.classList.toggle('is-hidden', lbIdx === 0);
-      if (lbNext) lbNext.classList.toggle('is-hidden', lbIdx === IMGS.length - 1);
-    }
-    function closeLb() {
-      lb && lb.classList.remove('is-open');
-      document.body.style.overflow = '';
-      if (lenis) lenis.start();
-    }
-    galleryItems.forEach((item, i) => item.addEventListener('click', () => openLb(i)));
-    if (lbClose) lbClose.addEventListener('click', closeLb);
-    if (lbPrev)  lbPrev.addEventListener('click',  () => { if (lbIdx > 0)                openLb(lbIdx - 1); });
-    if (lbNext)  lbNext.addEventListener('click',  () => { if (lbIdx < IMGS.length - 1) openLb(lbIdx + 1); });
-
-    // Accordions
-    document.querySelectorAll('.pdp__accordion-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const body   = btn.closest('.pdp__accordion').querySelector('.pdp__accordion-body');
-        const isOpen = btn.getAttribute('aria-expanded') === 'true';
-        btn.setAttribute('aria-expanded', !isOpen);
-        body.style.display = isOpen ? 'none' : 'block';
-      });
-    });
-
-    // Size selector & Add to Bag variant mapping
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
+    let localProduct = null;
+    let category = 'rings';
+    
     const container = document.querySelector('[data-barba="container"]');
-    const productHandle = container ? container.getAttribute('data-product-handle') : null;
-    const addBtn = document.getElementById('pdp-add-btn');
+    const namespace = container ? container.getAttribute('data-barba-namespace') : '';
+    if (namespace === 'product-bracelet') category = 'bracelets';
+    else if (namespace === 'product-pendant') category = 'pendants';
 
-    if (productHandle && addBtn && typeof window.RADICAL_API !== 'undefined') {
-      const API = window.RADICAL_API;
-      let variantMap = {};
-      
-      (async () => {
+    if (!productId || typeof window.RADICAL_PRODUCTS === 'undefined') {
+      setupLightboxTriggers();
+      setupSizesAndAddBtn();
+      setupAccordions();
+      return;
+    }
+
+    localProduct = window.RADICAL_PRODUCTS.products.find(p => p.id === productId);
+    if (!localProduct) {
+      setupLightboxTriggers();
+      setupSizesAndAddBtn();
+      setupAccordions();
+      return;
+    }
+
+    category = localProduct.category;
+
+    // Update document title & breadcrumb initially
+    document.title = localProduct.name + ' — RADICAL Men\'s Jewellery';
+    const breadcrumbSpan = document.querySelector('.pdp__breadcrumb span');
+    if (breadcrumbSpan) {
+      breadcrumbSpan.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+    }
+
+    const baseProducts = window.RADICAL_PRODUCTS.getBaseProducts();
+    const baseProduct = baseProducts.find(bp => bp.variants.some(v => v.id === productId));
+
+    function getColorStyle(colorStr) {
+      const color = colorStr.toUpperCase().trim();
+      if (color === 'BLACK' || color === 'BLACK GEM') return 'background-color: #1A1A1A;';
+      if (color === 'SILVER') return 'background-color: #E0E0E0;';
+      if (color === 'GOLD') return 'background-color: #D4AF37;';
+      if (color === 'BLACK ON BLACK') return 'background-color: #222222; border: 1px dashed #444;';
+      if (color === 'BLACK ON SILVER') return 'background: linear-gradient(135deg, #1A1A1A 50%, #E0E0E0 50%);';
+      if (color === 'DIAMOND ON SILVER') return 'background: linear-gradient(135deg, #FFFFFF 50%, #E0E0E0 50%);';
+      if (color === 'DIAMOND GEM') return 'background-color: #F0F8FF; border: 1px solid #CCC;';
+      if (color === 'DIAMOND ON BLACK') return 'background: linear-gradient(135deg, #FFFFFF 50%, #1A1A1A 50%);';
+      if (color === 'BLACK WITH DIAMOND') return 'background: linear-gradient(135deg, #1A1A1A 50%, #FFFFFF 50%);';
+      if (color === 'SILVER WITH BLACK GEMS') return 'background: linear-gradient(135deg, #E0E0E0 50%, #1A1A1A 50%);';
+      if (color === 'SILVER WITH DIAMOND') return 'background: linear-gradient(135deg, #E0E0E0 50%, #FFFFFF 50%);';
+      if (color === 'SILVER WITH BLACK STONE') return 'background: linear-gradient(135deg, #E0E0E0 50%, #1A1A1A 50%);';
+      return 'background-color: #CCCCCC;';
+    }
+
+    async function renderPDPVariant(vId, isFirstLoad) {
+      const targetProduct = window.RADICAL_PRODUCTS.products.find(p => p.id === vId);
+      if (!targetProduct) return;
+
+      if (!isFirstLoad) {
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + vId;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+      }
+
+      document.title = targetProduct.name + " — RADICAL Men's Jewellery";
+      const nameEl = document.querySelector('.pdp__name');
+      if (nameEl) nameEl.textContent = targetProduct.name;
+
+      const priceEl = document.querySelector('.pdp__price');
+      if (priceEl) {
+        if (targetProduct.comparePrice) {
+          priceEl.innerHTML = `<span class="price-original">&#8377;${targetProduct.comparePrice}</span><span class="price-discounted">&#8377;${targetProduct.price}</span>`;
+        } else {
+          priceEl.innerHTML = `<span class="price-discounted">&#8377;${targetProduct.price}</span>`;
+        }
+      }
+
+      const addBtn = document.getElementById('pdp-add-btn');
+      if (addBtn) {
+        addBtn.dataset.productId = targetProduct.dbId;
+      }
+
+      if (container) {
+        container.setAttribute('data-product-handle', targetProduct.sku);
+      }
+
+      const galleryStack = document.getElementById('pdp-gallery-stack');
+      if (galleryStack) {
+        let galleryHtml = '';
+        const imgsToShow = [targetProduct.images.primary];
+        if (targetProduct.images.hover && targetProduct.images.hover !== targetProduct.images.primary) {
+          imgsToShow.push(targetProduct.images.hover);
+        }
+        imgsToShow.forEach((src, idx) => {
+          galleryHtml += `
+            <div class="pdp__gallery-item" data-index="${idx}" role="button" tabindex="0" aria-label="View product image ${idx + 1} fullscreen">
+              <img class="pdp__gallery-img" src="${src}" alt="${targetProduct.name} — Image ${idx + 1}" />
+            </div>
+          `;
+        });
+        galleryStack.innerHTML = galleryHtml;
+
+        const newGalleryItems = galleryStack.querySelectorAll('.pdp__gallery-item');
+        if (newGalleryItems.length) {
+          gsap.set(newGalleryItems, { autoAlpha: 0, y: 32, clipPath: 'inset(100% 0% 0% 0%)' });
+          gsap.to(newGalleryItems, {
+            autoAlpha: 1,
+            y: 0,
+            clipPath: 'inset(0% 0% 0% 0%)',
+            duration: 1.2,
+            ease: EASE.emerge,
+            stagger: 0.1,
+            delay: isFirstLoad ? 0.5 : 0.1
+          });
+        }
+
+        setupLightboxTriggers();
+      }
+
+      if (addBtn && typeof window.RADICAL_API !== 'undefined') {
+        const API = window.RADICAL_API;
         try {
-          const { product } = await API.products.get(productHandle);
-          variantMap = Object.fromEntries((product.variants || []).map(v => [v.label, v.id]));
-          
-          const activeBtn = document.querySelector('.pdp__size-btn[aria-pressed="true"]');
-          if (activeBtn) {
-            const sizeValue = activeBtn.dataset.size;
-            const sizeLabel = productHandle === 'pendant-bar' ? `${sizeValue}` : `Size ${sizeValue}`;
+          const { product } = await API.products.get(targetProduct.sku);
+          const descEl = document.querySelector('.pdp__description');
+          if (descEl && product.description) {
+            descEl.textContent = product.description;
+          }
+
+          const variantMap = Object.fromEntries((product.variants || []).map(v => [v.label, v.id]));
+          window.pdpActiveVariantMap = variantMap;
+
+          const activeSizeBtn = document.querySelector('.pdp__size-btn[aria-pressed="true"]');
+          if (activeSizeBtn) {
+            const sizeValue = activeSizeBtn.dataset.size;
+            const sizeLabel = targetProduct.category === 'pendants' ? `${sizeValue}` : `Size ${sizeValue}`;
             const vid = variantMap[sizeLabel];
             if (vid) addBtn.dataset.variantId = vid;
           }
         } catch (e) {
           console.error('[RADICAL] Failed to fetch variants:', e);
         }
-      })();
+      }
 
+      const colorButtons = document.querySelectorAll('.pdp__color-btn');
+      colorButtons.forEach(btn => {
+        if (btn.dataset.id === vId) {
+          btn.classList.add('is-selected');
+          btn.setAttribute('aria-pressed', 'true');
+        } else {
+          btn.classList.remove('is-selected');
+          btn.setAttribute('aria-pressed', 'false');
+        }
+      });
+      
+      const labelSpan = document.querySelector('.pdp__colors-label span');
+      if (labelSpan && targetProduct.name.indexOf(' - ') !== -1) {
+        labelSpan.textContent = targetProduct.name.split(' - ')[1].trim();
+      } else if (labelSpan) {
+        labelSpan.textContent = 'Standard';
+      }
+
+      // ── Dynamic Details & Materials accordion content ──────────
+      let detailsContentEl = null;
+      document.querySelectorAll('.pdp__accordion-toggle').forEach(function(toggle) {
+        if (toggle.textContent.trim().indexOf('Details') !== -1) {
+          detailsContentEl = toggle.closest('.pdp__accordion').querySelector('.pdp__accordion-content');
+        }
+      });
+      if (detailsContentEl) {
+        var detailsText = targetProduct.details || 'Material : Brass, Silver plated\nColor : Silver';
+        // Normalise \n literals that survived JS string encoding
+        detailsText = detailsText.replace(/\\n/g, '\n');
+        var lines = detailsText.split('\n');
+        var html = '';
+        lines.forEach(function(line) {
+          var trimmed = line.replace(/\u00a0/g, ' ').trim();
+          if (trimmed) {
+            html += '<p>' + trimmed + '</p>';
+          }
+        });
+        html += '<p>Hypoallergenic and tarnish-resistant</p>';
+        detailsContentEl.innerHTML = html;
+        // Refresh max-height if accordion is already open
+        var detailsBody = detailsContentEl.closest('.pdp__accordion-body');
+        var detailsToggle = detailsContentEl.closest('.pdp__accordion') &&
+          detailsContentEl.closest('.pdp__accordion').querySelector('.pdp__accordion-toggle');
+        if (detailsBody && detailsToggle && detailsToggle.getAttribute('aria-expanded') === 'true') {
+          detailsBody.style.maxHeight = detailsBody.scrollHeight + 'px';
+        }
+      }
+    }
+
+    function setupLightboxTriggers() {
+      const galleryItems = document.querySelectorAll('.pdp__gallery-item');
+      const lb      = document.getElementById('pdp-lightbox');
+      const lbImg   = document.getElementById('pdp-lb-img');
+      const lbClose = document.getElementById('pdp-lb-close');
+      const lbPrev  = document.getElementById('pdp-lb-prev');
+      const lbNext  = document.getElementById('pdp-lb-next');
+      const IMGS    = Array.from(document.querySelectorAll('.pdp__gallery-img')).map(i => ({ src: i.src, alt: i.alt }));
+      let lbIdx     = 0;
+
+      function openLb(i) {
+        lbIdx = i;
+        if (lbImg) { lbImg.src = IMGS[i].src; lbImg.alt = IMGS[i].alt; }
+        lb && lb.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+        if (lenis) lenis.stop();
+        if (lbPrev) lbPrev.classList.toggle('is-hidden', lbIdx === 0);
+        if (lbNext) lbNext.classList.toggle('is-hidden', lbIdx === IMGS.length - 1);
+      }
+      function closeLb() {
+        lb && lb.classList.remove('is-open');
+        document.body.style.overflow = '';
+        if (lenis) lenis.start();
+      }
+
+      galleryItems.forEach((item, i) => item.addEventListener('click', () => openLb(i)));
+      
+      if (lbClose) {
+        const newLbClose = lbClose.cloneNode(true);
+        lbClose.parentNode.replaceChild(newLbClose, lbClose);
+        newLbClose.addEventListener('click', closeLb);
+      }
+      if (lbPrev) {
+        const newLbPrev = lbPrev.cloneNode(true);
+        lbPrev.parentNode.replaceChild(newLbPrev, lbPrev);
+        newLbPrev.addEventListener('click', () => { if (lbIdx > 0) openLb(lbIdx - 1); });
+      }
+      if (lbNext) {
+        const newLbNext = lbNext.cloneNode(true);
+        lbNext.parentNode.replaceChild(newLbNext, lbNext);
+        newLbNext.addEventListener('click', () => { if (lbIdx < IMGS.length - 1) openLb(lbIdx + 1); });
+      }
+    }
+
+    function setupSizesAndAddBtn() {
+      const addBtn = document.getElementById('pdp-add-btn');
       document.querySelectorAll('.pdp__size-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.pdp__size-btn').forEach(b => {
@@ -1099,34 +1265,89 @@
           btn.classList.add('is-selected');
           
           const sizeValue = btn.dataset.size;
-          const sizeLabel = productHandle === 'pendant-bar' ? `${sizeValue}` : `Size ${sizeValue}`;
-          const vid = variantMap[sizeLabel];
-          if (vid) {
+          const sizeLabel = category === 'pendants' ? `${sizeValue}` : `Size ${sizeValue}`;
+          const vid = window.pdpActiveVariantMap ? window.pdpActiveVariantMap[sizeLabel] : null;
+          if (vid && addBtn) {
             addBtn.dataset.variantId = vid;
           }
         });
       });
-    } else {
-      document.querySelectorAll('.pdp__size-btn').forEach(btn => {
+
+      if (addBtn) {
+        const clickHandler = () => {
+          const orig = addBtn.textContent;
+          addBtn.textContent = 'Added ✓';
+          addBtn.disabled = true;
+          setTimeout(() => { addBtn.textContent = orig; addBtn.disabled = false; }, 1500);
+        };
+        addBtn.addEventListener('click', clickHandler);
+      }
+    }
+
+    function setupAccordions() {
+      document.querySelectorAll('.pdp__accordion-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-          document.querySelectorAll('.pdp__size-btn').forEach(b => {
-            b.setAttribute('aria-pressed', 'false');
-            b.classList.remove('is-selected');
-          });
-          btn.setAttribute('aria-pressed', 'true');
-          btn.classList.add('is-selected');
+          const body   = btn.closest('.pdp__accordion').querySelector('.pdp__accordion-body');
+          const isOpen = btn.getAttribute('aria-expanded') === 'true';
+          btn.setAttribute('aria-expanded', !isOpen);
+          if (isOpen) {
+            body.style.maxHeight = '0';
+          } else {
+            body.style.maxHeight = body.scrollHeight + 'px';
+          }
         });
       });
     }
 
-    if (addBtn) {
-      addBtn.addEventListener('click', () => {
-        const orig = addBtn.textContent;
-        addBtn.textContent = 'Added ✓';
-        addBtn.disabled = true;
-        setTimeout(() => { addBtn.textContent = orig; addBtn.disabled = false; }, 1500);
-      });
+    renderPDPVariant(productId, true);
+
+    if (baseProduct && baseProduct.variants.length > 1) {
+      let colorSelector = document.getElementById('pdp-color-selector');
+      if (!colorSelector) {
+        const sizesEl = document.querySelector('.pdp__sizes');
+        if (sizesEl) {
+          colorSelector = document.createElement('div');
+          colorSelector.id = 'pdp-color-selector';
+          colorSelector.className = 'pdp__colors';
+          sizesEl.parentNode.insertBefore(colorSelector, sizesEl);
+        }
+      }
+
+      if (colorSelector) {
+        const currentVariantColor = localProduct.name.indexOf(' - ') !== -1 
+          ? localProduct.name.split(' - ')[1].trim() 
+          : 'Standard';
+        
+        let colorHtml = `
+          <p class="pdp__colors-label">Color: <span>${currentVariantColor}</span></p>
+          <div class="pdp__colors-row">
+        `;
+        baseProduct.variants.forEach(variant => {
+          const isSel = variant.id === localProduct.id;
+          const bgStyle = getColorStyle(variant.color);
+          colorHtml += `
+            <button class="pdp__color-btn ${isSel ? 'is-selected' : ''}" 
+              data-id="${variant.id}" 
+              data-color="${variant.color}" 
+              aria-pressed="${isSel ? 'true' : 'false'}" 
+              aria-label="Select color ${variant.color}" 
+              style="${bgStyle}"></button>
+          `;
+        });
+        colorHtml += `</div>`;
+        colorSelector.innerHTML = colorHtml;
+
+        colorSelector.querySelectorAll('.pdp__color-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const targetId = btn.dataset.id;
+            renderPDPVariant(targetId, false);
+          });
+        });
+      }
     }
+
+    setupSizesAndAddBtn();
+    setupAccordions();
   }
 
   /* ─────────────────────────────────────────────────────────────
@@ -1237,6 +1458,53 @@
     const outer = document.getElementById('product-track-outer');
     const inner = document.getElementById('product-track-inner');
     if (!inner || !outer) return;
+
+    inner.innerHTML = '';
+
+    if (typeof window.RADICAL_PRODUCTS !== 'undefined') {
+      const baseProducts = window.RADICAL_PRODUCTS.getBaseProducts();
+      const rings = baseProducts.filter(p => p.category === 'rings');
+      const bracelets = baseProducts.filter(p => p.category === 'bracelets');
+      const pendants = baseProducts.filter(p => p.category === 'pendants');
+
+      const maxLength = Math.max(rings.length, pendants.length);
+      const alternating = [];
+      for (let i = 0; i < maxLength; i++) {
+        if (i < rings.length) alternating.push(rings[i]);
+        if (bracelets.length > 0) {
+          alternating.push(bracelets[i % bracelets.length]);
+        }
+        if (i < pendants.length) alternating.push(pendants[i]);
+      }
+
+      let trackHtml = '';
+      alternating.forEach(product => {
+        trackHtml += `
+          <div class="product-track__item">
+            <div class="product-track__img-wrap">
+              <img src="${product.images.primary}" alt="${product.name}" class="product-track__img" loading="lazy" />
+              <img src="${product.images.hover || product.images.primary}" alt="${product.name} — detail" class="product-track__img-hover" aria-hidden="true" data-hover-src="${product.images.hover || product.images.primary}" loading="lazy" />
+            </div>
+            <a href="${product.url}" class="product-track__link">
+              <div class="product-track__info">
+                <div class="product-track__text">
+                  <div class="product-track__name">${product.name}</div>
+                  <p class="product-track__sku">(${product.id})</p>
+                </div>
+                <div class="product-track__price-row">
+                  <span class="product-track__price">₹${product.price}</span>
+                  <div class="product-track__arrow-wrap">
+                    <svg class="product-track__arrow-svg" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5.99805 1.00049L11.6549 6.65734M11.6549 6.65734H0.341193M11.6549 6.65734L5.99805 12.3142" stroke="currentColor"/></svg>
+                    <svg class="product-track__arrow-svg is-2" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5.99805 1.00049L11.6549 6.65734M11.6549 6.65734H0.341193M11.6549 6.65734L5.99805 12.3142" stroke="currentColor"/></svg>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        `;
+      });
+      inner.innerHTML = trackHtml;
+    }
 
     // Clone items for seamless infinite loop
     const originals = Array.from(inner.querySelectorAll('.product-track__item'));
@@ -1430,27 +1698,43 @@
   /* ─────────────────────────────────────────────────────────────
      18b. BACKGROUND VIDEOS (HERO & LIFESTYLE)
   ───────────────────────────────────────────────────────────── */
-  async function initHeroVideo() {
-    // 1. Hero background video
+  function initHeroVideo() {
+    // 1. Hero background video — streamed natively from its <source> in the
+    // markup (no blob preload). The browser handles HTTP range requests for
+    // progressive playback, which is what makes this work reliably on a CDN.
     const heroVideo = document.querySelector('.hero-bg-video');
     if (heroVideo) {
       enableFadeInOnPlay(heroVideo);
 
-      if (window.heroVideoPromise) {
-        try {
-          const videoSrc = await window.heroVideoPromise;
-          heroVideo.src = videoSrc;
-          heroVideo.load();
-        } catch (e) {
-          console.error('Failed to resolve hero video:', e);
+      let isIntersecting = true; // default true for hero section at top of page
+      const tryPlayHero = () => {
+        if (isIntersecting) {
+          heroVideo.play().catch(() => {});
         }
-      }
+      };
+
+      // Skip the first 2 seconds of intro footage once duration is known
+      let heroIntroSkipped = false;
+      const skipHeroIntro = () => {
+        if (heroIntroSkipped) return;
+        if (heroVideo.duration && heroVideo.duration > 2.5) {
+          heroVideo.currentTime = 2;
+        }
+        heroIntroSkipped = true;
+      };
+      heroVideo.addEventListener('loadedmetadata', skipHeroIntro);
+      if (heroVideo.readyState >= 1) skipHeroIntro();
+
+      heroVideo.addEventListener('canplay', tryPlayHero);
+      heroVideo.addEventListener('canplaythrough', tryPlayHero);
+      heroVideo.addEventListener('loadedmetadata', tryPlayHero);
 
       const heroSection = document.getElementById('hero');
       if (heroSection && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
-            if (entry.isIntersecting) {
+            isIntersecting = entry.isIntersecting;
+            if (isIntersecting) {
               heroVideo.play().catch(() => {});
             } else {
               heroVideo.pause();
@@ -1458,11 +1742,17 @@
           });
         });
         observer.observe(heroSection);
-        _cleanup.push(() => observer.disconnect());
+        _cleanup.push(() => {
+          observer.disconnect();
+          heroVideo.removeEventListener('canplay', tryPlayHero);
+          heroVideo.removeEventListener('canplaythrough', tryPlayHero);
+          heroVideo.removeEventListener('loadedmetadata', tryPlayHero);
+          heroVideo.removeEventListener('loadedmetadata', skipHeroIntro);
+        });
       }
 
       // Immediate autoplay attempt
-      heroVideo.play().catch(() => {});
+      tryPlayHero();
     }
 
     // 2. Full-bleed lifestyle video
@@ -1470,11 +1760,23 @@
     if (fbVideo) {
       enableFadeInOnPlay(fbVideo);
 
+      let fbIntersecting = false; // default false as full-bleed is further down the page
+      const tryPlayFb = () => {
+        if (fbIntersecting) {
+          fbVideo.play().catch(() => {});
+        }
+      };
+
+      fbVideo.addEventListener('canplay', tryPlayFb);
+      fbVideo.addEventListener('canplaythrough', tryPlayFb);
+      fbVideo.addEventListener('loadedmetadata', tryPlayFb);
+
       const fbSection = document.getElementById('full-bleed-visual');
       if (fbSection && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
-            if (entry.isIntersecting) {
+            fbIntersecting = entry.isIntersecting;
+            if (fbIntersecting) {
               fbVideo.play().catch(() => {});
             } else {
               fbVideo.pause();
@@ -1482,11 +1784,16 @@
           });
         });
         observer.observe(fbSection);
-        _cleanup.push(() => observer.disconnect());
+        _cleanup.push(() => {
+          observer.disconnect();
+          fbVideo.removeEventListener('canplay', tryPlayFb);
+          fbVideo.removeEventListener('canplaythrough', tryPlayFb);
+          fbVideo.removeEventListener('loadedmetadata', tryPlayFb);
+        });
       }
 
       // Immediate autoplay attempt
-      fbVideo.play().catch(() => {});
+      tryPlayFb();
     }
   }
 
@@ -1500,7 +1807,7 @@
      the complete frame. Strips then fade out handing off to the
      underlying hero video.
   ───────────────────────────────────────────────────────────── */
-  async function initHeroTileReveal() {
+  function initHeroTileReveal() {
     const stripsEl = document.getElementById('hero-strips');
     if (!stripsEl) return;
 
@@ -1515,15 +1822,10 @@
     const isPreloaderActive = preloader && !preloader.classList.contains('is-done') && preloader.style.display !== 'none';
     const shouldPause = isPreloaderActive || _isBarbaTransition;
 
-    // Both Mobile & Desktop use the same video strip reveal
-    let stripVideoSrc = 'assets/Radical%20Website%20Video%20Reboot(1).mp4';
-    if (window.heroVideoPromise) {
-      try {
-        stripVideoSrc = await window.heroVideoPromise;
-      } catch (e) {
-        console.error('Failed to resolve hero video promise:', e);
-      }
-    }
+    // Both Mobile & Desktop use the same video strip reveal. Streamed natively
+    // (no blob preload) — the browser's HTTP cache makes the 2nd-5th strip
+    // requests for this same URL effectively free.
+    const stripVideoSrc = window.HERO_VIDEO_SRC || 'assets/Radical%20Website%20Video%20Reboot(1).mp4';
 
     let html = '';
     for (let i = 0; i < 5; i++) {
@@ -1536,6 +1838,15 @@
 
     videos.forEach((v) => {
       enableFadeInOnPlay(v);
+
+      // Skip the first 2 seconds so strips assemble into the same frame
+      // the main hero video starts on
+      const skipStripIntro = () => {
+        if (v.duration && v.duration > 2.5) v.currentTime = 2;
+      };
+      v.addEventListener('loadedmetadata', skipStripIntro, { once: true });
+      if (v.readyState >= 1) skipStripIntro();
+
       v.play().catch(() => {});
     });
 
@@ -1584,8 +1895,13 @@
       }, '<');
     }
 
-    // Safely auto-play the reveal timeline if the preloader finished
-    const readyToReveal = (!isPreloaderActive || isPreloaderFinished);
+    // Safely auto-play the reveal timeline if the preloader finished.
+    // Must also confirm we're not mid-Barba-transition — otherwise this fires
+    // immediately (since isPreloaderActive is permanently false after the first
+    // page load) and the strip reveal plays while the page wipe-in is still
+    // animating, causing visible stutter. barba.hooks.after is the sole trigger
+    // for the Barba case (it flips _isBarbaTransition to false first).
+    const readyToReveal = (!isPreloaderActive || isPreloaderFinished) && !_isBarbaTransition;
     if (readyToReveal && heroRevealTl && heroRevealTl.paused()) {
       heroRevealTl.play();
     }
@@ -1735,7 +2051,8 @@
 
   function initShopFilters() {
     var buttons = document.querySelectorAll('.filter-pill');
-    if (!buttons.length) return;
+    var grid = document.getElementById('products-grid');
+    if (!buttons.length || !grid) return;
 
     buttons.forEach(function (btn) {
       var onClick = function () {
@@ -1745,6 +2062,30 @@
         });
         btn.classList.add('filter-pill--active');
         btn.setAttribute('aria-pressed', 'true');
+
+        var filter = btn.dataset.filter;
+        
+        // Kill existing scroll triggers for products to prevent leaks
+        ScrollTrigger.getAll()
+          .filter(function (st) { return st.vars.id && st.vars.id.startsWith('products-'); })
+          .forEach(function (st) { st.kill(); });
+          
+        // Render filtered grid
+        RADICAL_PRODUCTS.renderGrid(grid, filter);
+        
+        // Re-initialize hovers and animations
+        initProductCardHovers(grid.closest('.shop-page'));
+        initShopScrollAnimations();
+        
+        // Update product count label
+        var baseList = RADICAL_PRODUCTS.getBaseProducts();
+        var filteredCount = filter === 'all'
+          ? baseList.length
+          : baseList.filter(function(p) { return p.category === filter; }).length;
+        var countStr = String(filteredCount).padStart(2, '0') + ' Pieces';
+        document.querySelectorAll('.product-count').forEach(function(el) {
+          el.textContent = countStr;
+        });
       };
       btn.addEventListener('click', onClick);
       _cleanup.push(function () { btn.removeEventListener('click', onClick); });

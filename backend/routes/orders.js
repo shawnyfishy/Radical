@@ -20,8 +20,9 @@ router.post('/', (req, res) => {
   }
 
   const sessionId = req.headers['x-session-id'];
-  const cartWhere = userId ? 'ci.user_id = ?' : 'ci.session_id = ?';
-  const cartParam = userId ?? sessionId;
+  const cartWhere   = userId ? 'ci.user_id = ?' : 'ci.session_id = ?';
+  const deleteWhere = userId ? 'user_id = ?' : 'session_id = ?';
+  const cartParam   = userId ?? sessionId;
 
   if (!userId && !sessionId) return res.status(400).json({ error: 'No cart session found' });
 
@@ -71,7 +72,7 @@ router.post('/', (req, res) => {
     }
 
     // Clear cart
-    db.prepare(`DELETE FROM cart_items WHERE ${cartWhere}`).run(cartParam);
+    db.prepare(`DELETE FROM cart_items WHERE ${deleteWhere}`).run(cartParam);
 
     return db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
   });

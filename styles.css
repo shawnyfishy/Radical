@@ -281,7 +281,7 @@ ul, ol { list-style: none; }
 
 .menu-toggle_text {
   font-family: var(--font-ui), sans-serif;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -492,7 +492,7 @@ ul, ol { list-style: none; }
 .menu-footer_col {
   color: #FFFFFF; /* White on dark menu */
   font-family: 'Helvetica Neue', Arial, sans-serif;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -684,7 +684,7 @@ ul, ol { list-style: none; }
 
 .section__placeholder-label {
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -693,7 +693,7 @@ ul, ol { list-style: none; }
 
 .section__placeholder-desc {
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.04em;
   color: rgba(26, 26, 26, 0.18);
@@ -1057,7 +1057,7 @@ body.menu-open {
 }
 .detail-text {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -1179,7 +1179,7 @@ body.menu-open {
   left: 32px;
   font-family: var(--font-ui);
   font-weight: 400;
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.75);
@@ -1207,7 +1207,7 @@ body.menu-open {
   .editorial__caption {
     bottom: 20px;
     left: 20px;
-    font-size: 10px;
+    font-size: 14px;
   }
 }
 
@@ -1317,7 +1317,7 @@ body.menu-open {
   align-items: center;
   justify-content: center;
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -1365,7 +1365,7 @@ body.menu-open {
 .banner__label {
   font-family: var(--font-brand);
   font-weight: 400;
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.85);
@@ -1503,7 +1503,7 @@ body.menu-open {
   left: 32px;
   font-family: var(--font-ui);
   font-weight: 400;
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.75);
@@ -1537,7 +1537,7 @@ body.menu-open {
     gap: 8px;
   }
   .category__title {
-    font-size: 10px;
+    font-size: 14px;
     bottom: 16px;
     left: 16px;
   }
@@ -1610,7 +1610,7 @@ body.menu-open {
   align-items: center;
   justify-content: center;
   font-family: "Helvetica Neue", Arial, sans-serif;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.22em;
   color: rgba(26, 26, 26, 0.3);
@@ -1684,7 +1684,7 @@ body.menu-open {
     font-size: 20px;
   }
   .campaign__text {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.6;
   }
 }
@@ -1864,7 +1864,7 @@ body.menu-open {
 
 .footer__copyright {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 14px;
   color: #666666;
 }
 
@@ -1902,7 +1902,7 @@ body.menu-open {
   }
   .nav__link-btn {
     margin-left: 12px;
-    font-size: 11px;
+    font-size: 14px;
     letter-spacing: 1px;
     white-space: nowrap;
   }
@@ -1925,8 +1925,8 @@ body.menu-open {
   /* Hero Mobile */
   .section--hero { min-height: 75vh; }
   .hero__headline { font-size: 24px; }
-  .hero__label { font-size: 10px; }
-  .hero__cta { padding: 10px 24px; font-size: 10px; }
+  .hero__label { font-size: 14px; }
+  .hero__cta { padding: 10px 24px; font-size: 14px; }
   .hero__content { padding-bottom: 50px; }
 
   /* Editorial Grid Mobile â€” handled in component block */
@@ -1944,8 +1944,8 @@ body.menu-open {
   /* Collection Banner Mobile */
   .section--banner { min-height: 55vh; }
   .banner__headline { font-size: 24px; }
-  .banner__label { font-size: 9px; }
-  .banner__cta { font-size: 10px; padding: 10px 24px; }
+  .banner__label { font-size: 14px; }
+  .banner__cta { font-size: 14px; padding: 10px 24px; }
 
   /* Category Row Mobile */
   .category__row {
@@ -1953,11 +1953,11 @@ body.menu-open {
     gap: 16px;
     padding: 0 16px;
   }
-  .category__caption { font-size: 10px; }
+  .category__caption { font-size: 14px; }
 
   /* Campaign Mobile */
   .campaign__headline { font-size: 22px; }
-  .campaign__text { font-size: 13px; max-width: 100%; padding: 0 20px; }
+  .campaign__text { font-size: 14px; max-width: 100%; padding: 0 20px; }
   .campaign__img-wrapper { aspect-ratio: 4 / 3; }
 
   /* Footer Mobile Accordion */
@@ -1984,7 +1984,7 @@ body.menu-open {
     color: #FFFFFF;
     font-family: var(--font-brand);
     font-weight: 700;
-    font-size: 11px;
+    font-size: 14px;
     letter-spacing: 2px;
     text-transform: uppercase;
   }
@@ -2121,7 +2121,7 @@ body.menu-open {
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   color: var(--color-text-faint);
   text-transform: uppercase;
@@ -2198,7 +2198,7 @@ body.menu-open {
 /* Breadcrumb */
 .pdp__breadcrumb {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 14px;
   color: #999;
   letter-spacing: 0.3px;
 }
@@ -2231,6 +2231,21 @@ body.menu-open {
   font-size: 16px;
   color: var(--color-text);
   margin-top: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.pdp__price .price-original {
+  text-decoration: line-through;
+  color: var(--color-crimson);
+  opacity: 0.7;
+  font-size: 0.85em;
+}
+
+.pdp__price .price-discounted {
+  color: var(--color-text);
+  font-weight: 500;
 }
 
 /* Thin divider */
@@ -2258,7 +2273,7 @@ body.menu-open {
 
 .pdp__sizes-label {
   font-family: var(--font-brand);
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--color-text);
@@ -2278,7 +2293,7 @@ body.menu-open {
   background: none;
   font-family: var(--font-brand);
   font-weight: 400;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text);
   display: flex;
   align-items: center;
@@ -2298,6 +2313,55 @@ body.menu-open {
   color: var(--color-white);
 }
 
+/* ------------------------------------------------------------
+   COLOR SWATCH SELECTOR
+   ------------------------------------------------------------ */
+.pdp__colors {
+  margin-top: 24px;
+}
+
+.pdp__colors-label {
+  font-family: var(--font-brand);
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.pdp__colors-label span {
+  text-transform: none;
+  letter-spacing: 0;
+  color: #777777;
+}
+
+.pdp__colors-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pdp__color-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #CCCCCC;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.pdp__color-btn:hover {
+  transform: scale(1.08);
+}
+
+.pdp__color-btn.is-selected,
+.pdp__color-btn[aria-pressed="true"] {
+  border-color: var(--color-white);
+  box-shadow: 0 0 0 2px var(--color-text);
+}
+
 
 /* ------------------------------------------------------------
    ADD TO BAG BUTTON
@@ -2312,7 +2376,7 @@ body.menu-open {
   color: var(--color-white);
   font-family: var(--font-brand);
   font-weight: 400;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 3px;
   text-transform: uppercase;
   border: none;
@@ -2339,7 +2403,7 @@ body.menu-open {
   display: block;
   text-align: center;
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 14px;
   color: #6A6A6A;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -2465,7 +2529,7 @@ body.menu-open {
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   color: rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
@@ -2484,7 +2548,7 @@ body.menu-open {
   gap: 8px;
   color: rgba(255, 255, 255, 0.9);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   cursor: pointer;
@@ -2708,7 +2772,7 @@ body.menu-open {
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   color: rgba(255, 255, 255, 0.15);
   text-transform: uppercase;
@@ -2753,7 +2817,7 @@ body.menu-open {
 
 .about-hero__label {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -2816,7 +2880,7 @@ body.menu-open {
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   color: var(--color-text-faint);
   text-transform: uppercase;
@@ -2862,7 +2926,7 @@ body.menu-open {
 
 .about-section__label {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: 3px;
   color: var(--color-text);
@@ -2948,7 +3012,7 @@ body.menu-open {
   border: 1px solid rgba(255, 255, 255, 0.6);
   font-family: var(--font-brand);
   font-weight: 400;
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: #FFFFFF;
@@ -3317,7 +3381,7 @@ h1, h2, h3,
 
 .cart__loading {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-faint);
   text-align: center;
   padding: 48px 0;
@@ -3370,7 +3434,7 @@ h1, h2, h3,
 }
 .cart__item-variant {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-text-muted);
@@ -3378,7 +3442,7 @@ h1, h2, h3,
 }
 .cart__item-price {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text);
   letter-spacing: 0.03em;
 }
@@ -3408,7 +3472,7 @@ h1, h2, h3,
 .cart__qty-btn:hover { color: var(--color-text); }
 .cart__item-qty > span {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   min-width: 18px;
   text-align: center;
   color: var(--color-text);
@@ -3439,7 +3503,7 @@ h1, h2, h3,
 }
 .cart__subtotal > span:first-child {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-muted);
@@ -3453,7 +3517,7 @@ h1, h2, h3,
 }
 .cart__shipping-note {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--color-text-faint);
   letter-spacing: 0.04em;
   margin-bottom: 20px;
@@ -3465,7 +3529,7 @@ h1, h2, h3,
   background: var(--color-text);
   color: var(--color-white);
   font-family: var(--font-brand);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -3488,7 +3552,7 @@ h1, h2, h3,
   background: none;
   border: none;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
@@ -3536,7 +3600,7 @@ h1, h2, h3,
   padding: 0 0 16px;
   margin-bottom: -1px;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
@@ -3560,7 +3624,7 @@ h1, h2, h3,
 .auth-gate__box label {
   display: block;
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text-muted);
@@ -3596,7 +3660,7 @@ h1, h2, h3,
 
 .form-error {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   color: #b5341e;
   margin-bottom: 14px;
@@ -3614,7 +3678,7 @@ h1, h2, h3,
   background: var(--color-text);
   color: var(--color-white);
   font-family: var(--font-brand);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -3635,7 +3699,7 @@ h1, h2, h3,
 
 .checkout-btn--sm {
   height: 40px;
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 2px;
   width: auto;
   display: inline-flex;
@@ -3670,7 +3734,7 @@ h1, h2, h3,
   align-items: center;
   gap: 12px;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-faint);
@@ -3707,7 +3771,7 @@ h1, h2, h3,
 .checkout-guest-toggle {
   margin-bottom: 24px;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   color: var(--color-text-muted);
   padding: 14px 16px;
@@ -3741,14 +3805,14 @@ h1, h2, h3,
 }
 .payment-cod__sub {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--color-text-muted);
   letter-spacing: 0.02em;
 }
 .payment-cod input[type="radio"] { margin-left: auto; accent-color: var(--color-text); }
 .payment-note {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--color-text-faint);
   letter-spacing: 0.04em;
   font-style: italic;
@@ -3780,7 +3844,7 @@ h1, h2, h3,
 }
 .checkout-confirm p {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-muted);
   letter-spacing: 0.03em;
   margin-bottom: 6px;
@@ -3794,7 +3858,7 @@ h1, h2, h3,
 /* Order Summary Sidebar */
 .checkout-summary__title {
   font-family: var(--font-brand);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -3823,12 +3887,12 @@ h1, h2, h3,
 .checkout-summary__item > div { flex: 1; min-width: 0; }
 .checkout-summary__item p {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--color-text);
   letter-spacing: 0.02em;
 }
-.summary-variant { color: var(--color-text-muted) !important; font-size: 11px !important; }
+.summary-variant { color: var(--color-text-muted) !important; font-size: 14px !important; }
 .checkout-summary__item > span {
   font-family: var(--font-brand);
   font-size: 16px;
@@ -3845,7 +3909,7 @@ h1, h2, h3,
   display: flex;
   justify-content: space-between;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   color: var(--color-text-muted);
   margin-bottom: 10px;
@@ -3902,7 +3966,7 @@ h1, h2, h3,
 }
 .account-sidebar__email {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--color-text-muted);
   letter-spacing: 0.03em;
   margin-bottom: 36px;
@@ -3920,7 +3984,7 @@ h1, h2, h3,
   text-align: left;
   padding: 14px 0;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
@@ -3933,7 +3997,7 @@ h1, h2, h3,
   margin-top: 24px;
   border: none;
   color: var(--color-text-faint);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.1em;
 }
 .account-nav-btn--logout:hover { color: #b5341e; }
@@ -3980,7 +4044,7 @@ h1, h2, h3,
 }
 .order-card__status {
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 4px 10px;
@@ -3992,14 +4056,14 @@ h1, h2, h3,
 .order-status--cancelled  { background: #fdf0ee; color: #8a2318; }
 .order-card__date {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--color-text-faint);
   letter-spacing: 0.04em;
   margin-left: auto;
 }
 .order-card__items p {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--color-text-muted);
   letter-spacing: 0.02em;
   margin-bottom: 4px;
@@ -4023,14 +4087,14 @@ h1, h2, h3,
 }
 .address-card p {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.7;
   color: var(--color-text);
   letter-spacing: 0.02em;
 }
 .default-badge {
   font-family: var(--font-ui);
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   background: var(--color-text);
@@ -4043,7 +4107,7 @@ h1, h2, h3,
   background: none;
   border: none;
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-faint);
@@ -4155,7 +4219,7 @@ h1, h2, h3,
 
 .product-track-section__label {
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--color-text-muted);
@@ -4167,7 +4231,7 @@ h1, h2, h3,
 
 .product-track-section__cta {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text);
@@ -4274,7 +4338,7 @@ h1, h2, h3,
 
 .product-track__name {
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--color-text);
@@ -4284,7 +4348,7 @@ h1, h2, h3,
 
 .product-track__sub {
   font-family: var(--font-ui);
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-muted);
@@ -4292,7 +4356,7 @@ h1, h2, h3,
 
 .product-track__price {
   font-family: var(--font-ui);
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 0.06em;
   color: var(--color-text-muted);
   margin-top: 4px;
@@ -4499,7 +4563,7 @@ h1, h2, h3,
 
 .product-track__name {
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-text);
@@ -4509,7 +4573,7 @@ h1, h2, h3,
 
 .product-track__sku {
   font-family: var(--font-ui);
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--color-text-muted);
@@ -4526,7 +4590,7 @@ h1, h2, h3,
 
 .product-track__price {
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   color: var(--color-text);
 }
@@ -4659,7 +4723,7 @@ h1, h2, h3,
 /* Card text — clean uppercase sans-serif, OR-scale */
 .product-track__name {
   font-family: "Questrial", sans-serif !important;
-  font-size: 13px !important;
+  font-size: 14px !important;
   font-style: normal !important;
   letter-spacing: 0.06em !important;
   text-transform: uppercase !important;
@@ -4670,7 +4734,7 @@ h1, h2, h3,
 
 .product-track__sku {
   font-family: "Questrial", sans-serif !important;
-  font-size: 12px !important;
+  font-size: 14px !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
   color: #7B8487 !important;
@@ -4678,7 +4742,7 @@ h1, h2, h3,
 
 .product-track__price {
   font-family: "Questrial", sans-serif !important;
-  font-size: 13px !important;
+  font-size: 14px !important;
   letter-spacing: 0.03em !important;
   color: #1A1A1A !important;
 }
@@ -4704,7 +4768,7 @@ h1, h2, h3,
 /* Section header — OR exact type spec */
 .product-track-section__label {
   font-family: "Questrial", sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-accent);
@@ -4713,7 +4777,7 @@ h1, h2, h3,
 /* Mobile overrides */
 @media (max-width: 768px) {
   .product-track__name { font-size: 15px !important; }
-  .product-track__price { font-size: 12px !important; }
+  .product-track__price { font-size: 14px !important; }
 }
 
 /* ============================================================
@@ -4869,7 +4933,7 @@ a[href], button, [role="button"] {
 .cta-block .body-upper.is-desktop {
   padding: 30px 40px;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -4923,7 +4987,7 @@ a[href], button, [role="button"] {
 }
 .cta-hover_el .body-upper {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   font-weight: 600;
   margin-bottom: 12px;
@@ -4932,7 +4996,7 @@ a[href], button, [role="button"] {
   display: inline-flex;
   align-items: center;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -4986,7 +5050,7 @@ a[href], button, [role="button"] {
 }
 .or-info .body-upper.f-5 {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.8;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -5121,7 +5185,7 @@ a[href], button, [role="button"] {
 }
 .manifesto-intro-subtitle {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -5281,7 +5345,7 @@ a[href], button, [role="button"] {
 }
 .footer-tagline {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.8;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -5303,7 +5367,7 @@ a[href], button, [role="button"] {
   border-bottom: 1.5px solid var(--color-border);
   padding: 10px 0;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   color: var(--color-text);
   text-transform: uppercase;
@@ -5316,7 +5380,7 @@ a[href], button, [role="button"] {
 .footer-signup-submit {
   align-self: flex-start;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -5348,7 +5412,7 @@ a[href], button, [role="button"] {
 }
 .footer-col-header {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 2.5px;
   text-transform: uppercase;
@@ -5365,7 +5429,7 @@ a[href], button, [role="button"] {
 }
 .footer-links-list a {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 1.5px;
   color: var(--color-text-muted);
@@ -5378,7 +5442,7 @@ a[href], button, [role="button"] {
 }
 .footer-text-link {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 1.5px;
   color: var(--color-text-muted) !important;
@@ -5386,7 +5450,7 @@ a[href], button, [role="button"] {
 }
 .footer-text-span {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 1.5px;
   color: var(--color-text-muted);
@@ -5395,7 +5459,7 @@ a[href], button, [role="button"] {
   display: flex;
   justify-content: space-between;
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   color: var(--color-text-faint);
   text-transform: uppercase;
@@ -5456,7 +5520,7 @@ a[href], button, [role="button"] {
 
 .shop-header__label {
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgba(0, 0, 0, 0.35);
@@ -5483,7 +5547,7 @@ a[href], button, [role="button"] {
 
 .shop-header__collection {
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(0, 0, 0, 0.3);
@@ -5505,7 +5569,7 @@ a[href], button, [role="button"] {
 
 .filter-pill {
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: rgba(0, 0, 0, 0.4);
@@ -5526,7 +5590,7 @@ a[href], button, [role="button"] {
 
 .product-count {
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   letter-spacing: 0.15em;
   color: rgba(0, 0, 0, 0.3);
   text-transform: uppercase;
@@ -5601,7 +5665,7 @@ a[href], button, [role="button"] {
 .product-card__placeholder-label {
   display: block;
   font-family: 'Cinzel', serif;
-  font-size: clamp(0.55rem, 0.8vw, 0.75rem);
+  font-size: clamp(0.75rem, 1vw, 1rem);
   letter-spacing: 0.3em;
   color: rgba(0, 0, 0, 0.2);
   text-transform: uppercase;
@@ -5611,7 +5675,7 @@ a[href], button, [role="button"] {
 .product-card__placeholder-sub {
   display: block;
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: 0.5rem;
+  font-size: 0.7rem;
   letter-spacing: 0.2em;
   color: rgba(0, 0, 0, 0.15);
   text-transform: uppercase;
@@ -5643,7 +5707,7 @@ a[href], button, [role="button"] {
   opacity: 0;
   transition: opacity 0.25s ease, transform 0.25s ease;
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #1a1a1a;
@@ -5672,7 +5736,7 @@ a[href], button, [role="button"] {
 
 .product-card__name {
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: clamp(0.6rem, 0.9vw, 0.75rem);
+  font-size: clamp(0.8rem, 1vw, 1rem);
   font-weight: 400;
   letter-spacing: 0.04em;
   color: #1a1a1a;
@@ -5681,10 +5745,25 @@ a[href], button, [role="button"] {
 
 .product-card__price {
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: clamp(0.6rem, 0.9vw, 0.75rem);
+  font-size: clamp(0.8rem, 1vw, 1rem);
   font-weight: 300;
   color: rgba(0, 0, 0, 0.5);
   white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+}
+
+.product-card__price .price-original {
+  text-decoration: line-through;
+  color: var(--color-crimson);
+  opacity: 0.75;
+  font-weight: 300;
+}
+
+.product-card__price .price-discounted {
+  color: #1a1a1a;
+  font-weight: 500;
 }
 
 /* ── Featured Products (homepage, dark context) ──────────── */
@@ -5702,7 +5781,7 @@ a[href], button, [role="button"] {
 
 .featured-products__label {
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: clamp(0.6rem, 0.75vw, 0.68rem);
+  font-size: clamp(0.78rem, 0.9vw, 0.92rem);
   font-weight: 400;
   letter-spacing: 0.22em;
   color: var(--color-saffron);
@@ -5711,7 +5790,7 @@ a[href], button, [role="button"] {
 
 .featured-products__all {
   font-family: 'Inter Tight', 'Questrial', sans-serif;
-  font-size: clamp(0.6rem, 0.75vw, 0.68rem);
+  font-size: clamp(0.78rem, 0.9vw, 0.92rem);
   font-weight: 400;
   letter-spacing: 0.15em;
   color: rgba(255, 255, 255, 0.45);
@@ -5749,6 +5828,15 @@ a[href], button, [role="button"] {
 }
 
 .featured-products .product-card__price {
+  color: var(--color-saffron);
+}
+
+.featured-products .product-card__price .price-original {
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 1;
+}
+
+.featured-products .product-card__price .price-discounted {
   color: var(--color-saffron);
 }
 

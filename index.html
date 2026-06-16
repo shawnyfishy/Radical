@@ -31,22 +31,11 @@
 
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Parallel Video Loader (Single fetch in-memory share for strips & main hero) -->
+  <!-- Hero video source — streamed natively via HTTP range requests (no blob preload).
+       Same URL is reused by the main hero video and all 5 strip clones; the browser's
+       HTTP cache (immutable, 1yr per vercel.json) makes repeat requests instant. -->
   <script>
-    (function() {
-      var videoUrl = 'assets/Radical%20Website%20Video%20Reboot(1).mp4';
-      window.heroVideoPromise = fetch(videoUrl)
-        .then(function(r) {
-          if (!r.ok) throw new Error();
-          return r.blob();
-        })
-        .then(function(b) {
-          return URL.createObjectURL(b);
-        })
-        .catch(function() {
-          return videoUrl;
-        });
-    })();
+    window.HERO_VIDEO_SRC = 'assets/Radical%20Website%20Video%20Reboot(1).mp4';
   </script>
 
   <style>
@@ -306,7 +295,7 @@
             fetchpriority="high"
             poster="assets/hero_poster.webp"
           >
-            <!-- Dynamic source will be assigned by script.js -->
+            <source src="assets/Radical%20Website%20Video%20Reboot(1).mp4" type="video/mp4">
           </video>
           <div class="hero-video-overlay"></div>
         </div>

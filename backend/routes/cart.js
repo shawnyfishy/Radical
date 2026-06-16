@@ -16,9 +16,15 @@ function getCartOwner(req) {
   let sessionId = req.headers['x-session-id'];
   if (sessionId) {
     const exists = db.prepare('SELECT id FROM sessions WHERE id = ?').get(sessionId);
-    if (!exists) sessionId = null;
-  }
-  if (!sessionId) {
+    if (!exists) {
+      try {
+        db.prepare('INSERT INTO sessions (id) VALUES (?)').run(sessionId);
+      } catch (e) {
+        sessionId = crypto.randomUUID();
+        db.prepare('INSERT INTO sessions (id) VALUES (?)').run(sessionId);
+      }
+    }
+  } else {
     sessionId = crypto.randomUUID();
     db.prepare('INSERT INTO sessions (id) VALUES (?)').run(sessionId);
   }
