@@ -1580,8 +1580,11 @@
     let dragBase   = 0;
 
     const AUTO_SPEED = 0.45;  // px/frame (~27px/s at 60fps — slow, premium feel)
-    const DRAG_LERP  = 0.055; // heavy, weighted drag — track lags behind cursor
+    const DRAG_LERP  = 0.055; // heavy, weighted drag — track lags behind cursor (mouse only)
+    const TOUCH_LERP = 1;     // touch must track the finger 1:1 — any lag reads as "broken" on mobile
     const IDLE_LERP  = 0.08;  // smoothing factor during auto-scroll
+
+    let activeDragLerp = DRAG_LERP;
 
     function getWrapped(x) {
       if (halfW <= 0) return x;
@@ -1599,7 +1602,7 @@
         targetX -= AUTO_SPEED;
       }
 
-      const lerpFactor = isDragging ? DRAG_LERP : IDLE_LERP;
+      const lerpFactor = isDragging ? activeDragLerp : IDLE_LERP;
       renderX += (targetX - renderX) * lerpFactor;
 
       // Periodic normalization to prevent floating-point drift after long sessions
@@ -1620,6 +1623,7 @@
       dragged    = false;
       dragStartX = e.clientX;
       dragBase   = renderX;
+      activeDragLerp = DRAG_LERP;
       outer.classList.add('is-dragging');
     });
 
@@ -1661,6 +1665,7 @@
       dragged    = false;
       ts     = e.touches[0].clientX;
       txBase = renderX;
+      activeDragLerp = TOUCH_LERP;
     }, { passive: true });
 
     outer.addEventListener('touchmove', e => {
@@ -2087,9 +2092,9 @@
       onEnter: function (batch) {
         gsap.to(batch, { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', stagger: 0.08 });
       },
-      onLeaveBack: function (batch) {
-        gsap.to(batch, { y: 24, opacity: 0, duration: 0.4, ease: 'power2.in', stagger: 0.05 });
-      },
+      // No onLeaveBack: cards stay visible once revealed. Fading them back out on
+      // scroll-up was causing them to flicker/vanish on mobile, where viewport-height
+      // jitter (address bar show/hide) shifts trigger marks mid-scroll.
       start: 'top 92%',
     });
   }
