@@ -22,12 +22,13 @@ try {
 console.log('Cleared old products, variants, orders, cart, and reset autoincrement.');
 
 // Admin user
-const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get(process.env.ADMIN_EMAIL);
+const adminEmail = process.env.ADMIN_EMAIL || 'admin@radical.com';
+const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
 if (!adminExists) {
   db.prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)').run(
-    'Admin', process.env.ADMIN_EMAIL, bcrypt.hashSync('radical_admin_123', 10), 'admin'
+    'Admin', adminEmail, bcrypt.hashSync('radical_admin_123', 10), 'admin'
   );
-  console.log(`Admin created: ${process.env.ADMIN_EMAIL} / radical_admin_123`);
+  console.log(`Admin created: ${adminEmail} / radical_admin_123`);
 }
 
 // Sample products
