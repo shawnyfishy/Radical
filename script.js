@@ -120,6 +120,7 @@
   ───────────────────────────────────────────────────────────── */
   let nav, menuBtn, closeBtn, backdrop, overlay, searchBtn, searchStrip, searchScrim, searchClose, searchInput;
   let lastScrollY = 0, ticking = false;
+  let navDarkZoneEl = null; // dark hero/gallery element the nav should show white text over, if any
 
   function reQueryDOMElements() {
     nav         = document.getElementById('main-nav');
@@ -132,6 +133,8 @@
     searchScrim = document.getElementById('search-scrim');
     searchClose = document.getElementById('search-close-btn');
     searchInput = document.getElementById('search-input');
+    // Re-resolved on every page since Barba swaps .page-content but never the header itself
+    navDarkZoneEl = document.querySelector('.hero-slider, .about-hero, .pdp');
   }
 
   reQueryDOMElements();
@@ -141,10 +144,15 @@
     if (nav) {
       nav.classList.toggle('is-scrolled', y > 20);
       nav.style.transform = (y > 150 && y > lastScrollY) ? 'translateY(-100%)' : 'translateY(0)';
+
+      // White text while a dark hero/gallery is still behind the nav; charcoal otherwise.
+      const overDarkZone = !!navDarkZoneEl && navDarkZoneEl.getBoundingClientRect().bottom > nav.offsetHeight;
+      nav.classList.toggle('is-on-dark', overDarkZone);
     }
     lastScrollY = y;
     ticking = false;
   }
+  updateNav();
   window.addEventListener('scroll', () => {
     if (!ticking) { requestAnimationFrame(updateNav); ticking = true; }
   }, { passive: true });
@@ -205,6 +213,7 @@
       document.documentElement.classList.remove('is-transitioning');
       window.scrollTo(0, 0);
       reQueryDOMElements();
+      updateNav();
       if (typeof lenis !== 'undefined') lenis.start();
       _isBarbaTransition = false;
       if (heroRevealTl && heroRevealTl.paused()) heroRevealTl.play();
@@ -463,7 +472,7 @@
     // Hero image — Ken Burns entrance
     const heroImgCover = document.querySelector('.about-hero__img');
     if (heroImgCover) {
-      tl.fromTo(heroImgCover, { scale: 1.14 }, { scale: 1, duration: 2.0, ease: 'power3.out' }, 0);
+      tl.fromTo(heroImgCover, { scale: 1.14 }, { scale: 1, duration: 1.1, ease: 'power3.out' }, 0);
       gsap.to(heroImgCover, {
         yPercent: 18,
         ease: 'none',

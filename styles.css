@@ -166,36 +166,48 @@ ul, ol { list-style: none; }
   z-index: 1000;
   width: 100%;
   height: var(--nav-height);
-  background-color: var(--color-bg); /* Dark by default for PDPs */
-  border-bottom: 1px solid rgba(0,0,0,0.08);
-  box-shadow: var(--nav-shadow-scrolled);
-  color: var(--color-text); /* Charcoal by default */
+  background-color: transparent; /* Always transparent — never a solid bar */
+  border-bottom: none;
+  box-shadow: none;
+  color: var(--color-text); /* Charcoal by default — most pages are light */
   transform: translateY(0);
   transition:
     height var(--nav-transition),
-    background-color 0.4s var(--ease-standard),
-    color 0.4s var(--ease-standard),
-    border-color 0.4s var(--ease-standard),
-    box-shadow var(--nav-transition),
+    color 0.6s var(--ease-standard),
     transform 0.4s var(--ease-brand);
-  will-change: transform;
+  will-change: transform, color;
 }
 
-/* Transparent state for Hero (Home page) */
-.nav.is-transparent:not(.is-scrolled) {
-  background-color: transparent;
-  border-bottom: 1px solid transparent;
-  box-shadow: none;
+/* Over a dark section (video/image hero) — flips text/icons to white.
+   Toggled by JS (updateNav in script.js) based on scroll position relative
+   to whatever dark hero element is present on the current page. */
+.nav.is-on-dark {
   color: #FFFFFF;
 }
 
-/* Solid state (reappearing / scrolled past hero) */
+/* Past the hero — nav shrinks slightly (background stays transparent) */
 .nav.is-scrolled {
   height: var(--nav-height-scrolled);
-  background-color: var(--color-bg); /* Dior-White */
-  border-bottom: 1px solid rgba(0,0,0,0.08);
-  color: var(--color-text); /* Charcoal */
-  box-shadow: var(--nav-shadow-scrolled);
+}
+
+/* PDP-only top vignette — gallery imagery brightness varies shot to shot,
+   so this guarantees the white nav text stays legible without needing a
+   solid bar. Fades out via the sibling selector once .is-on-dark clears
+   (i.e. once scrolled past the gallery). */
+.nav-top-scrim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 140px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0));
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-standard);
+}
+.nav.is-on-dark ~ .nav-top-scrim {
+  opacity: 1;
 }
 
 /* Hidden state â€” added by JS (scroll down) */
@@ -203,7 +215,6 @@ ul, ol { list-style: none; }
   transform: translateY(-100%);
   transition:
     height var(--nav-transition),
-    box-shadow var(--nav-transition),
     transform 0.4s var(--ease-brand); /* Dior-speed buttery slide */
 }
 
@@ -262,16 +273,8 @@ ul, ol { list-style: none; }
 .menu-toggle_line {
   width: 100%;
   height: 1.5px;
-  background-color: #ffffff;
-  transition: transform 0.4s var(--ease-standard), background-color 0.3s ease;
-}
-/* When scrolled — nav has white bg, lines go dark */
-.nav.is-scrolled .menu-toggle_line {
-  background-color: #1A1A1A;
-}
-/* When menu is open — dark panel behind, lines go white */
-.nav.is-menu-open .menu-toggle_line {
-  background-color: #ffffff !important;
+  background-color: currentColor; /* Follows .nav's color theme automatically */
+  transition: transform 0.4s var(--ease-standard), background-color 0.6s var(--ease-standard);
 }
 .nav.is-menu-open .menu-toggle_line:nth-child(1) {
   transform: translateY(3.25px) rotate(45deg);
@@ -286,15 +289,12 @@ ul, ol { list-style: none; }
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #ffffff;
+  color: currentColor; /* Follows .nav's color theme automatically */
   opacity: 0;
   transform: translateX(-10px);
-  transition: opacity 0.35s var(--ease-standard), transform 0.35s var(--ease-standard), color 0.3s ease;
+  transition: opacity 0.35s var(--ease-standard), transform 0.35s var(--ease-standard), color 0.6s var(--ease-standard);
   pointer-events: none;
   white-space: nowrap;
-}
-.nav.is-scrolled .menu-toggle_text {
-  color: #1A1A1A;
 }
 .menu-toggle:hover .menu-toggle_text {
   opacity: 1;
@@ -2786,7 +2786,7 @@ body.menu-open {
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.38) 0%,
     rgba(0, 0, 0, 0.55) 60%,
     rgba(0, 0, 0, 0.75) 100%
   );
@@ -2806,22 +2806,24 @@ body.menu-open {
 }
 
 .about-hero__label {
-  font-family: var(--font-ui);
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 3px;
+  font-family: var(--font-ui), sans-serif;
+  font-size: clamp(28px, 3.5vw, 44px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
   color: #FFFFFF;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .about-hero__headline {
-  font-family: var(--font-brand);
+  font-family: var(--font-ui), sans-serif;
   font-weight: 700;
-  font-size: 56px;
-  letter-spacing: 3px;
+  font-size: clamp(28px, 3.5vw, 44px);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
   color: #FFFFFF;
-  line-height: 1.15;
+  line-height: 1.05;
   margin-bottom: 24px;
 }
 
@@ -2937,11 +2939,11 @@ body.menu-open {
 
 .about-section__body {
   font-family: var(--font-body);
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 500;
-  line-height: 1.7;
+  line-height: 1.75;
   color: var(--color-text);
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   max-width: 480px;
 }
 
@@ -3055,9 +3057,9 @@ body.menu-open {
     padding: 0 var(--gutter-mobile);
   }
 
+  .about-hero__label,
   .about-hero__headline {
     font-size: 24px;
-    letter-spacing: 2px;
   }
 
   .about-hero__sub {
@@ -3113,8 +3115,44 @@ body.menu-open {
 }
 
 @media (max-width: 480px) {
+  .about-hero__label,
   .about-hero__headline {
     font-size: 20px;
+  }
+}
+
+/* ------------------------------------------------------------
+   FOUNDER PAGE (About) — editorial bio below the full-bleed hero
+   ------------------------------------------------------------ */
+.founder-bio {
+  background: var(--color-bg);
+  padding: 130px var(--gutter-desktop);
+}
+
+.founder-bio__inner {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.founder-bio__inner .about-section__body {
+  max-width: none;
+}
+
+.founder-bio__lede {
+  font-weight: 700;
+}
+
+.founder-closing {
+  background: var(--color-bg);
+  padding: 100px var(--gutter-desktop);
+}
+
+@media (max-width: 768px) {
+  .founder-bio {
+    padding: 80px var(--gutter-mobile);
+  }
+  .founder-closing {
+    padding: 60px var(--gutter-mobile);
   }
 }
 
@@ -5058,6 +5096,9 @@ a[href], button, [role="button"] {
   display: flex;
   justify-content: center;
   opacity: 0.85;
+}
+.logo-icon_wrap--lg {
+  width: 68px;
 }
 .logo-icon_wrap svg {
   width: 100%;
