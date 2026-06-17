@@ -2814,7 +2814,7 @@ body.menu-open {
 }
 
 .about-hero__label {
-  font-family: var(--font-ui), sans-serif;
+  font-family: 'Cinzel', serif;
   font-size: clamp(28px, 3.5vw, 44px);
   font-weight: 700;
   line-height: 1.05;

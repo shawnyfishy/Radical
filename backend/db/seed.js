@@ -54,7 +54,7 @@ const products = [
     images: ['assets/products/chainlink-ring/silver/front.webp']
   },
   {
-    name: 'Compass Chain - Black',
+    name: 'Tennis Chain - Black',
     slug: 'compass-chain-black',
     category: 'pendants',
     price: 4624,
@@ -64,7 +64,7 @@ const products = [
     images: ['assets/products/compass-cuff/black/front.webp']
   },
   {
-    name: 'Compass Chain - Silver',
+    name: 'Tennis Chain - Silver',
     slug: 'compass-chain-silver',
     category: 'pendants',
     price: 4624,
