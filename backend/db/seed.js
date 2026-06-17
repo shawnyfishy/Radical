@@ -366,7 +366,7 @@ const products = [
     ]
   },
   {
-    name: 'Onyx Core Pendant - Black',
+    name: 'Wheel of Time - Black',
     slug: 'onyx-core-pendant-black',
     category: 'pendants',
     price: 1114,
@@ -376,7 +376,7 @@ const products = [
     images: ['assets/products/onyx-core-pendant/black/front.webp']
   },
   {
-    name: 'Onyx Core Pendant - Silver',
+    name: 'Wheel of Time - Silver',
     slug: 'onyx-core-pendant-silver',
     category: 'pendants',
     price: 1114,
@@ -486,7 +486,7 @@ const products = [
     images: ['assets/products/spear-pendant/silver-with-black-stone/front.webp']
   },
   {
-    name: 'Tennis Black Stone Chain',
+    name: 'Black Onyx Core Pendant',
     slug: 'tennis-black-stone-chain',
     category: 'pendants',
     price: 1051,

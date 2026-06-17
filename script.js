@@ -2001,10 +2001,12 @@
         e.preventDefault();
         const emailInput = document.getElementById('footer-signup-email');
         const nameInput = document.getElementById('footer-signup-name');
-        if (!emailInput || !nameInput) return;
+        const phoneInput = document.getElementById('footer-signup-phone');
+        if (!emailInput || !nameInput || !phoneInput) return;
 
         const email = emailInput.value;
         const name = nameInput.value;
+        const phone = phoneInput.value;
 
         // Visual feedback transition
         const col = signupForm.parentElement;
