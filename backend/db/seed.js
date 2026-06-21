@@ -531,7 +531,7 @@ for (const p of products) {
 
     // Add size variants
     if (p.category === 'rings') {
-      ['Size 8','Size 9','Size 10','Size 11','Size 12'].forEach((label, i) => {
+      ['Size 8','Size 9','Size 10'].forEach((label, i) => {
         db.prepare('INSERT INTO variants (product_id, label, sku, stock) VALUES (?, ?, ?, ?)').run(
           result.lastInsertRowid, label, `${p.slug}-${8+i}`, 10
         );

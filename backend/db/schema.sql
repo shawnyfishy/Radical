@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS orders (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
   guest_email     TEXT,
+  session_id      TEXT,
   status          TEXT    NOT NULL DEFAULT 'pending',  -- pending|confirmed|shipped|delivered|cancelled
   subtotal        REAL    NOT NULL,
   shipping_cost   REAL    NOT NULL DEFAULT 0,

@@ -84,23 +84,21 @@
         </form>
       </div>
 
-      <!-- Step 2: Payment (placeholder — Stripe will go here) -->
+      <!-- Step 2: Payment (ICICI Bank Integration) -->
       <div id="step-payment" class="checkout-step">
         <h2 class="checkout-step__title">Payment</h2>
         <div class="payment-placeholder">
           <div class="payment-cod">
             <div class="payment-cod__icon">💳</div>
             <div>
-              <p class="payment-cod__title">Cash on Delivery</p>
-              <p class="payment-cod__sub">Pay when your order arrives. Available across India.</p>
+              <p class="payment-cod__title">Secure Online Payment</p>
+              <p class="payment-cod__sub">Pay securely via ICICI Bank Payment Gateway using Credit Card, Debit Card, Net Banking, or UPI.</p>
             </div>
-            <input type="radio" name="payment" value="cod" checked />
           </div>
-          <p class="payment-note">Online payment via Stripe coming soon.</p>
         </div>
 
         <p class="form-error" id="payment-error"></p>
-        <button id="place-order-btn" class="checkout-btn">Place Order</button>
+        <button id="place-order-btn" class="checkout-btn">Pay Now</button>
         <button id="back-to-shipping" class="checkout-btn checkout-btn--ghost">← Back to Shipping</button>
       </div>
 
@@ -135,12 +133,24 @@
   <script>
   (async () => {
     const API = window.RADICAL_API;
+
+    // Handle payment redirect callback query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusParam = urlParams.get('status');
+    const orderIdParam = urlParams.get('orderId');
+    const errorParam = urlParams.get('error');
+
+    if (statusParam === 'success') {
+      document.getElementById('step-shipping').classList.remove('is-active');
+      document.getElementById('step-payment').classList.remove('is-active');
+      document.getElementById('step-confirm').classList.add('is-active');
+      document.getElementById('confirm-order-id').textContent = `Order #${orderIdParam}`;
+      document.getElementById('step-payment-label').classList.add('is-active');
+      document.querySelector('.checkout-header__steps .step').classList.remove('is-active');
+      return; // Do not load cart summary or other listeners
+    }
+
     let shippingData = null;
-
-    // Orders are recorded by appending a row to a Google Sheet via this
-    // Apps Script Web App — no local order database involved.
-    const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby-7UlBa-iX7VVi0NcOmvisUOjKscCZX7Ai7HUpI9SusSIt2RG258ln0CPHBllUCFfTQA/exec';
-
     let cartSummary = { items: [], subtotal: 0, shipping: 0, total: 0 };
 
     // Load cart summary
@@ -174,7 +184,16 @@
       }
     }
 
-    loadSummary();
+    await loadSummary();
+
+    // If redirected back with a failure
+    if (statusParam === 'failed') {
+      document.getElementById('step-shipping').classList.remove('is-active');
+      document.getElementById('step-payment').classList.add('is-active');
+      document.getElementById('step-payment-label').classList.add('is-active');
+      document.querySelector('.checkout-header__steps .step').classList.remove('is-active');
+      document.getElementById('payment-error').textContent = errorParam || 'Payment failed. Please try again.';
+    }
 
     // Shipping form
     document.getElementById('shipping-form').addEventListener('submit', e => {
@@ -199,71 +218,34 @@
     document.getElementById('back-to-shipping').addEventListener('click', () => {
       document.getElementById('step-payment').classList.remove('is-active');
       document.getElementById('step-shipping').classList.add('is-active');
+      document.getElementById('step-payment-label').classList.remove('is-active');
+      document.querySelector('.checkout-header__steps .step').classList.add('is-active');
     });
 
-    // Place order — writes a row straight to the delivery team's Google Sheet
+    // Pay Now — creates pending order in db and redirects to ICICI payment gateway
     document.getElementById('place-order-btn').addEventListener('click', async () => {
       const btn = document.getElementById('place-order-btn');
       const err = document.getElementById('payment-error');
       if (!shippingData) return;
-      btn.textContent = 'Placing order…';
+      btn.textContent = 'Redirecting to payment…';
       btn.disabled = true;
       err.textContent = '';
 
-      const orderId = 'RAD' + Date.now().toString(36).toUpperCase();
-      const guestEmail = document.getElementById('ship-email').value;
-
-      const items = cartSummary.items.map(i => ({
-        name:        i.product.name,
-        variant:     i.variant ? i.variant.label : '',
-        quantity:    i.quantity,
-        unit_price:  i.unit_price,
-        line_total:  i.unit_price * i.quantity,
-      }));
-      const itemsSummary = items.map(i =>
-        `${i.name}${i.variant ? ' (' + i.variant + ')' : ''} x${i.quantity}`
-      ).join('; ');
-
-      const nameParts = shippingData.name.trim().split(/\s+/);
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-      const cityStateCountry = `${shippingData.city}, ${shippingData.state}, India`;
-      const formattedDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-
-      const payload = {
-        first_name:         firstName,
-        last_name:          lastName,
-        email:              guestEmail,
-        phone:              shippingData.phone,
-        address_line1:      shippingData.line1,
-        address_line2:      shippingData.line2 || '',
-        city_state_country: cityStateCountry,
-        zipcode:            shippingData.postal_code,
-        product_name:       itemsSummary,
-        total_amount:       `₹${cartSummary.total.toLocaleString('en-IN')}`,
-        date_and_time:      formattedDate,
-        order_id:           orderId,
-        payment_method:     'Cash on Delivery',
-      };
-
       try {
-        await fetch(SHEET_WEBHOOK_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: JSON.stringify(payload)
+        const guestEmail = document.getElementById('ship-email').value;
+        const res = await API.orders.place(shippingData, {
+          guest_email: guestEmail
         });
-
-        // Best-effort — the sheet row is the source of truth, so a cart-clear
-        // failure shouldn't block the confirmation screen.
-        try { await API.cart.clear(); } catch {}
-
-        document.getElementById('step-payment').classList.remove('is-active');
-        document.getElementById('step-confirm').classList.add('is-active');
-        document.getElementById('confirm-order-id').textContent = `Order #${orderId}`;
+        
+        if (res.paymentUrl) {
+          window.location.href = res.paymentUrl;
+        } else {
+          throw new Error('Payment gateway link was not received from the server.');
+        }
       } catch (e) {
-        console.error('[RADICAL] order submission failed:', e);
-        err.textContent = 'Could not submit your order. Please check your connection and try again.';
-        btn.textContent = 'Place Order';
+        console.error('[RADICAL] checkout failed:', e);
+        err.textContent = e.message || 'Could not initiate secure checkout. Please try again.';
+        btn.textContent = 'Pay Now';
         btn.disabled = false;
       }
     });
@@ -289,10 +271,13 @@
         }
       } catch {}
     } else {
-      document.getElementById('checkout-login-link').addEventListener('click', e => {
-        e.preventDefault();
-        window.location.href = '/account.html?redirect=checkout';
-      });
+      const loginLink = document.getElementById('checkout-login-link');
+      if (loginLink) {
+        loginLink.addEventListener('click', e => {
+          e.preventDefault();
+          window.location.href = '/account.html?redirect=checkout';
+        });
+      }
     }
   })();
   </script>

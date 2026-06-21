@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const db     = require('../db/database');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { generatePaymentURL } = require('../utils/payment');
 
 const VALID_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
@@ -21,7 +22,6 @@ router.post('/', (req, res) => {
 
   const sessionId = req.headers['x-session-id'];
   const cartWhere   = userId ? 'ci.user_id = ?' : 'ci.session_id = ?';
-  const deleteWhere = userId ? 'user_id = ?' : 'session_id = ?';
   const cartParam   = userId ?? sessionId;
 
   if (!userId && !sessionId) return res.status(400).json({ error: 'No cart session found' });
@@ -50,12 +50,57 @@ router.post('/', (req, res) => {
   const shippingCost = subtotal >= 999 ? 0 : 99;  // free shipping above ₹999
   const total        = subtotal + shippingCost;
 
-  // Create order in a transaction
+  // ── Self-Cleaning Stock Reclaiming ─────────────────────────────────────
+  // 1. Reclaim stock from ANY pending orders older than 20 minutes across the system
+  try {
+    const expiredOrders = db.prepare(`
+      SELECT id FROM orders 
+      WHERE status = 'pending' 
+        AND created_at < datetime('now', '-20 minutes')
+    `).all();
+
+    for (const exp of expiredOrders) {
+      db.transaction(() => {
+        db.prepare("UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?").run(exp.id);
+        const expItems = db.prepare("SELECT * FROM order_items WHERE order_id = ?").all(exp.id);
+        for (const item of expItems) {
+          if (item.variant_id) {
+            db.prepare('UPDATE variants SET stock = stock + ? WHERE id = ?').run(item.quantity, item.variant_id);
+          }
+        }
+      })();
+    }
+  } catch (e) {
+    console.error('[RADICAL] Failed to clean up expired pending orders:', e);
+  }
+
+  // 2. Cancel previous pending orders for the SAME user or session to free their own stock
+  try {
+    const userPendingOrders = userId 
+      ? db.prepare("SELECT id FROM orders WHERE user_id = ? AND status = 'pending'").all(userId)
+      : db.prepare("SELECT id FROM orders WHERE session_id = ? AND status = 'pending'").all(cartParam);
+
+    for (const po of userPendingOrders) {
+      db.transaction(() => {
+        db.prepare("UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?").run(po.id);
+        const poItems = db.prepare("SELECT * FROM order_items WHERE order_id = ?").all(po.id);
+        for (const item of poItems) {
+          if (item.variant_id) {
+            db.prepare('UPDATE variants SET stock = stock + ? WHERE id = ?').run(item.quantity, item.variant_id);
+          }
+        }
+      })();
+    }
+  } catch (e) {
+    console.error('[RADICAL] Failed to clean up previous user pending orders:', e);
+  }
+
+  // Create order in a transaction (does not clear cart, but reserves stock)
   const createOrder = db.transaction(() => {
     const order = db.prepare(`
-      INSERT INTO orders (user_id, guest_email, subtotal, shipping_cost, total, shipping_address, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(userId, guest_email ?? null, subtotal, shippingCost, total, JSON.stringify(shipping_address), notes ?? null);
+      INSERT INTO orders (user_id, guest_email, session_id, subtotal, shipping_cost, total, shipping_address, notes, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    `).run(userId, guest_email ?? null, userId ? null : cartParam, subtotal, shippingCost, total, JSON.stringify(shipping_address), notes ?? null);
 
     const orderId = order.lastInsertRowid;
 
@@ -71,18 +116,154 @@ router.post('/', (req, res) => {
       }
     }
 
-    // Clear cart
-    db.prepare(`DELETE FROM cart_items WHERE ${deleteWhere}`).run(cartParam);
-
     return db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
   });
 
   const newOrder = createOrder();
-  newOrder.shipping_address = JSON.parse(newOrder.shipping_address);
-  newOrder.items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(newOrder.id);
+  
+  // Generate ICICI Bank redirect link
+  const paymentUrl = generatePaymentURL(`RAD${newOrder.id}`, newOrder.total, req.headers.host);
 
-  res.status(201).json({ order: newOrder });
+  res.status(201).json({ order: newOrder, paymentUrl });
 });
+
+// ── Payment Callback (ICICI Return URL) ──────────────────────────────────
+router.all('/payment/callback', async (req, res) => {
+  const params = { ...req.query, ...req.body };
+  console.log('[RADICAL] Payment callback received:', params);
+
+  const referenceNo = params['ReferenceNo'] || params['Reference No'] || '';
+  const responseCode = params['Response_Code'] || params['Response Code'] || '';
+  
+  if (!referenceNo) {
+    return res.status(400).send('Invalid payment callback: ReferenceNo is missing.');
+  }
+
+  // Parse order ID from ReferenceNo (e.g., "RAD15" -> 15)
+  const orderIdMatch = referenceNo.match(/^RAD(\d+)$/);
+  if (!orderIdMatch) {
+    return res.status(400).send('Invalid payment callback: Invalid ReferenceNo format.');
+  }
+  const orderDbId = parseInt(orderIdMatch[1], 10);
+
+  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderDbId);
+  if (!order) {
+    return res.status(404).send('Order not found.');
+  }
+
+  // If already confirmed, redirect directly to success screen
+  if (order.status === 'confirmed') {
+    return res.redirect(`/checkout.html?status=success&orderId=RAD${order.id}`);
+  }
+
+  const isSuccess = (responseCode === 'E000');
+
+  if (isSuccess) {
+    try {
+      // 1. Update order status to confirmed
+      db.prepare("UPDATE orders SET status = 'confirmed', updated_at = datetime('now') WHERE id = ?").run(order.id);
+      
+      // Get the updated order state
+      const confirmedOrder = db.prepare('SELECT * FROM orders WHERE id = ?').get(order.id);
+      
+      // 2. Clear customer cart
+      const deleteWhere = confirmedOrder.user_id ? 'user_id = ?' : 'session_id = ?';
+      const deleteParam = confirmedOrder.user_id ?? confirmedOrder.session_id;
+      db.prepare(`DELETE FROM cart_items WHERE ${deleteWhere}`).run(deleteParam);
+
+      // 3. Send order details to the Google Sheet delivery team webhook
+      await submitToGoogleSheets(confirmedOrder);
+
+      return res.redirect(`/checkout.html?status=success&orderId=RAD${order.id}`);
+    } catch (e) {
+      console.error('[RADICAL] Failed to finalize successful order:', e);
+      return res.redirect(`/checkout.html?status=failed&error=Failed to process payment confirmation: ${e.message}`);
+    }
+  } else {
+    // Payment failed or was cancelled
+    try {
+      // 1. Update order status to cancelled
+      db.prepare("UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?").run(order.id);
+      
+      // 2. Restore stock levels
+      const orderItems = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+      for (const item of orderItems) {
+        if (item.variant_id) {
+          db.prepare('UPDATE variants SET stock = stock + ? WHERE id = ?').run(item.quantity, item.variant_id);
+        }
+      }
+      
+      const errorMsg = params['Reason'] || 'Payment failed or was cancelled by the customer.';
+      return res.redirect(`/checkout.html?status=failed&error=${encodeURIComponent(errorMsg)}`);
+    } catch (e) {
+      console.error('[RADICAL] Failed to handle payment cancellation:', e);
+      return res.redirect(`/checkout.html?status=failed&error=Payment processing error: ${e.message}`);
+    }
+  }
+});
+
+// ── Payment Simulation Endpoint ──────────────────────────────────────────
+// Simulates the ICICI bank redirection callback
+router.get('/payment/simulate', (req, res) => {
+  const { orderId, status } = req.query;
+  if (!orderId || !status) {
+    return res.status(400).send('Missing query parameters: orderId and status are required.');
+  }
+
+  const responseCode = status === 'success' ? 'E000' : 'E999';
+  const reason = status === 'success' ? '' : 'Simulated transaction failure.';
+
+  const params = new URLSearchParams();
+  params.append('ReferenceNo', orderId.startsWith('RAD') ? orderId : `RAD${orderId}`);
+  params.append('Response_Code', responseCode);
+  if (reason) params.append('Reason', reason);
+
+  res.redirect(`/api/orders/payment/callback?${params.toString()}`);
+});
+
+// Helper function to write order to Google Sheets
+async function submitToGoogleSheets(order) {
+  const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby-7UlBa-iX7VVi0NcOmvisUOjKscCZX7Ai7HUpI9SusSIt2RG258ln0CPHBllUCFfTQA/exec';
+  
+  const shippingAddress = JSON.parse(order.shipping_address);
+  const nameParts = (shippingAddress.name || '').trim().split(/\s+/);
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || '';
+  const cityStateCountry = `${shippingAddress.city}, ${shippingAddress.state}, India`;
+  const formattedDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+  const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+  const itemsSummary = items.map(i => 
+    `${i.product_name}${i.variant_label ? ' (' + i.variant_label + ')' : ''} x${i.quantity}`
+  ).join('; ');
+
+  const payload = {
+    first_name:         firstName,
+    last_name:          lastName,
+    email:              order.guest_email || '',
+    phone:              shippingAddress.phone || '',
+    address_line1:      shippingAddress.line1 || '',
+    address_line2:      shippingAddress.line2 || '',
+    city_state_country: cityStateCountry,
+    zipcode:            shippingAddress.postal_code || '',
+    product_name:       itemsSummary,
+    total_amount:       `₹${order.total.toLocaleString('en-IN')}`,
+    date_and_time:      formattedDate,
+    order_id:           `RAD${order.id}`,
+    payment_method:     'Online Payment',
+  };
+
+  try {
+    await fetch(SHEET_WEBHOOK_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    console.log(`[RADICAL] Google Sheet webhook succeeded for Order RAD${order.id}`);
+  } catch (err) {
+    console.error(`[RADICAL] Google Sheet webhook failed for Order RAD${order.id}:`, err);
+  }
+}
 
 // GET /api/orders — current user's orders
 router.get('/', requireAuth, (req, res) => {

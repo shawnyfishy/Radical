@@ -15,6 +15,13 @@ db.pragma('foreign_keys = ON');
 const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
 db.exec(schema);
 
+// Migration: Add session_id to orders table if it doesn't exist
+try {
+  db.exec('ALTER TABLE orders ADD COLUMN session_id TEXT');
+} catch (e) {
+  // Column already exists
+}
+
 // Auto-seed if the database is empty (important for ephemeral Vercel deploys)
 try {
   const count = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
