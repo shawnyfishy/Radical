@@ -39,7 +39,7 @@ const products = [
     category: 'rings',
     price: 841,
     compare_price: 1999,
-    description: 'Matte black finish over surgical steel, structured like a heavy industrial chain link. Solid weight.',
+    description: 'Matte black finish over surgical-grade material, structured like a heavy industrial chain link. Solid weight.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
     images: ['assets/products/chainlink-ring/black/front.webp']
   },
@@ -49,7 +49,7 @@ const products = [
     category: 'rings',
     price: 841,
     compare_price: 1999,
-    description: 'Brushed surgical steel band, structured like a heavy industrial chain link. Architectural strength.',
+    description: 'Brushed surgical-grade band, structured like a heavy industrial chain link. Architectural strength.',
     material: 'Material : Brass, Silver plated\nColor : Oxydised Silver',
     images: ['assets/products/chainlink-ring/silver/front.webp']
   },
@@ -59,7 +59,7 @@ const products = [
     category: 'pendants',
     price: 4624,
     compare_price: 11499,
-    description: 'Matte black steel chain featuring an engraved compass motif. Worn to navigate your own path.',
+    description: 'Matte black chain featuring an engraved compass motif. Worn to navigate your own path.',
     material: 'White rodium plated setting with round  black ceramic stones necklace\nColor : Silver, Black',
     images: ['assets/products/compass-cuff/black/front.webp']
   },
@@ -69,7 +69,7 @@ const products = [
     category: 'pendants',
     price: 4624,
     compare_price: 11499,
-    description: 'Brushed steel chain featuring an engraved compass motif. Architectural design for daily wear.',
+    description: 'Brushed chain featuring an engraved compass motif. Architectural design for daily wear.',
     material: 'Solitare necklace set in white rodium.\nMaterial : Brass, Silver plated, AAA grade CZ\nColor : Silver',
     images: ['assets/products/compass-cuff/silver/front.webp']
   },
@@ -79,7 +79,7 @@ const products = [
     category: 'bracelets',
     price: 4624,
     compare_price: 11499,
-    description: 'Black-coated surgical steel band set with midnight onyx stones in a crown bezel.',
+    description: 'Black-coated surgical-grade band set with midnight onyx stones in a crown bezel.',
     material: 'Black rodium plated setting with round  black ceramic stones.\nColor : Black Gold / Gun metal',
     images: ['assets/products/crown-tennis-bracelet/black-on-black/front.webp']
   },
@@ -89,7 +89,7 @@ const products = [
     category: 'bracelets',
     price: 4624,
     compare_price: 11499,
-    description: 'Brushed steel band set with polished black onyx stones in a crown bezel setting.',
+    description: 'Brushed band set with polished black onyx stones in a crown bezel setting.',
     material: 'White rodium plated setting with round  black ceramic stones\nColor : Silver, Black',
     images: ['assets/products/crown-tennis-bracelet/black-on-silver/front.webp']
   },
@@ -99,7 +99,7 @@ const products = [
     category: 'bracelets',
     price: 4624,
     compare_price: 11499,
-    description: 'Brushed steel band set with brilliant white stones in a crown bezel setting.',
+    description: 'Brushed band set with brilliant white stones in a crown bezel setting.',
     material: 'Solitare bracelet set in white rodium.\nMaterial : Brass, Silver plated, AAA grade CZ\nColor : Silver',
     images: ['assets/products/crown-tennis-bracelet/diamond-on-silver/front.webp']
   },
@@ -109,7 +109,7 @@ const products = [
     category: 'rings',
     price: 1429,
     compare_price: 3499,
-    description: 'Architectural steel vault ring featuring inset black onyx stones.',
+    description: 'Architectural wearables vault ring featuring inset black onyx stones.',
     material: 'Pave Set CZ Wide Band Ring\nWhite rodium plated ring with round black ceramic stones',
     images: ['assets/products/diamond-vault-ring/black-on-silver/front.webp']
   },
@@ -119,7 +119,7 @@ const products = [
     category: 'rings',
     price: 1429,
     compare_price: 3499,
-    description: 'Matte black steel vault ring set with brilliant white diamond-cut stones.',
+    description: 'Matte black vault ring set with brilliant white diamond-cut stones.',
     material: 'Pave Set CZ Wide Band Ring\nMaterial : Brass, Black Gold, Cubic Zirconia\nColor : Black Gold / Gun metal',
     images: ['assets/products/diamond-vault-ring/diamond-on-black/front.webp']
   },
@@ -129,7 +129,7 @@ const products = [
     category: 'rings',
     price: 1429,
     compare_price: 3499,
-    description: 'Brushed steel vault ring set with brilliant white diamond-cut stones.',
+    description: 'Brushed metal vault ring set with brilliant white diamond-cut stones.',
     material: 'Pave Set CZ Wide Band Ring\nWhite rodium plated ring with high grade cubic zirco',
     images: ['assets/products/diamond-vault-ring/diamond-on-silver/front.webp']
   },
@@ -149,7 +149,7 @@ const products = [
     category: 'rings',
     price: 946,
     compare_price: 1999,
-    description: 'Polished surgical steel band with a central offset groove representing a partial eclipse.',
+    description: 'Polished surgical-grade band with a central offset groove representing a partial eclipse.',
     material: 'Material : Brass, Silver plated\nColor : Oxydised Silver',
     images: ['assets/products/eclipse-ring/silver/front.webp']
   },
@@ -159,7 +159,7 @@ const products = [
     category: 'rings',
     price: 1009,
     compare_price: 2499,
-    description: 'Gold-plated steel signet ring with an eclipse carving on the face.',
+    description: 'Gold-plated signet ring with an eclipse carving on the face.',
     material: 'Material : Brass, Gold plated\nColor : Gold',
     images: ['assets/products/eclipse-signet-ring/gold/front.webp']
   },
@@ -169,7 +169,7 @@ const products = [
     category: 'rings',
     price: 1009,
     compare_price: 2499,
-    description: 'Brushed surgical steel signet ring with an eclipse carving on the face.',
+    description: 'Brushed surgical-grade material signet ring with an eclipse carving on the face.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
     images: ['assets/products/eclipse-signet-ring/silver/front.webp']
   },
@@ -192,7 +192,7 @@ const products = [
     category: 'rings',
     price: 925,
     compare_price: 1999,
-    description: 'Intricately woven Celtic eternal knot design in brushed surgical steel.',
+    description: 'Intricately woven Celtic eternal knot design in brushed surgical-grade material.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
     images: ['assets/products/eternal-knot-ring/silver/front.webp']
   },
@@ -212,7 +212,7 @@ const products = [
     category: 'pendants',
     price: 1051,
     compare_price: 2499,
-    description: 'Steel shield pendant set with a central black onyx cabochon.',
+    description: 'Shield pendant set with a central black onyx cabochon.',
     material: 'Material : Brass, Silver plated, Black Enamel\nColor : Silver',
     images: ['assets/products/guardian-pendant/black-on-silver/front.webp']
   },
@@ -222,7 +222,7 @@ const products = [
     category: 'pendants',
     price: 1051,
     compare_price: 2499,
-    description: 'Steel shield pendant set with a central brilliant white stone.',
+    description: 'Shield pendant set with a central brilliant white stone.',
     material: 'Material : Brass, Silver plated, AAA grade CZ\nColor : Silver',
     images: ['assets/products/guardian-pendant/diamond-on-silver/front.webp']
   },
@@ -252,7 +252,7 @@ const products = [
     category: 'pendants',
     price: 1240,
     compare_price: 2999,
-    description: 'Continuous twist Möbius pendant in a matte black surgical steel finish.',
+    description: 'Continuous twist Möbius pendant in a matte black surgical-grade finish.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
     images: [
       'assets/products/infinite-loop-pendant/black/front.webp',
@@ -265,7 +265,7 @@ const products = [
     category: 'pendants',
     price: 1240,
     compare_price: 2999,
-    description: 'Continuous twist Möbius pendant in brushed 316L surgical steel.',
+    description: 'Continuous twist Möbius pendant in brushed 316L surgical-grade material.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
     images: ['assets/products/infinite-loop-pendant/silver/front.webp']
   },
@@ -285,7 +285,7 @@ const products = [
     category: 'pendants',
     price: 1051,
     compare_price: 2499,
-    description: 'Brushed steel dog tag pendant set with double black onyx gems.',
+    description: 'Brushed dog tag pendant set with double black onyx gems.',
     material: 'Material : Brass, Silver plated, Black ceramic stones\nColor : Silver',
     images: ['assets/products/legacy-tag-pendant/silver-with-black-gems/front.webp']
   },
@@ -295,7 +295,7 @@ const products = [
     category: 'pendants',
     price: 1051,
     compare_price: 2499,
-    description: 'Brushed steel dog tag pendant set with a central brilliant white gem.',
+    description: 'Brushed dog tag pendant set with a central brilliant white gem.',
     material: 'Material : Brass, Silver plated, AAA grade CZ\nColor : Silver',
     images: ['assets/products/legacy-tag-pendant/silver-with-diamond/front.webp']
   },
@@ -305,7 +305,7 @@ const products = [
     category: 'pendants',
     price: 1429,
     compare_price: 3499,
-    description: 'Solid steel pillar pendant inspired by brutalist architecture. Heavy, balanced weight.',
+    description: 'Solid wearables pillar pendant inspired by brutalist architecture. Heavy, balanced weight.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
     images: [
       'assets/products/monument-pendant/front.webp',
@@ -328,7 +328,7 @@ const products = [
     category: 'pendants',
     price: 1009,
     compare_price: 2499,
-    description: 'Compass star design in brushed surgical steel, a classic emblem of direction.',
+    description: 'Compass star design in brushed surgical-grade material, a classic emblem of direction.',
     material: 'Material : Brass, Silver plated, AAA grade CZ\nColor : Silver',
     images: ['assets/products/northstar-pendant/silver/front.webp']
   },
@@ -338,7 +338,7 @@ const products = [
     category: 'pendants',
     price: 1156,
     compare_price: 2999,
-    description: '18K Gold plated steel framing a textured black obsidian tile.',
+    description: '18K Gold plated framing a textured black obsidian tile.',
     material: 'Material : Brass, Gold plated, Black Enamel.\nColor : Gold',
     images: ['assets/products/obsidian-grid-pendant/gold/front.webp']
   },
@@ -348,7 +348,7 @@ const products = [
     category: 'pendants',
     price: 1156,
     compare_price: 2999,
-    description: 'Surgical steel frame holding a textured black obsidian stone tile.',
+    description: 'Surgical-grade frame holding a textured black obsidian stone tile.',
     material: 'Material : Brass, Silver plated, Black Enamel.\nColor : Silver',
     images: ['assets/products/obsidian-grid-pendant/silver/front.webp']
   },
@@ -371,7 +371,7 @@ const products = [
     category: 'pendants',
     price: 1114,
     compare_price: 2499,
-    description: 'Matte black steel frame holding a solid black onyx cylinder core.',
+    description: 'Matte black frame holding a solid black onyx cylinder core.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
     images: ['assets/products/onyx-core-pendant/black/front.webp']
   },
@@ -381,7 +381,7 @@ const products = [
     category: 'pendants',
     price: 1114,
     compare_price: 2499,
-    description: 'Brushed surgical steel frame holding a solid black onyx cylinder core.',
+    description: 'Brushed surgical-grade material frame holding a solid black onyx cylinder core.',
     material: 'Material : Brass, Silver plated, Black Enamel.\nColor : Oxydised Silver',
     images: ['assets/products/onyx-core-pendant/silver/front.webp']
   },
@@ -411,7 +411,7 @@ const products = [
     category: 'pendants',
     price: 1009,
     compare_price: 2499,
-    description: 'Minimal geometric arrow pendant in brushed surgical-grade steel.',
+    description: 'Minimal geometric arrow pendant in brushed surgical-grade material.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
     images: ['assets/products/path-finder-pendant/silver/front.webp']
   },
@@ -421,7 +421,7 @@ const products = [
     category: 'rings',
     price: 841,
     compare_price: 1999,
-    description: 'Matte black steel band carved with ancient protective runes.',
+    description: 'Matte black band carved with ancient protective runes.',
     material: 'Material : Brass, Black Gold\nColor : Black Gold / Gun metal',
     images: ['assets/products/rune-shield-ring/black/front.webp']
   },
@@ -431,7 +431,7 @@ const products = [
     category: 'rings',
     price: 841,
     compare_price: 1999,
-    description: 'Surgical-grade steel band carved with ancient protective runes.',
+    description: 'Surgical-grade band carved with ancient protective runes.',
     material: 'Material : Brass, Silver plated\nColor : Silver',
     images: ['assets/products/rune-shield-ring/silver/front.webp']
   },
@@ -451,7 +451,7 @@ const products = [
     category: 'rings',
     price: 946,
     compare_price: 1999,
-    description: 'Coiled serpent design representing wisdom and renewal in brushed steel.',
+    description: 'Coiled serpent design representing wisdom and renewal in brushed metal.',
     material: 'Material : Brass, Silver plated\nColor : Oxydised Silver',
     images: ['assets/products/serpent-ascend-ring/silver/front.webp']
   },
@@ -461,7 +461,7 @@ const products = [
     category: 'pendants',
     price: 1156,
     compare_price: 2999,
-    description: 'Brutalist spear tip pendant in a matte black surgical steel finish.',
+    description: 'Brutalist spear tip pendant in a matte black surgical-grade finish.',
     material: 'Material : Brass, Black Gold, Black Onyx.\nColor : Black Gold / Gun metal',
     images: ['assets/products/spear-pendant/black/front.webp']
   },
@@ -471,7 +471,7 @@ const products = [
     category: 'pendants',
     price: 1156,
     compare_price: 2999,
-    description: 'Brutalist spear tip pendant in hand-finished brushed surgical steel.',
+    description: 'Brutalist spear tip pendant in hand-finished brushed surgical-grade material.',
     material: 'Material : Brass, Silver plated, AAA grade CZ\nColor : Silver',
     images: ['assets/products/spear-pendant/silver/front.webp']
   },
@@ -481,7 +481,7 @@ const products = [
     category: 'pendants',
     price: 1156,
     compare_price: 2999,
-    description: 'Brutalist spear tip pendant in silver steel, set with a raw black onyx stone.',
+    description: 'Brutalist spear tip pendant in silver-finish metal, set with a raw black onyx stone.',
     material: 'Material : Brass, Silver plated, Black Onyx.\nColor : Silver',
     images: ['assets/products/spear-pendant/silver-with-black-stone/front.webp']
   },
@@ -514,7 +514,7 @@ const products = [
     category: 'rings',
     price: 946,
     compare_price: 1999,
-    description: 'Engraved Yggdrasil World Tree band in textured brushed surgical steel.',
+    description: 'Engraved Yggdrasil World Tree band in textured brushed surgical-grade material.',
     material: 'Material : Brass, Silver plated\nColor : Oxydised Silver',
     images: ['assets/products/world-tree-ring/silver/front.webp']
   }

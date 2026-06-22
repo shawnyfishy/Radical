@@ -15,7 +15,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        1,
       url:         '/product?id=RAD-002',
       name:        'CHAINLINK RING - BLACK',
-      subtitle:    'Matte Black Steel, Industrial Link',
+      subtitle:    'Matte Black Wearable, Industrial Link',
       price:       '841',
       comparePrice: '1,999',
       
@@ -36,7 +36,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        2,
       url:         '/product?id=RAD-003',
       name:        'CHAINLINK RING - SILVER',
-      subtitle:    'Brushed Surgical Steel, Industrial Link',
+      subtitle:    'Brushed Surgical Wearable, Industrial Link',
       price:       '841',
       comparePrice: '1,999',
       
@@ -57,7 +57,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        3,
       url:         '/product-pendant?id=RAD-004',
       name:        'TENNIS CHAIN - BLACK',
-      subtitle:    'Matte Black Steel, Engraved Motif',
+      subtitle:    'Matte Black Wearable, Engraved Motif',
       price:       '4,624',
       comparePrice: '11,499',
       
@@ -78,7 +78,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        4,
       url:         '/product-pendant?id=RAD-005',
       name:        'TENNIS CHAIN - SILVER',
-      subtitle:    'Brushed Steel, Engraved Motif',
+      subtitle:    'Brushed Wearable, Engraved Motif',
       price:       '4,624',
       comparePrice: '11,499',
       
@@ -99,7 +99,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        5,
       url:         '/product-bracelet?id=RAD-006',
       name:        'CROWN TENNIS BRACELET - BLACK ON BLACK',
-      subtitle:    'Black Steel, Midnight Onyx Gems',
+      subtitle:    'Black Wearable, Midnight Onyx Gems',
       price:       '4,624',
       comparePrice: '11,499',
       
@@ -120,7 +120,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        6,
       url:         '/product-bracelet?id=RAD-007',
       name:        'CROWN TENNIS BRACELET - BLACK ON SILVER',
-      subtitle:    'Brushed Steel, Black Onyx Gems',
+      subtitle:    'Brushed Wearable, Black Onyx Gems',
       price:       '4,624',
       comparePrice: '11,499',
       
@@ -141,7 +141,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        7,
       url:         '/product-bracelet?id=RAD-008',
       name:        'CROWN TENNIS BRACELET - DIAMOND ON SILVER',
-      subtitle:    'Brushed Steel, Brilliant White Stones',
+      subtitle:    'Brushed Wearable, Brilliant White Stones',
       price:       '4,624',
       comparePrice: '11,499',
       
@@ -162,7 +162,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        8,
       url:         '/product?id=RAD-009',
       name:        'DIAMOND VAULT RING - BLACK ON SILVER',
-      subtitle:    'Surgical Steel, Vault Inset Onyx',
+      subtitle:    'Surgical Wearable, Vault Inset Onyx',
       price:       '1,429',
       comparePrice: '3,499',
       
@@ -183,7 +183,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        9,
       url:         '/product?id=RAD-010',
       name:        'DIAMOND VAULT RING - DIAMOND ON BLACK',
-      subtitle:    'Black Steel, Vault Inset White Gems',
+      subtitle:    'Black Wearable, Vault Inset White Gems',
       price:       '1,429',
       comparePrice: '3,499',
       
@@ -204,7 +204,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        10,
       url:         '/product?id=RAD-011',
       name:        'DIAMOND VAULT RING - DIAMOND ON SILVER',
-      subtitle:    'Brushed Steel, Vault Inset White Gems',
+      subtitle:    'Brushed Wearable, Vault Inset White Gems',
       price:       '1,429',
       comparePrice: '3,499',
       
@@ -246,7 +246,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        12,
       url:         '/product?id=RAD-013',
       name:        'ECLIPSE RING - SILVER',
-      subtitle:    'Polished Steel, Center Eclipse Groove',
+      subtitle:    'Polished Wearable, Center Eclipse Groove',
       price:       '946',
       comparePrice: '1,999',
       
@@ -288,7 +288,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        14,
       url:         '/product?id=RAD-015',
       name:        'ECLIPSE SIGNET RING - SILVER',
-      subtitle:    'Brushed Steel, Eclipse Face Carving',
+      subtitle:    'Brushed Wearable, Eclipse Face Carving',
       price:       '1,009',
       comparePrice: '2,499',
       
@@ -330,7 +330,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        16,
       url:         '/product?id=RAD-017',
       name:        'ETERNAL KNOT RING - SILVER',
-      subtitle:    'Brushed Steel, Celtic Knot Band',
+      subtitle:    'Brushed Wearable, Celtic Knot Band',
       price:       '925',
       comparePrice: '1,999',
       
@@ -351,7 +351,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        17,
       url:         '/product-pendant?id=RAD-018',
       name:        'GUARDIAN PENDANT - BLACK ON BLACK',
-      subtitle:    'Black Steel Shield, Onyx Cabochon',
+      subtitle:    'Black Wearable Shield, Onyx Cabochon',
       price:       '1,051',
       comparePrice: '2,499',
       
@@ -372,7 +372,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        18,
       url:         '/product-pendant?id=RAD-019',
       name:        'GUARDIAN PENDANT - BLACK ON SILVER',
-      subtitle:    'Steel Shield, Onyx Cabochon',
+      subtitle:    'Wearable Shield, Onyx Cabochon',
       price:       '1,051',
       comparePrice: '2,499',
       
@@ -393,7 +393,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        19,
       url:         '/product-pendant?id=RAD-020',
       name:        'GUARDIAN PENDANT - DIAMOND ON SILVER',
-      subtitle:    'Steel Shield, White Stone Inset',
+      subtitle:    'Wearable Shield, White Stone Inset',
       price:       '1,051',
       comparePrice: '2,499',
       
@@ -477,7 +477,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        23,
       url:         '/product-pendant?id=RAD-024',
       name:        'INFINITE LOOP PENDANT - SILVER',
-      subtitle:    'Brushed Steel, Twist Möbius Ribbon',
+      subtitle:    'Brushed Wearable, Twist Möbius Ribbon',
       price:       '1,240',
       comparePrice: '2,999',
       
@@ -519,7 +519,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        25,
       url:         '/product-pendant?id=RAD-026',
       name:        'LEGACY TAG PENDANT - SILVER WITH BLACK GEMS',
-      subtitle:    'Steel Dog Tag, Double Black Onyx',
+      subtitle:    'Wearable Dog Tag, Double Black Onyx',
       price:       '1,051',
       comparePrice: '2,499',
       
@@ -540,7 +540,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        26,
       url:         '/product-pendant?id=RAD-027',
       name:        'LEGACY TAG PENDANT - SILVER WITH DIAMOND',
-      subtitle:    'Steel Dog Tag, Central White Gem',
+      subtitle:    'Wearable Dog Tag, Central White Gem',
       price:       '1,051',
       comparePrice: '2,499',
       
@@ -561,7 +561,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        27,
       url:         '/product-pendant?id=RAD-028',
       name:        'MONUMENT PENDANT',
-      subtitle:    'Surgical Steel Brutalist Column',
+      subtitle:    'Surgical Wearable Brutalist Column',
       price:       '1,429',
       comparePrice: '3,499',
       
@@ -603,7 +603,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        29,
       url:         '/product-pendant?id=RAD-030',
       name:        'NORTHSTAR PENDANT - SILVER',
-      subtitle:    'Brushed Steel, Compass Star Design',
+      subtitle:    'Brushed Wearable, Compass Star Design',
       price:       '1,009',
       comparePrice: '2,499',
       
@@ -624,7 +624,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        30,
       url:         '/product-pendant?id=RAD-031',
       name:        'OBSIDIAN GRID PENDANT - GOLD',
-      subtitle:    'Gold Steel Frame, Obsidian Grid Tile',
+      subtitle:    'Gold Wearable Frame, Obsidian Grid Tile',
       price:       '1,156',
       comparePrice: '2,999',
       
@@ -645,7 +645,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        31,
       url:         '/product-pendant?id=RAD-032',
       name:        'OBSIDIAN GRID PENDANT - SILVER',
-      subtitle:    'Brushed Steel, Obsidian Grid Tile',
+      subtitle:    'Brushed Wearable, Obsidian Grid Tile',
       price:       '1,156',
       comparePrice: '2,999',
       
@@ -666,7 +666,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        32,
       url:         '/product?id=RAD-033',
       name:        'OBSIDIAN MONARCH RING',
-      subtitle:    'Heavy Steel, Flat Obsidian Slab',
+      subtitle:    'Heavy Wearable, Flat Obsidian Slab',
       price:       '1,366',
       comparePrice: '2,999',
       
@@ -687,7 +687,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        33,
       url:         '/product-pendant?id=RAD-034',
       name:        'WHEEL OF TIME - BLACK',
-      subtitle:    'Black Steel Frame, Onyx Cylinder Core',
+      subtitle:    'Black Wearable Frame, Onyx Cylinder Core',
       price:       '1,114',
       comparePrice: '2,499',
       
@@ -708,7 +708,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        34,
       url:         '/product-pendant?id=RAD-035',
       name:        'WHEEL OF TIME - SILVER',
-      subtitle:    'Brushed Steel Frame, Onyx Cylinder Core',
+      subtitle:    'Brushed Wearable Frame, Onyx Cylinder Core',
       price:       '1,114',
       comparePrice: '2,499',
       
@@ -771,7 +771,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        37,
       url:         '/product-pendant?id=RAD-038',
       name:        'PATH FINDER PENDANT - SILVER',
-      subtitle:    'Brushed Steel, Geometric Arrow Head',
+      subtitle:    'Brushed Wearable, Geometric Arrow Head',
       price:       '1,009',
       comparePrice: '2,499',
       
@@ -792,7 +792,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        38,
       url:         '/product?id=RAD-039',
       name:        'RUNE SHIELD RING - BLACK',
-      subtitle:    'Matte Black Steel, Protective Runes',
+      subtitle:    'Matte Black Wearable, Protective Runes',
       price:       '841',
       comparePrice: '1,999',
       
@@ -813,7 +813,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        39,
       url:         '/product?id=RAD-040',
       name:        'RUNE SHIELD RING - SILVER',
-      subtitle:    'Surgical Steel, Protective Runes',
+      subtitle:    'Surgical Wearable, Protective Runes',
       price:       '841',
       comparePrice: '1,999',
       
@@ -855,7 +855,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        41,
       url:         '/product?id=RAD-042',
       name:        'SERPENT ASCEND RING - SILVER',
-      subtitle:    'Brushed Steel, Coiled Serpent Motif',
+      subtitle:    'Brushed Wearable, Coiled Serpent Motif',
       price:       '946',
       comparePrice: '1,999',
       
@@ -897,7 +897,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        43,
       url:         '/product-pendant?id=RAD-044',
       name:        'SPEAR PENDANT - SILVER',
-      subtitle:    'Brushed Steel, Brutalist Spear Tip',
+      subtitle:    'Brushed Wearable, Brutalist Spear Tip',
       price:       '1,156',
       comparePrice: '2,999',
       
@@ -918,7 +918,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        44,
       url:         '/product-pendant?id=RAD-045',
       name:        'SPEAR PENDANT - SILVER WITH BLACK STONE',
-      subtitle:    'Brushed Steel, Spear with Onyx Stone',
+      subtitle:    'Brushed Wearable, Spear with Onyx Stone',
       price:       '1,156',
       comparePrice: '2,999',
       
@@ -981,7 +981,7 @@ window.RADICAL_PRODUCTS = (function () {
       dbId:        47,
       url:         '/product?id=RAD-048',
       name:        'WORLD TREE RING - SILVER',
-      subtitle:    'Brushed Steel, Yggdrasil Engraving',
+      subtitle:    'Brushed Wearable, Yggdrasil Engraving',
       price:       '946',
       comparePrice: '1,999',
       
