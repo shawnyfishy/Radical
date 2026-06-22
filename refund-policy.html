@@ -1,41 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      fetch('/api/log-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, source, lineno, colno, stack: error ? error.stack : null })
+      });
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+      fetch('/api/log-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Unhandled Promise Rejection: ' + (event.reason ? event.reason.message || event.reason : event.reason) })
+      });
+    });
+  </script>
   <script>document.documentElement.classList.add('js-enabled')</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Precision-formed solid 316L surgical stainless steel cuff bracelet. Minimalist design engineered as a daily anchor for the modern disciplined man." />
-  <meta name="keywords" content="mens metal cuff, surgical steel bracelet, anti tarnish cuff bracelet, buy silver bracelets for men, minimal steel cuffs, hypoallergenic jewelry" />
+  <meta name="description" content="Refund & Return Policy — RADICAL Men's Jewellery. Learn about our 7-day exchange and return policy, return shipping, and refund process details." />
+  <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#1A1A1A" />
-  <title>Classic Steel Cuff Bracelet 1 | RADICAL Men's Jewellery</title>
+  <title>Refund Policy — RADICAL</title>
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="assets/flavicon.png" />
   <link rel="apple-touch-icon" href="assets/flavicon.png" />
 
-  <!-- Canonical URL -->
-  <link rel="canonical" href="https://radicalhood.com/product-bracelet" />
-
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://radicalhood.com/product-bracelet" />
-  <meta property="og:title" content="Classic Steel Cuff Bracelet 1 | RADICAL Men's Jewellery" />
-  <meta property="og:description" content="Precision-formed solid 316L surgical stainless steel cuff bracelet. Minimalist design engineered as a daily anchor for the modern disciplined man." />
-  <meta property="og:image" content="https://radicalhood.com/assets/bracelet_1_front.webp" />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://radicalhood.com/product-bracelet" />
-  <meta name="twitter:title" content="Classic Steel Cuff Bracelet 1 | RADICAL Men's Jewellery" />
-  <meta name="twitter:description" content="Precision-formed solid 316L surgical stainless steel cuff bracelet. Minimalist design engineered as a daily anchor for the modern disciplined man." />
-  <meta name="twitter:image" content="https://radicalhood.com/assets/bracelet_1_front.webp" />
-
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Questrial&family=Inter+Tight:wght@300;400;500&family=Permanent+Marker&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Questrial&family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="styles.css" />
-
 </head>
 
 <body data-barba="wrapper">
@@ -43,30 +42,26 @@
   <!-- Preloader (Odd Ritual DNA) -->
   <div id="preloader" class="preloader" aria-hidden="true">
     <div class="preloader__box">
-      <!-- 1. Logo and Brand inside the box boundaries (centered) -->
       <div class="preloader__inner">
         <img src="assets/logo.svg" class="preloader__logo" alt="RADICAL Logo" />
         <span class="preloader__brand">RADICAL</span>
       </div>
-      <!-- 2. Box background and Image container -->
       <div class="preloader__box-bg"></div>
       <div class="preloader__image-wrap">
         <img src="assets/images/preloader.webp" class="preloader__box-img" alt="Branding" />
       </div>
     </div>
   </div>
+
+  <!-- Scroll Progress Bar -->
   <div id="scroll-progress" aria-hidden="true"></div>
 
-  <!-- ============================================================
-       STICKY NAVIGATION
-  ============================================================ -->
+  <!-- Navigation -->
   <header id="main-nav" class="nav" role="banner">
     <div class="nav__inner">
-      <!-- LEFT: Brand Logo / Wordmark -->
       <div class="nav__left">
         <a href="/" class="nav__brand" aria-label="Home">RADICAL</a>
       </div>
-      
       <div class="nav__center">
         <div h-fadeout role="button" data-menu-toggle class="menu-toggle" aria-label="Toggle menu">
           <div class="menu-toggle_lines">
@@ -76,20 +71,14 @@
           <span class="menu-toggle_text">MENU</span>
         </div>
       </div>
-
-      <!-- RIGHT: Shop Now + Cart -->
       <div class="nav__right">
         <a h-flip href="/shop" class="nav__link-btn"><span class="body-upper">SHOP NOW</span></a>
         <a h-flip href="#cart" id="nav-bag-btn" class="nav__link-btn" aria-label="Shopping bag"><span class="body-upper">CART</span></a>
       </div>
     </div>
   </header>
-  <div class="nav-top-scrim" aria-hidden="true"></div>
 
-
-  <!-- ============================================================
-       NAVIGATION OVERLAY (Curtain Dropdown)
-  ============================================================ -->
+  <!-- Navigation Overlay -->
   <div id="nav-overlay" class="nav-overlay" data-nav="closed" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="nav-overlay__scrim" data-menu-toggle></div>
     <nav class="menu-curtain">
@@ -112,19 +101,15 @@
             </div>
           </div>
         </div>
-        <!-- Curtain stagger panels -->
         <div class="bg-panel first"></div>
         <div class="bg-panel"></div>
       </div>
       <div class="menu-inner">
         <div class="menu-contain">
-          <!-- TOP WHITE AREA -->
           <div class="menu-layout">
-            <!-- Left: Image Preview Panel -->
             <div data-menu-fade class="menu-img_wrap">
               <div target-img_wrap class="menu-img_inner"></div>
             </div>
-            <!-- Center: Staggered Menu Links -->
             <div class="menu-list_wrap">
               <div img-hover_triggers-wrap class="menu-list">
                 <div img-hover_trigger class="menu-list-item">
@@ -142,8 +127,6 @@
               </div>
             </div>
           </div>
-          
-          <!-- BOTTOM OF WHITE AREA (Cart / Social) -->
           <div class="menu-bottom_layout is-menu">
             <div data-menu-fade class="menu-footer_col center-col">
               <div class="menu-bot_wrap">
@@ -165,10 +148,9 @@
         </div>
       </div>
     </nav>
-    <!-- Nav hover images -- loaded lazily on first menu open via JS -->
   </div>
 
-
+  <!-- Search Overlay -->
   <div id="search-scrim" class="search-scrim" aria-hidden="true"></div>
   <div id="search-strip" class="search-strip" aria-hidden="true" role="search">
     <div class="search-strip__inner">
@@ -182,30 +164,29 @@
     </div>
   </div>
 
-
-  <!-- ============================================================
-       CART DRAWER
-  ============================================================ -->
+  <!-- Cart Drawer -->
   <div id="cart-overlay" class="cart-overlay" aria-hidden="true"></div>
   <aside id="cart-drawer" class="cart-drawer" aria-label="Shopping bag" role="dialog">
     <div class="cart-drawer__header">
       <h2 class="cart-drawer__title">Your Bag</h2>
       <button id="cart-close" class="cart-drawer__close" aria-label="Close bag">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+        </svg>
       </button>
     </div>
     <div id="cart-body" class="cart-drawer__body"></div>
     <div id="cart-footer" class="cart-drawer__footer"></div>
   </aside>
 
-  <!-- ============================================================
-       AUTH MODAL
-  ============================================================ -->
+  <!-- Auth Modal -->
   <div id="auth-overlay" class="auth-overlay" aria-hidden="true"></div>
   <div id="auth-modal" class="auth-modal" role="dialog" aria-label="Sign in">
     <div class="auth-modal__inner">
       <button id="auth-modal-close" class="cart-drawer__close" style="position:absolute;top:20px;right:20px" aria-label="Close">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+        </svg>
       </button>
       <div class="auth__tabs">
         <button class="auth__tab is-active" data-tab="login">Sign In</button>
@@ -231,135 +212,73 @@
     </div>
   </div>
 
-  <div class="page-content" data-barba="container" data-barba-namespace="product-bracelet" data-product-handle="cuff-1">
+  <!-- Page Content Container -->
+  <div class="page-content" data-barba="container" data-barba-namespace="policy">
+    <main role="main">
 
-  <!-- ============================================================
-       LIGHTBOX
-  ============================================================ -->
-  <div id="pdp-lightbox" class="pdp-lightbox" aria-hidden="true" role="dialog" aria-label="Product image viewer" aria-modal="true">
-    <div class="pdp-lightbox__stage" id="pdp-lb-stage">
-      <img id="pdp-lb-img" class="pdp-lightbox__img" src="" alt="" />
-      <div id="pdp-lb-placeholder" class="pdp-lightbox__placeholder"></div>
-    </div>
-    <button id="pdp-lb-close" class="pdp-lightbox__close" aria-label="Close image viewer">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-        <line x1="2" y1="2" x2="12" y2="12"/>
-        <line x1="12" y1="2" x2="2" y2="12"/>
-      </svg>
-      <span>Close</span>
-    </button>
-    <button id="pdp-lb-prev" class="pdp-lightbox__prev" aria-label="Previous image">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
-    </button>
-    <button id="pdp-lb-next" class="pdp-lightbox__next" aria-label="Next image">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 18 15 12 9 6"></polyline>
-      </svg>
-    </button>
-  </div>
-
-  <main id="pdp-main" class="pdp" role="main" aria-label="Product detail">
-
-    <div class="pdp__gallery-col">
-      <div class="pdp__gallery-stack" id="pdp-gallery-stack">
-
-        <div class="pdp__gallery-item" data-index="0" role="button" tabindex="0" aria-label="View product image 1 fullscreen">
-          <img class="pdp__gallery-img" src="assets/bracelet_1_front.webp" alt="Bracelet 1 — Front view" />
-        </div>
-
-        <div class="pdp__gallery-item" data-index="1" role="button" tabindex="0" aria-label="View product image 2 fullscreen">
-          <img class="pdp__gallery-img" src="assets/bracelet_1_detail.webp" alt="Bracelet 1 — Detail view" />
-        </div>
-
-        <div class="pdp__gallery-item" data-index="2" role="button" tabindex="0" aria-label="View product image 3 fullscreen">
-          <img class="pdp__gallery-img" src="assets/bracelet_1_lifestyle.webp" alt="Bracelet 1 — Lifestyle view" />
-        </div>
-
-      </div>
-      <div class="pdp__carousel-dots" id="pdp-carousel-dots" aria-hidden="true"></div>
-    </div>
-
-    <div class="pdp__info-col">
-      <div class="pdp__info">
-
-        <nav class="pdp__breadcrumb" aria-label="Breadcrumb">
-          <a href="/">Shop</a> / <span>Bracelets</span>
-        </nav>
-
-        <h1 class="pdp__name">Bracelet 1</h1>
-
-        <p class="pdp__price">&#8377;5,200</p>
-
-        <hr class="pdp__divider" />
-
-
-
-        <div class="pdp__sizes" role="group" aria-labelledby="pdp-size-label">
-          <p class="pdp__sizes-label" id="pdp-size-label">Wrist Size</p>
-          <div class="pdp__sizes-row">
-            <button class="pdp__size-btn" data-size="S" aria-pressed="false">S</button>
-            <button class="pdp__size-btn" data-size="M" aria-pressed="false">M</button>
-            <button class="pdp__size-btn" data-size="L" aria-pressed="false">L</button>
-            <button class="pdp__size-btn" data-size="XL" aria-pressed="false">XL</button>
+      <!-- Header area -->
+      <section class="about-hero" aria-label="Refund Policy Header">
+        <div class="about-container">
+          <div class="about-hero__content">
+            <p class="about-hero__label">Legal Documents</p>
+            <h1 class="about-hero__headline">Refund Policy</h1>
           </div>
         </div>
+      </section>
 
-        <button class="pdp__add-btn" id="pdp-add-btn" data-add-to-bag data-product-id="3" aria-label="Add Bracelet 1 to bag">Add to Bag</button>
+      <!-- Policy Content -->
+      <section class="policy-section">
+        <div class="policy-page-content">
+          <p>Our return policy is valid for 7 days from the date of delivery. Within 7 days, you can initiate a return request on the link provided above.</p>
 
-        <a href="#" class="pdp__find-store">Find in Store</a>
+          <h2>Exchanges</h2>
+          <p>In case your order is defective or damaged or doesn't suit you, we also provide the option of replacing your product for the same/ any other item from our store.</p>
+          <p>Our exchange policy is also valid for 7 days from the date of delivery. Within 7 days, you can initiate an exchange request on the link provided above. Depending on where you live, the time it may take for your exchanged product to reach you may vary.</p>
 
-        <div class="pdp__accordions">
+          <h2>Return Shipping</h2>
+          <p>We will arrange for the return pick up from the originally delivered address only. If 7 days have gone by since your purchase, unfortunately, we can't offer you a refund or exchange. To be eligible for a return/exchange, your item must be unused and in the same condition that you received it. It must also be in the original packaging. Please also return any freebies received with the order.</p>
 
-          <div class="pdp__accordion">
-            <button class="pdp__accordion-toggle" aria-expanded="false">
-              Details &amp; Materials
-              <svg class="pdp__accordion-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="4 2 8 6 4 10"></polyline>
-              </svg>
-            </button>
-            <div class="pdp__accordion-body" role="region">
-              <div class="pdp__accordion-content">
-                <p>Material: 316L Surgical-Grade Steel</p>
-                <p>Weight: 45g</p>
-                <p>Finish: Matte brushed</p>
-                <p>Width: 14mm</p>
-                <p>Hypoallergenic and tarnish-resistant</p>
-              </div>
-            </div>
-          </div>
+          <h2>Refunds</h2>
+          <p>Refunds will be processed once your return is received and inspected in our warehouse in a maximum of 7 days from the date on which salty.co.in receives returned goods. We will send you an email/Whatsapp message to notify you that we have received your returned item.</p>
+          <p>If everything is in order, then your refund will be processed, and the amount will be refunded to your original method of payment for prepaid orders. For cash on delivery orders, we will ask you to provide us with your bank account details and credit the refund amount in the same.</p>
+          <p>In case of prepaid order through UPI, Credit Card, Debit Card, or Net Banking, the amount will be refunded back to the account from which it was paid within 3-5 working days.</p>
+          <p>Please note that Cash-on-Delivery charges and Shipping Charges (if applicable) are not refundable.</p>
 
-          <div class="pdp__accordion">
-            <button class="pdp__accordion-toggle" aria-expanded="false">
-              Shipping &amp; Returns
-              <svg class="pdp__accordion-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="4 2 8 6 4 10"></polyline>
-              </svg>
-            </button>
-            <div class="pdp__accordion-body" role="region">
-              <div class="pdp__accordion-content">
-                <p>Free shipping on orders above &#8377;2,000. Delivered within 5 to 7 business days.</p>
-                <p>Returns accepted within 14 days of delivery. Item must be unworn and in original packaging.</p>
-              </div>
-            </div>
-          </div>
+          <h3>Note:</h3>
+          <ul>
+            <li>For any defective/ damaged/incomplete/wrong order delivered, we request you to inform us within 48 hours of receiving the order with the unboxing video of the product received.</li>
+            <li>For defective and wrong. You can do so by clicking on 'Return’ under the ‘My Orders’ section of the Salty.co.in Website and follow the instructions to upload the images. Please keep in mind the following–You need to share the images, unboxing video for wrong product with fully packed condition.</li>
+            <li>Kindly ensure the video is clear and the damaged/defective/missing part of the jewelery is highlighted in zoom.</li>
+            <li>You must send us a video of the original labels and tags intact box. If the video is not shared as per the mentioned details we will be not able to cater any further request.</li>
+            <li>We will be requiring a 360-degree unpacking video of the parcel for us to process the request further. Please note that insufficient evidence or visible signs of tampering with the packet may result in your claim not being honoured. In all such cases, the brand reserves the right to take the final decision.</li>
+            <li>In case you face any technical difficulties in following this process, kindly get in touch with us on <a href="mailto:divyam@radicalhood.com">divyam@radicalhood.com</a> or WhatsApp/Call us on <a href="tel:9990259555">9990259555</a>. We will then investigate the case and reply within 48-72 hours with the best available resolution.</li>
+            <li>Any such complaint raised after 48 hours of receiving the order may not be considered.</li>
+            <li>Return and exchange will be processed at the order level, not on a product-by-product basis. We no longer accommodate requests for return and exchange on a product-by-product basis.</li>
+            <li>In case of missing items in return orders, i.e., where the customer claims to have returned multiple products but actual pickup doesn't include all said items, the company has a right to deduct an amount up to the full MRP of the missing product from the refund amount. This shall extend to promotional products, including but not limited to free gifts.</li>
+            <li>Once you have booked the return request, we request you to be available for the reverse pick-up, and we request you to answer calls from the delivery partner. In the absence of your availability or inability to answer the calls, the delivery partner may, at their discretion, cancel the reverse pick-up. In all such cases, the process will have to be re-initiated again, and the overall timeline will increase.</li>
+            <li>Further, please note that while most pin codes are forward and reverse serviceable, in rare cases, some pin codes may only be forward serviceable and not reverse serviceable. In all such cases, we may request you to return the product via an alternate courier service, such as India Post and reimburse all reasonable shipping costs (up to Rs 70) incurred by you for processing such returns.</li>
+            <li>In case the charges exceed Rs. 70, all charges (return shipping, duties, taxes, fees, etc.) in excess of Rs. 70 will be adjusted against the customer's refund. In case of non-serviceable pin codes, the customer is responsible for returning the jewellery to our warehouse and will receive Rs.70 towards shipping charges with their refund.</li>
+            <li>Any single jewellery in a combo/ gift box cannot be replaced or returned.</li>
+            <li>Products purchased in the period of a special promotional offer, contests, clearance or any special scheme, cannot be returned or replaced.</li>
+          </ul>
 
+          <h2>Contact Us</h2>
+          <p>If you have any questions about this Policy, You can contact us:</p>
+          <ul>
+            <li>By email: <a href="mailto:Divyam@radicalhood.com">Divyam@radicalhood.com</a></li>
+            <li>By Call: <a href="tel:9990259555">9990259555</a></li>
+            <li>By WhatsApp: <a href="https://wa.me/919990259555" target="_blank">9990259555</a></li>
+          </ul></div>
+      </section>
 
-        </div>
+    </main>
 
-      </div>
-    </div>
-
-  </main>
-
-
-  <footer id="footer" class="footer-ritual">
+    <!-- Footer -->
+    <footer id="footer" class="footer-ritual">
       <div class="footer-ritual-inner">
         <div class="footer-top-row">
           <div class="footer-logos-col">
             <div class="footer-logo-svg-wrap">
-              <!-- Inline SVG containing the RADICAL geometric logo -->
               <svg class="footer-logo-radical" viewBox="1352 1216 1328 1352" xmlns="http://www.w3.org/2000/svg">
                 <g id="Layer_x0020_1">
                   <g id="_1980658528416">

@@ -23,3 +23,7 @@ node_modules/
 
 # Original asset masters (never commit — local safety net only)
 raw-assets/
+
+# Scratch folder
+scratch/
+

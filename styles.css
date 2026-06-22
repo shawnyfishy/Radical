@@ -5987,3 +5987,58 @@ a[href], button, [role="button"] {
   }
 }
 
+/* ── Policy Pages Styling ──────────────────────────────────── */
+.policy-page-content {
+  font-family: var(--font-ui), sans-serif;
+  color: var(--color-text);
+  line-height: 1.8;
+  font-size: 15px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+.policy-page-content h2, .policy-page-content h3 {
+  font-family: var(--font-display), serif;
+  color: var(--color-text);
+  margin-top: 48px;
+  margin-bottom: 20px;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+.policy-page-content h2 {
+  font-size: 24px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 12px;
+  text-transform: uppercase;
+}
+.policy-page-content h3 {
+  font-size: 18px;
+  text-transform: uppercase;
+}
+.policy-page-content p {
+  margin-bottom: 24px;
+  color: #333;
+}
+.policy-page-content ul, .policy-page-content ol {
+  margin-bottom: 24px;
+  padding-left: 24px;
+  list-style: square;
+}
+.policy-page-content li {
+  margin-bottom: 12px;
+}
+.policy-page-content strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+/* Footer brand description paragraph styling */
+.footer-about-text {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 13px;
+  line-height: 1.8;
+  letter-spacing: 1px;
+  color: var(--color-text-muted);
+  margin-top: 16px;
+  text-align: center;
+}

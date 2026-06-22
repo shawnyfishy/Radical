@@ -1,41 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      fetch('/api/log-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, source, lineno, colno, stack: error ? error.stack : null })
+      });
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+      fetch('/api/log-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Unhandled Promise Rejection: ' + (event.reason ? event.reason.message || event.reason : event.reason) })
+      });
+    });
+  </script>
   <script>document.documentElement.classList.add('js-enabled')</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Precision-formed solid 316L surgical stainless steel cuff bracelet. Minimalist design engineered as a daily anchor for the modern disciplined man." />
-  <meta name="keywords" content="mens metal cuff, surgical steel bracelet, anti tarnish cuff bracelet, buy silver bracelets for men, minimal steel cuffs, hypoallergenic jewelry" />
+  <meta name="description" content="Privacy Policy — RADICAL Men's Jewellery. Our policies and procedures on the collection, use and disclosure of your information." />
+  <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#1A1A1A" />
-  <title>Classic Steel Cuff Bracelet 1 | RADICAL Men's Jewellery</title>
+  <title>Privacy Policy — RADICAL</title>
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="assets/flavicon.png" />
   <link rel="apple-touch-icon" href="assets/flavicon.png" />
 
-  <!-- Canonical URL -->
-  <link rel="canonical" href="https://radicalhood.com/product-bracelet" />
-
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://radicalhood.com/product-bracelet" />
-  <meta property="og:title" content="Classic Steel Cuff Bracelet 1 | RADICAL Men's Jewellery" />
-  <meta property="og:description" content="Precision-formed solid 316L surgical stainless steel cuff bracelet. Minimalist design engineered as a daily anchor for the modern disciplined man." />
-  <meta property="og:image" content="https://radicalhood.com/assets/bracelet_1_front.webp" />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://radicalhood.com/product-bracelet" />
-  <meta name="twitter:title" content="Classic Steel Cuff Bracelet 1 | RADICAL Men's Jewellery" />
-  <meta name="twitter:description" content="Precision-formed solid 316L surgical stainless steel cuff bracelet. Minimalist design engineered as a daily anchor for the modern disciplined man." />
-  <meta name="twitter:image" content="https://radicalhood.com/assets/bracelet_1_front.webp" />
-
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Questrial&family=Inter+Tight:wght@300;400;500&family=Permanent+Marker&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Questrial&family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="styles.css" />
-
 </head>
 
 <body data-barba="wrapper">
@@ -43,30 +42,26 @@
   <!-- Preloader (Odd Ritual DNA) -->
   <div id="preloader" class="preloader" aria-hidden="true">
     <div class="preloader__box">
-      <!-- 1. Logo and Brand inside the box boundaries (centered) -->
       <div class="preloader__inner">
         <img src="assets/logo.svg" class="preloader__logo" alt="RADICAL Logo" />
         <span class="preloader__brand">RADICAL</span>
       </div>
-      <!-- 2. Box background and Image container -->
       <div class="preloader__box-bg"></div>
       <div class="preloader__image-wrap">
         <img src="assets/images/preloader.webp" class="preloader__box-img" alt="Branding" />
       </div>
     </div>
   </div>
+
+  <!-- Scroll Progress Bar -->
   <div id="scroll-progress" aria-hidden="true"></div>
 
-  <!-- ============================================================
-       STICKY NAVIGATION
-  ============================================================ -->
+  <!-- Navigation -->
   <header id="main-nav" class="nav" role="banner">
     <div class="nav__inner">
-      <!-- LEFT: Brand Logo / Wordmark -->
       <div class="nav__left">
         <a href="/" class="nav__brand" aria-label="Home">RADICAL</a>
       </div>
-      
       <div class="nav__center">
         <div h-fadeout role="button" data-menu-toggle class="menu-toggle" aria-label="Toggle menu">
           <div class="menu-toggle_lines">
@@ -76,20 +71,14 @@
           <span class="menu-toggle_text">MENU</span>
         </div>
       </div>
-
-      <!-- RIGHT: Shop Now + Cart -->
       <div class="nav__right">
         <a h-flip href="/shop" class="nav__link-btn"><span class="body-upper">SHOP NOW</span></a>
         <a h-flip href="#cart" id="nav-bag-btn" class="nav__link-btn" aria-label="Shopping bag"><span class="body-upper">CART</span></a>
       </div>
     </div>
   </header>
-  <div class="nav-top-scrim" aria-hidden="true"></div>
 
-
-  <!-- ============================================================
-       NAVIGATION OVERLAY (Curtain Dropdown)
-  ============================================================ -->
+  <!-- Navigation Overlay -->
   <div id="nav-overlay" class="nav-overlay" data-nav="closed" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="nav-overlay__scrim" data-menu-toggle></div>
     <nav class="menu-curtain">
@@ -112,19 +101,15 @@
             </div>
           </div>
         </div>
-        <!-- Curtain stagger panels -->
         <div class="bg-panel first"></div>
         <div class="bg-panel"></div>
       </div>
       <div class="menu-inner">
         <div class="menu-contain">
-          <!-- TOP WHITE AREA -->
           <div class="menu-layout">
-            <!-- Left: Image Preview Panel -->
             <div data-menu-fade class="menu-img_wrap">
               <div target-img_wrap class="menu-img_inner"></div>
             </div>
-            <!-- Center: Staggered Menu Links -->
             <div class="menu-list_wrap">
               <div img-hover_triggers-wrap class="menu-list">
                 <div img-hover_trigger class="menu-list-item">
@@ -142,8 +127,6 @@
               </div>
             </div>
           </div>
-          
-          <!-- BOTTOM OF WHITE AREA (Cart / Social) -->
           <div class="menu-bottom_layout is-menu">
             <div data-menu-fade class="menu-footer_col center-col">
               <div class="menu-bot_wrap">
@@ -165,10 +148,9 @@
         </div>
       </div>
     </nav>
-    <!-- Nav hover images -- loaded lazily on first menu open via JS -->
   </div>
 
-
+  <!-- Search Overlay -->
   <div id="search-scrim" class="search-scrim" aria-hidden="true"></div>
   <div id="search-strip" class="search-strip" aria-hidden="true" role="search">
     <div class="search-strip__inner">
@@ -182,30 +164,29 @@
     </div>
   </div>
 
-
-  <!-- ============================================================
-       CART DRAWER
-  ============================================================ -->
+  <!-- Cart Drawer -->
   <div id="cart-overlay" class="cart-overlay" aria-hidden="true"></div>
   <aside id="cart-drawer" class="cart-drawer" aria-label="Shopping bag" role="dialog">
     <div class="cart-drawer__header">
       <h2 class="cart-drawer__title">Your Bag</h2>
       <button id="cart-close" class="cart-drawer__close" aria-label="Close bag">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+        </svg>
       </button>
     </div>
     <div id="cart-body" class="cart-drawer__body"></div>
     <div id="cart-footer" class="cart-drawer__footer"></div>
   </aside>
 
-  <!-- ============================================================
-       AUTH MODAL
-  ============================================================ -->
+  <!-- Auth Modal -->
   <div id="auth-overlay" class="auth-overlay" aria-hidden="true"></div>
   <div id="auth-modal" class="auth-modal" role="dialog" aria-label="Sign in">
     <div class="auth-modal__inner">
       <button id="auth-modal-close" class="cart-drawer__close" style="position:absolute;top:20px;right:20px" aria-label="Close">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+        </svg>
       </button>
       <div class="auth__tabs">
         <button class="auth__tab is-active" data-tab="login">Sign In</button>
@@ -231,135 +212,128 @@
     </div>
   </div>
 
-  <div class="page-content" data-barba="container" data-barba-namespace="product-bracelet" data-product-handle="cuff-1">
+  <!-- Page Content Container -->
+  <div class="page-content" data-barba="container" data-barba-namespace="policy">
+    <main role="main">
 
-  <!-- ============================================================
-       LIGHTBOX
-  ============================================================ -->
-  <div id="pdp-lightbox" class="pdp-lightbox" aria-hidden="true" role="dialog" aria-label="Product image viewer" aria-modal="true">
-    <div class="pdp-lightbox__stage" id="pdp-lb-stage">
-      <img id="pdp-lb-img" class="pdp-lightbox__img" src="" alt="" />
-      <div id="pdp-lb-placeholder" class="pdp-lightbox__placeholder"></div>
-    </div>
-    <button id="pdp-lb-close" class="pdp-lightbox__close" aria-label="Close image viewer">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-        <line x1="2" y1="2" x2="12" y2="12"/>
-        <line x1="12" y1="2" x2="2" y2="12"/>
-      </svg>
-      <span>Close</span>
-    </button>
-    <button id="pdp-lb-prev" class="pdp-lightbox__prev" aria-label="Previous image">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
-    </button>
-    <button id="pdp-lb-next" class="pdp-lightbox__next" aria-label="Next image">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 18 15 12 9 6"></polyline>
-      </svg>
-    </button>
-  </div>
-
-  <main id="pdp-main" class="pdp" role="main" aria-label="Product detail">
-
-    <div class="pdp__gallery-col">
-      <div class="pdp__gallery-stack" id="pdp-gallery-stack">
-
-        <div class="pdp__gallery-item" data-index="0" role="button" tabindex="0" aria-label="View product image 1 fullscreen">
-          <img class="pdp__gallery-img" src="assets/bracelet_1_front.webp" alt="Bracelet 1 — Front view" />
-        </div>
-
-        <div class="pdp__gallery-item" data-index="1" role="button" tabindex="0" aria-label="View product image 2 fullscreen">
-          <img class="pdp__gallery-img" src="assets/bracelet_1_detail.webp" alt="Bracelet 1 — Detail view" />
-        </div>
-
-        <div class="pdp__gallery-item" data-index="2" role="button" tabindex="0" aria-label="View product image 3 fullscreen">
-          <img class="pdp__gallery-img" src="assets/bracelet_1_lifestyle.webp" alt="Bracelet 1 — Lifestyle view" />
-        </div>
-
-      </div>
-      <div class="pdp__carousel-dots" id="pdp-carousel-dots" aria-hidden="true"></div>
-    </div>
-
-    <div class="pdp__info-col">
-      <div class="pdp__info">
-
-        <nav class="pdp__breadcrumb" aria-label="Breadcrumb">
-          <a href="/">Shop</a> / <span>Bracelets</span>
-        </nav>
-
-        <h1 class="pdp__name">Bracelet 1</h1>
-
-        <p class="pdp__price">&#8377;5,200</p>
-
-        <hr class="pdp__divider" />
-
-
-
-        <div class="pdp__sizes" role="group" aria-labelledby="pdp-size-label">
-          <p class="pdp__sizes-label" id="pdp-size-label">Wrist Size</p>
-          <div class="pdp__sizes-row">
-            <button class="pdp__size-btn" data-size="S" aria-pressed="false">S</button>
-            <button class="pdp__size-btn" data-size="M" aria-pressed="false">M</button>
-            <button class="pdp__size-btn" data-size="L" aria-pressed="false">L</button>
-            <button class="pdp__size-btn" data-size="XL" aria-pressed="false">XL</button>
+      <!-- Header area -->
+      <section class="about-hero" aria-label="Privacy Policy Header">
+        <div class="about-container">
+          <div class="about-hero__content">
+            <p class="about-hero__label">Legal Documents</p>
+            <h1 class="about-hero__headline">Privacy Policy</h1>
           </div>
         </div>
+      </section>
 
-        <button class="pdp__add-btn" id="pdp-add-btn" data-add-to-bag data-product-id="3" aria-label="Add Bracelet 1 to bag">Add to Bag</button>
+      <!-- Policy Content -->
+      <section class="policy-section">
+        <div class="policy-page-content">
+          <p>This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.</p>
+          <p>We use Your Personal data to provide and improve the Service. By using the Service, You agree to the collection and use of information in accordance with this Privacy Policy.</p>
 
-        <a href="#" class="pdp__find-store">Find in Store</a>
+          <h2>Interpretation and Definitions</h2>
+          <h3>Interpretation</h3>
+          <p>The words of which the initial letter is capitalized have meanings defined under the following conditions. The following definitions shall have the same meaning regardless of whether they appear in singular or in plural.</p>
 
-        <div class="pdp__accordions">
+          <h3>Definitions</h3>
+          <p>For the purposes of this Privacy Policy:</p>
+          <ul>
+            <li><strong>Account</strong> means a unique account created for You to access our Service or parts of our Service.</li>
+            <li><strong>Company</strong> (referred to as either "the Company", "We", "Us" or "Our" in this Agreement) refers to Radical Inc, Floor No.: 3rd floor, Building No./Flat No.: unit no 320, Name Of Premises/Building: City Centre, Road/Street: Sai Road, Nearby Landmark: City Centre, Locality/Sub Locality: Sector 12 Dwarka, City/Town/Village: New Delhi, District: South West Delhi, State: Delhi, PIN Code: 110078.</li>
+            <li><strong>Cookies</strong> are small files that are placed on Your computer, mobile device or any other device by a website, containing the details of Your browsing history on that website among its many uses.</li>
+            <li><strong>Country</strong> refers to: Delhi, India.</li>
+            <li><strong>Device</strong> means any device that can access the Service such as a computer, a cellphone or a digital tablet.</li>
+            <li><strong>Personal Data</strong> is any information that relates to an identified or identifiable individual.</li>
+            <li><strong>Service</strong> refers to the Website.</li>
+            <li><strong>Service Provider</strong> means any natural or legal person who processes the data on behalf of the Company. It refers to third-party companies or individuals employed by the Company to facilitate the Service, to provide the Service on behalf of the Company, to perform services related to the Service or to assist the Company in analyzing how the Service is used.</li>
+            <li><strong>Third-party Social Media Service</strong> refers to any website or any social network website through which a User can log in or create an account to use the Service.</li>
+            <li><strong>Usage Data</strong> refers to data collected automatically, either generated by the use of the Service or from the Service infrastructure itself (for example, the duration of a page visit).</li>
+            <li><strong>Website</strong> refers to Radical Inc, accessible from Radicalhood.com.</li>
+            <li><strong>You</strong> means the individual accessing or using the Service, or the company, or other legal entity on behalf of which such individual is accessing or using the Service, as applicable.</li>
+          </ul>
 
-          <div class="pdp__accordion">
-            <button class="pdp__accordion-toggle" aria-expanded="false">
-              Details &amp; Materials
-              <svg class="pdp__accordion-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="4 2 8 6 4 10"></polyline>
-              </svg>
-            </button>
-            <div class="pdp__accordion-body" role="region">
-              <div class="pdp__accordion-content">
-                <p>Material: 316L Surgical-Grade Steel</p>
-                <p>Weight: 45g</p>
-                <p>Finish: Matte brushed</p>
-                <p>Width: 14mm</p>
-                <p>Hypoallergenic and tarnish-resistant</p>
-              </div>
-            </div>
-          </div>
+          <h2>Collecting and Using Your Personal Data</h2>
+          <h3>Types of Data Collected</h3>
+          <h4>Personal Data</h4>
+          <p>While using Our Service, We may ask You to provide Us with certain personally identifiable information that can be used to contact or identify You. Personally identifiable information may include, but is not limited to:</p>
+          <ul>
+            <li>Email address</li>
+            <li>First name and last name</li>
+            <li>Phone number</li>
+            <li>Address, State, Province, ZIP/Postal code, City</li>
+            <li>Usage Data</li>
+          </ul>
 
-          <div class="pdp__accordion">
-            <button class="pdp__accordion-toggle" aria-expanded="false">
-              Shipping &amp; Returns
-              <svg class="pdp__accordion-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="4 2 8 6 4 10"></polyline>
-              </svg>
-            </button>
-            <div class="pdp__accordion-body" role="region">
-              <div class="pdp__accordion-content">
-                <p>Free shipping on orders above &#8377;2,000. Delivered within 5 to 7 business days.</p>
-                <p>Returns accepted within 14 days of delivery. Item must be unworn and in original packaging.</p>
-              </div>
-            </div>
-          </div>
+          <h4>Usage Data</h4>
+          <p>Usage Data is collected automatically when using the Service.</p>
+          <p>Usage Data may include information such as Your Device's Internet Protocol address (e.g. IP address), browser type, browser version, the pages of our Service that You visit, the time and date of Your visit, the time spent on those pages, unique device identifiers and other diagnostic data.</p>
+          <p>When You access the Service by or through a mobile device, We may collect certain information automatically, including, but not limited to, the type of mobile device You use, Your mobile device unique ID, the IP address of Your mobile device, Your mobile operating system, the type of mobile Internet browser You use, unique device identifiers and other diagnostic data.</p>
+          <p>We may also collect information that Your browser sends whenever You visit our Service or when You access the Service by or through a mobile device.</p>
 
+          <h3>Tracking Technologies and Cookies</h3>
+          <p>We use Cookies and similar tracking technologies to track the activity on Our Service and store certain information. Tracking technologies used are beacons, tags, and scripts to collect and track information and to improve and analyze Our Service. The technologies We use may include:</p>
+          <ul>
+            <li><strong>Cookies or Browser Cookies.</strong> A cookie is a small file placed on Your Device. You can instruct Your browser to refuse all Cookies or to indicate when a Cookie is being sent. However, if You do not accept Cookies, You may not be able to use some parts of our Service. Unless you have adjusted Your browser setting so that it will refuse Cookies, our Service may use Cookies.</li>
+            <li><strong>Flash Cookies.</strong> Certain features of our Service may use local stored objects (or Flash Cookies) to collect and store information about Your preferences or Your activity on our Service. Flash Cookies are not managed by the same browser settings as those used for Browser Cookies.</li>
+            <li><strong>Web Beacons.</strong> Certain sections of our Service and our emails may contain small electronic files known as web beacons (also referred to as clear gifs, pixel tags, and single-pixel gifs) that permit the Company, for example, to count users who have visited those pages or opened an email and for other related website statistics.</li>
+          </ul>
+          <p>We use both Session and Persistent Cookies for the purposes set out below:</p>
+          <ul>
+            <li><strong>Necessary / Essential Cookies</strong><br>Type: Session Cookies<br>Administered by: Us<br>Purpose: These Cookies are essential to provide You with services available through the Website and to enable You to use some of its features. They help to authenticate users and prevent fraudulent use of user accounts.</li>
+            <li><strong>Cookies Policy / Notice Acceptance Cookies</strong><br>Type: Persistent Cookies<br>Administered by: Us<br>Purpose: These Cookies identify if users have accepted the use of cookies on the Website.</li>
+            <li><strong>Functionality Cookies</strong><br>Type: Persistent Cookies<br>Administered by: Us<br>Purpose: These Cookies allow us to remember choices You make when You use the Website, such as remembering your login details or language preference.</li>
+          </ul>
 
+          <h3>Use of Your Personal Data</h3>
+          <p>The Company may use Personal Data for the following purposes:</p>
+          <ul>
+            <li><strong>To provide and maintain our Service:</strong> including to monitor the usage of our Service.</li>
+            <li><strong>To manage Your Account:</strong> to manage Your registration as a user of the Service. The Personal Data You provide can give You access to different functionalities of the Service that are available to You as a registered user.</li>
+            <li><strong>For the performance of a contract:</strong> the development, compliance and undertaking of the purchase contract for the products, items or services You have purchased or of any other contract with Us through the Service.</li>
+            <li><strong>To contact You:</strong> To contact You by email, telephone calls, SMS, or other equivalent forms of electronic communication, such as a mobile application's push notifications regarding updates or informative communications related to the functionalities, products or contracted services, including the security updates, when necessary or reasonable for their implementation.</li>
+            <li><strong>To provide You with news, special offers and general information:</strong> about other goods, services and events which we offer that are similar to those that you have already purchased or enquired about unless You have opted not to receive such information.</li>
+            <li><strong>To manage Your requests:</strong> To attend and manage Your requests to Us.</li>
+            <li><strong>For business transfers:</strong> We may use Your information to evaluate or conduct a merger, divestiture, restructuring, reorganization, dissolution, or other sale or transfer of some or all of Our assets, whether as a going concern or as part of bankruptcy, liquidation, or similar proceeding, in which Personal Data held by Us about our Service users is among the assets transferred.</li>
+            <li><strong>For other purposes:</strong> We may use Your information for other purposes, such as data analysis, identifying usage trends, determining the effectiveness of our promotional campaigns and to evaluate and improve our Service, products, services, marketing and your experience.</li>
+          </ul>
+
+          <p>We may share Your personal information in the following situations:</p>
+          <ul>
+            <li><strong>With Service Providers:</strong> We may share Your personal information with Service Providers to monitor and analyze the use of our Service, to contact You.</li>
+            <li><strong>For business transfers:</strong> We may share or transfer Your personal information in connection with, or during negotiations of, any merger, sale of Company assets, financing, or acquisition of all or a portion of Our business to another company.</li>
+            <li><strong>With Affiliates:</strong> We may share Your information with Our affiliates, in which case we will require those affiliates to honor this Privacy Policy.</li>
+            <li><strong>With business partners:</strong> We may share Your information with Our business partners to offer You certain products, services or promotions.</li>
+            <li><strong>With consent:</strong> We may disclose Your personal information for any other purpose with Your consent.</li>
+          </ul>
+
+          <h3>Retention of Your Personal Data</h3>
+          <p>The Company will retain Your Personal Data only for as long as is necessary for the purposes set out in this Privacy Policy. We will retain and use Your Personal Data to the extent necessary to comply with our legal obligations, resolve disputes, and enforce our legal agreements and policies.</p>
+
+          <h3>Security of Your Personal Data</h3>
+          <p>The security of Your Personal Data is important to Us, but remember that no method of transmission over the Internet, or method of electronic storage is 100% secure. While We strive to use commercially acceptable means to protect Your Personal Data, We cannot guarantee its absolute security.</p>
+
+          <h3>Children's Privacy</h3>
+          <p>Our Service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from anyone under the age of 13. If You are a parent or guardian and You are aware that Your child has provided Us with Personal Data, please contact Us. If We become aware that We have collected Personal Data from anyone under the age of 13 without verification of parental consent, We take steps to remove that information from Our servers.</p>
+
+          <h2>Contact Us</h2>
+          <p>If you have any questions about this Privacy Policy, You can contact us:</p>
+          <ul>
+            <li>By email: <a href="mailto:divyam@radicalhood.com">divyam@radicalhood.com</a></li>
+            <li>By Call: <a href="tel:9990259555">9990259555</a></li>
+            <li>By WhatsApp: <a href="https://wa.me/919990259555" target="_blank">9990259555</a></li>
+          </ul>
         </div>
+      </section>
 
-      </div>
-    </div>
+    </main>
 
-  </main>
-
-
-  <footer id="footer" class="footer-ritual">
+    <!-- Footer -->
+    <footer id="footer" class="footer-ritual">
       <div class="footer-ritual-inner">
         <div class="footer-top-row">
           <div class="footer-logos-col">
             <div class="footer-logo-svg-wrap">
-              <!-- Inline SVG containing the RADICAL geometric logo -->
               <svg class="footer-logo-radical" viewBox="1352 1216 1328 1352" xmlns="http://www.w3.org/2000/svg">
                 <g id="Layer_x0020_1">
                   <g id="_1980658528416">

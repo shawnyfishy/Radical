@@ -2,10 +2,41 @@ require('dotenv').config();
 
 const express = require('express');
 const path    = require('path');
+const helmet  = require('helmet');
+const { rateLimit } = require('express-rate-limit');
 
 const app       = express();
 const FRONTEND  = path.join(__dirname, '..');  // parent folder = RADICAL WEBSITE
 const IS_VERCEL = !!process.env.VERCEL;
+
+// ── Security & Rate Limiting ────────────────────────────────────
+// Trust reverse proxies (Vercel uses them) for accurate rate limiting by IP
+app.set('trust proxy', 1);
+
+// Add standard HTTP security headers (CSP disabled to avoid blocking inline frontend scripts/CDNs)
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
+
+// Global Rate Limiter: max 100 requests per 15 minutes per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
+});
+app.use('/api', globalLimiter);
+
+// Auth Endpoints Rate Limiter: max 15 requests per 15 minutes per IP (prevent brute force)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts, please try again after 15 minutes' }
+});
+app.use('/api/auth', authLimiter);
 
 // ── Middleware ──────────────────────────────────────────────────
 app.use(express.json());
