@@ -5,7 +5,7 @@ const crypto = require('crypto');
  * Truncates or zero-pads the key to fit exactly 16 bytes for AES-128 if needed.
  */
 function getKeyBuffer() {
-  const key = process.env.ICICI_KEY || 'ae85111d-7cc7-4f75-b0dd-6ebd33f8a86f';
+  const key = process.env.ICICI_KEY || 'db06cca0-838b-4e01-8b20-6ac446ffb6bd';
   let keyBuffer = Buffer.from(key, 'utf8');
   if (keyBuffer.length > 16) {
     keyBuffer = keyBuffer.subarray(0, 16);
@@ -126,7 +126,7 @@ function calculateSecureHash(payload, secretKey) {
  */
 async function generatePaymentURL(orderId, amount, host, customerEmail, rawCustomerName, rawCustomerPhone) {
   const mid = process.env.ICICI_MID || '100000000007164';
-  const secretKey = process.env.ICICI_KEY || 'ae85111d-7cc7-4f75-b0dd-6ebd33f8a86f';
+  const secretKey = process.env.ICICI_KEY || 'db06cca0-838b-4e01-8b20-6ac446ffb6bd';
   const aggId = process.env.ICICI_AGG_ID || 'A100000000007164';
   
   const saleApiUrl = process.env.ICICI_SALE_API || 'https://pgpayuat.icicibank.com/tsp/pg/api/v2/initiateSale';
