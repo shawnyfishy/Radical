@@ -2394,6 +2394,24 @@ body.menu-open {
   cursor: default;
 }
 
+/* Size-not-selected error state */
+.pdp__add-btn--error {
+  background-color: #8B1A10 !important;
+  letter-spacing: 1.5px;
+}
+
+/* Shake animation for size error feedback */
+@keyframes shake {
+  0%  { transform: translateX(0); }
+  15% { transform: translateX(-6px); }
+  30% { transform: translateX(6px); }
+  45% { transform: translateX(-5px); }
+  60% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+  100%{ transform: translateX(0); }
+}
+
 /* Find in Store */
 .pdp__find-store {
   display: block;
@@ -3371,11 +3389,19 @@ h1, h2, h3,
   border: none;
   cursor: pointer;
   color: var(--color-text-muted);
-  padding: 4px;
+  padding: 0;
+  /* 44×44px tap target (Apple HIG minimum) */
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: color 0.2s;
+  /* Pull the button flush to the right edge without adding layout width */
+  margin-right: -12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
 .cart-drawer__close:hover { color: var(--color-text); }
 
@@ -3416,7 +3442,7 @@ h1, h2, h3,
 /* Cart Item */
 .cart__item {
   display: grid;
-  grid-template-columns: 72px 1fr 16px;
+  grid-template-columns: 72px 1fr 44px;
   gap: 0 16px;
   align-items: start;
   padding: 24px 0;
@@ -3501,12 +3527,18 @@ h1, h2, h3,
   border: none;
   cursor: pointer;
   color: var(--color-text-faint);
-  padding: 2px;
+  padding: 0;
+  /* 44×44px tap target */
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: color 0.2s;
-  margin-top: 2px;
+  /* Visually centre alongside the item name */
+  margin-top: -10px;
+  /* Pull right to sit flush at edge */
+  margin-right: -12px;
 }
 .cart__item-remove:hover { color: var(--color-text); }
 

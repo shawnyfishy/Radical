@@ -127,6 +127,31 @@
     const btn = e.target.closest('[data-add-to-bag]');
     if (!btn) return;
 
+    // ── Size validation ──────────────────────────────────────────
+    const sizeButtons = document.querySelectorAll('.pdp__size-btn');
+    if (sizeButtons.length > 0) {
+      const hasSelected = Array.from(sizeButtons).some(
+        b => b.getAttribute('aria-pressed') === 'true' || b.classList.contains('is-selected')
+      );
+      if (!hasSelected) {
+        const orig = btn.textContent;
+        btn.textContent = 'Please select a size';
+        btn.classList.add('pdp__add-btn--error');
+        btn.disabled = true;
+        // Shake animation
+        btn.style.animation = 'none';
+        btn.offsetHeight; // force reflow
+        btn.style.animation = 'shake 0.4s ease';
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove('pdp__add-btn--error');
+          btn.disabled = false;
+          btn.style.animation = '';
+        }, 2000);
+        return;
+      }
+    }
+
     const productId = btn.dataset.productId;
     const variantId = btn.dataset.variantId || null;
     const orig = btn.textContent;

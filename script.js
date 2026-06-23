@@ -1305,8 +1305,9 @@
       }
     }
 
+    }
+
     function setupSizesAndAddBtn() {
-      const addBtn = document.getElementById('pdp-add-btn');
       document.querySelectorAll('.pdp__size-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.pdp__size-btn').forEach(b => {
@@ -1319,21 +1320,14 @@
           const sizeValue = btn.dataset.size;
           const sizeLabel = category === 'pendants' ? `${sizeValue}` : `Size ${sizeValue}`;
           const vid = window.pdpActiveVariantMap ? window.pdpActiveVariantMap[sizeLabel] : null;
+          const addBtn = document.getElementById('pdp-add-btn');
           if (vid && addBtn) {
             addBtn.dataset.variantId = vid;
           }
         });
       });
-
-      if (addBtn) {
-        const clickHandler = () => {
-          const orig = addBtn.textContent;
-          addBtn.textContent = 'Added ✓';
-          addBtn.disabled = true;
-          setTimeout(() => { addBtn.textContent = orig; addBtn.disabled = false; }, 1500);
-        };
-        addBtn.addEventListener('click', clickHandler);
-      }
+      // Note: The actual add-to-bag click + API call is handled by store.js via
+      // event delegation on document.body — do NOT add a duplicate handler here.
     }
 
     function setupAccordions() {

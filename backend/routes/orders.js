@@ -149,7 +149,7 @@ router.post('/', async (req, res) => {
   // Generate ICICI Bank redirect link
   try {
     const paymentUrl = await generatePaymentURL(
-      `RAD${newOrder.id}`, 
+      `RAD${newOrder.id}_${Date.now()}`, 
       newOrder.total, 
       req.headers.host, 
       customerEmail,
@@ -168,15 +168,16 @@ router.all('/payment/callback', async (req, res) => {
   const params = { ...req.query, ...req.body };
   console.log('[RADICAL] Payment callback received:', params);
 
-  const referenceNo = params['ReferenceNo'] || params['Reference No'] || '';
-  const responseCode = params['Response_Code'] || params['Response Code'] || '';
+  const referenceNo = params['ReferenceNo'] || params['Reference No'] || params['merchantTxnNo'] || '';
+  const responseCode = params['Response_Code'] || params['Response Code'] || params['responseCode'] || '';
+  const txnStatus = params['txnStatus'] || '';
   
   if (!referenceNo) {
     return res.status(400).send('Invalid payment callback: ReferenceNo is missing.');
   }
 
-  // Parse order ID from ReferenceNo (e.g., "RAD15" -> 15)
-  const orderIdMatch = referenceNo.match(/^RAD(\d+)$/);
+  // Parse order ID from ReferenceNo (e.g., "RAD15_17822..." -> 15, "15" -> 15)
+  const orderIdMatch = referenceNo.match(/^(?:RAD|TEST)?(\d+)/);
   if (!orderIdMatch) {
     return res.status(400).send('Invalid payment callback: Invalid ReferenceNo format.');
   }
@@ -192,7 +193,14 @@ router.all('/payment/callback', async (req, res) => {
     return res.redirect(`/checkout.html?status=success&orderId=RAD${order.id}`);
   }
 
-  const isSuccess = (responseCode === 'E000');
+  const isSuccess = (
+    responseCode === 'E000' || 
+    responseCode === '000' || 
+    responseCode === 'R1000' || 
+    txnStatus.toUpperCase() === 'SUC' || 
+    txnStatus.toUpperCase() === 'SUCCESS' ||
+    params['status'] === 'success'
+  );
 
   if (isSuccess) {
     try {
@@ -290,11 +298,22 @@ async function submitToGoogleSheets(order) {
   };
 
   try {
+    // Google Apps Script requires the request as URL-encoded form data when
+    // called server-side. We use 'no-cors' so the opaque response doesn't throw.
+    const formBody = Object.entries(payload)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+      .join('&');
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
     await fetch(SHEET_WEBHOOK_URL, {
       method: 'POST',
-      body: JSON.stringify(payload),
-      headers: { 'Content-Type': 'application/json' }
-    });
+      body: formBody,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeout));
+
     console.log(`[RADICAL] Google Sheet webhook succeeded for Order RAD${order.id}`);
   } catch (err) {
     console.error(`[RADICAL] Google Sheet webhook failed for Order RAD${order.id}:`, err);
