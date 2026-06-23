@@ -6,7 +6,7 @@ const { generatePaymentURL } = require('../utils/payment');
 const VALID_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 // POST /api/orders — place an order from current cart
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { shipping_address, guest_email, notes } = req.body;
   if (!shipping_address) return res.status(400).json({ error: 'shipping_address is required' });
 
@@ -121,10 +121,46 @@ router.post('/', (req, res) => {
 
   const newOrder = createOrder();
   
-  // Generate ICICI Bank redirect link
-  const paymentUrl = generatePaymentURL(`RAD${newOrder.id}`, newOrder.total, req.headers.host);
+  // Resolve customer email, name, and phone for the payment gateway
+  let customerEmail = guest_email || null;
+  let customerName = 'Customer';
+  let customerPhone = '919999999999';
 
-  res.status(201).json({ order: newOrder, paymentUrl });
+  try {
+    const parsedAddr = typeof shipping_address === 'string' ? JSON.parse(shipping_address) : shipping_address;
+    if (parsedAddr) {
+      if (parsedAddr.name) customerName = parsedAddr.name;
+      if (parsedAddr.phone) customerPhone = parsedAddr.phone;
+    }
+  } catch (e) {
+    console.error('[RADICAL] Failed to parse shipping address for payment:', e);
+  }
+
+  if (userId) {
+    try {
+      const user = db.prepare('SELECT email, name FROM users WHERE id = ?').get(userId);
+      if (user) {
+        if (!customerEmail) customerEmail = user.email;
+        if (customerName === 'Customer' && user.name) customerName = user.name;
+      }
+    } catch {}
+  }
+
+  // Generate ICICI Bank redirect link
+  try {
+    const paymentUrl = await generatePaymentURL(
+      `RAD${newOrder.id}`, 
+      newOrder.total, 
+      req.headers.host, 
+      customerEmail,
+      customerName,
+      customerPhone
+    );
+    res.status(201).json({ order: newOrder, paymentUrl });
+  } catch (err) {
+    console.error('[RADICAL] Payment initiation failed:', err);
+    res.status(500).json({ error: 'Failed to initiate secure checkout session: ' + err.message });
+  }
 });
 
 // ── Payment Callback (ICICI Return URL) ──────────────────────────────────
