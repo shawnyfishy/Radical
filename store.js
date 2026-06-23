@@ -11,12 +11,10 @@
   let cartSubtotal = 0;
 
   // ── DOM refs ──────────────────────────────────────────────────
-  const bagBtn       = document.getElementById('nav-bag-btn');
   const bagCount     = document.querySelector('.nav__bag-count');
   const accountBtn   = document.getElementById('nav-account-btn');
   const cartDrawer   = document.getElementById('cart-drawer');
   const cartOverlay  = document.getElementById('cart-overlay');
-  const cartClose    = document.getElementById('cart-close');
   const cartBody     = document.getElementById('cart-body');
   const cartFooter   = document.getElementById('cart-footer');
   const authModal    = document.getElementById('auth-modal');
@@ -27,9 +25,19 @@
   function openCart()  { cartDrawer?.classList.add('is-open'); cartOverlay?.classList.add('is-active'); document.body.style.overflow = 'hidden'; refreshCart(); }
   function closeCart() { cartDrawer?.classList.remove('is-open'); cartOverlay?.classList.remove('is-active'); document.body.style.overflow = ''; }
 
-  bagBtn?.addEventListener('click', (e) => { e.preventDefault(); openCart(); });
-  cartClose?.addEventListener('click', closeCart);
-  cartOverlay?.addEventListener('click', closeCart);
+  // Delegated on document.body (never replaced, even across Barba SPA page
+  // transitions) instead of binding directly to #nav-bag-btn/#cart-close —
+  // direct bindings on specific PDP-page elements were intermittently going dead.
+  document.body.addEventListener('click', (e) => {
+    if (e.target.closest('#nav-bag-btn')) {
+      e.preventDefault();
+      openCart();
+      return;
+    }
+    if (e.target.closest('#cart-close') || e.target === cartOverlay) {
+      closeCart();
+    }
+  });
 
   async function refreshCart() {
     if (!cartBody) return;

@@ -298,8 +298,7 @@ async function submitToGoogleSheets(order) {
   };
 
   try {
-    // Google Apps Script requires the request as URL-encoded form data when
-    // called server-side. We use 'no-cors' so the opaque response doesn't throw.
+    // This is a server-to-server request (Node fetch), so CORS does not apply here at all.
     const formBody = Object.entries(payload)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
       .join('&');
@@ -307,14 +306,22 @@ async function submitToGoogleSheets(order) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-    await fetch(SHEET_WEBHOOK_URL, {
+    const resp = await fetch(SHEET_WEBHOOK_URL, {
       method: 'POST',
       body: formBody,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       signal: controller.signal,
     }).finally(() => clearTimeout(timeout));
 
-    console.log(`[RADICAL] Google Sheet webhook succeeded for Order RAD${order.id}`);
+    // Apps Script returns HTTP 200 even when the script itself throws —
+    // the failure shows up as an HTML error page in the body, not the status code.
+    const bodyText = await resp.text();
+    const looksLikeScriptError = /<title>Error<\/title>|errorMessage/i.test(bodyText);
+    if (!resp.ok || looksLikeScriptError) {
+      throw new Error(`Apps Script returned an error page (HTTP ${resp.status}): ${bodyText.slice(0, 300)}`);
+    }
+
+    console.log(`[RADICAL] Google Sheet webhook succeeded for Order RAD${order.id}:`, bodyText.slice(0, 200));
   } catch (err) {
     console.error(`[RADICAL] Google Sheet webhook failed for Order RAD${order.id}:`, err);
   }
