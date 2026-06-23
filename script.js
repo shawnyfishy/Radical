@@ -1305,8 +1305,6 @@
       }
     }
 
-    }
-
     function setupSizesAndAddBtn() {
       document.querySelectorAll('.pdp__size-btn').forEach(btn => {
         btn.addEventListener('click', () => {
