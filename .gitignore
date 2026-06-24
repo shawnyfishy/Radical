@@ -27,3 +27,9 @@ raw-assets/
 # Scratch folder
 scratch/
 
+# Internal business documents
+*.pdf
+*.xlsx
+*.docx
+scraped_full.html
+

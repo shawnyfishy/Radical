@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const db     = require('../db/database');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { generatePaymentURL } = require('../utils/payment');
+const { generatePaymentURL, calculateSecureHash } = require('../utils/payment');
 
 const VALID_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
@@ -168,6 +168,21 @@ router.all('/payment/callback', async (req, res) => {
   const params = { ...req.query, ...req.body };
   console.log('[RADICAL] Payment callback received:', params);
 
+  // Verify the callback signature to confirm it genuinely came from ICICI Bank
+  const receivedHash = params['secureHash'] || params['SecureHash'] || params['secure_hash'] || '';
+  if (receivedHash) {
+    const secretKey = process.env.ICICI_KEY;
+    if (!secretKey) {
+      console.error('[RADICAL] Cannot verify callback: ICICI_KEY env var is not set.');
+      return res.status(500).send('Payment verification configuration error.');
+    }
+    const expectedHash = calculateSecureHash(params, secretKey);
+    if (receivedHash.toLowerCase() !== expectedHash.toLowerCase()) {
+      console.error('[RADICAL] Payment callback HMAC mismatch. Possible tampered request. Received:', receivedHash, 'Expected:', expectedHash);
+      return res.status(400).send('Invalid payment callback: signature verification failed.');
+    }
+  }
+
   const referenceNo = params['ReferenceNo'] || params['Reference No'] || params['merchantTxnNo'] || '';
   const responseCode = params['Response_Code'] || params['Response Code'] || params['responseCode'] || '';
   const txnStatus = params['txnStatus'] || '';
@@ -221,7 +236,7 @@ router.all('/payment/callback', async (req, res) => {
       return res.redirect(`/checkout.html?status=success&orderId=RAD${order.id}`);
     } catch (e) {
       console.error('[RADICAL] Failed to finalize successful order:', e);
-      return res.redirect(`/checkout.html?status=failed&error=Failed to process payment confirmation: ${e.message}`);
+      return res.redirect('/checkout.html?status=failed&error=Payment+confirmation+error.+Please+contact+support.');
     }
   } else {
     // Payment failed or was cancelled
@@ -241,33 +256,35 @@ router.all('/payment/callback', async (req, res) => {
       return res.redirect(`/checkout.html?status=failed&error=${encodeURIComponent(errorMsg)}`);
     } catch (e) {
       console.error('[RADICAL] Failed to handle payment cancellation:', e);
-      return res.redirect(`/checkout.html?status=failed&error=Payment processing error: ${e.message}`);
+      return res.redirect('/checkout.html?status=failed&error=Payment+processing+error.+Please+contact+support.');
     }
   }
 });
 
-// ── Payment Simulation Endpoint ──────────────────────────────────────────
-// Simulates the ICICI bank redirection callback
-router.get('/payment/simulate', (req, res) => {
-  const { orderId, status } = req.query;
-  if (!orderId || !status) {
-    return res.status(400).send('Missing query parameters: orderId and status are required.');
-  }
+if (process.env.NODE_ENV !== 'production') {
+  // ── Payment Simulation Endpoint ──────────────────────────────────────────
+  // Simulates the ICICI bank redirection callback
+  router.get('/payment/simulate', (req, res) => {
+    const { orderId, status } = req.query;
+    if (!orderId || !status) {
+      return res.status(400).send('Missing query parameters: orderId and status are required.');
+    }
 
-  const responseCode = status === 'success' ? 'E000' : 'E999';
-  const reason = status === 'success' ? '' : 'Simulated transaction failure.';
+    const responseCode = status === 'success' ? 'E000' : 'E999';
+    const reason = status === 'success' ? '' : 'Simulated transaction failure.';
 
-  const params = new URLSearchParams();
-  params.append('ReferenceNo', orderId.startsWith('RAD') ? orderId : `RAD${orderId}`);
-  params.append('Response_Code', responseCode);
-  if (reason) params.append('Reason', reason);
+    const params = new URLSearchParams();
+    params.append('ReferenceNo', orderId.startsWith('RAD') ? orderId : `RAD${orderId}`);
+    params.append('Response_Code', responseCode);
+    if (reason) params.append('Reason', reason);
 
-  res.redirect(`/api/orders/payment/callback?${params.toString()}`);
-});
+    res.redirect(`/api/orders/payment/callback?${params.toString()}`);
+  });
+}
 
 // Helper function to write order to Google Sheets
 async function submitToGoogleSheets(order) {
-  const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby-7UlBa-iX7VVi0NcOmvisUOjKscCZX7Ai7HUpI9SusSIt2RG258ln0CPHBllUCFfTQA/exec';
+  const SHEET_WEBHOOK_URL = process.env.GOOGLE_SHEET_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycby-7UlBa-iX7VVi0NcOmvisUOjKscCZX7Ai7HUpI9SusSIt2RG258ln0CPHBllUCFfTQA/exec';
   
   const shippingAddress = JSON.parse(order.shipping_address);
   const nameParts = (shippingAddress.name || '').trim().split(/\s+/);

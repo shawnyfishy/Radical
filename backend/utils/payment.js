@@ -5,7 +5,8 @@ const crypto = require('crypto');
  * Truncates or zero-pads the key to fit exactly 16 bytes for AES-128 if needed.
  */
 function getKeyBuffer() {
-  const key = process.env.ICICI_KEY || 'db06cca0-838b-4e01-8b20-6ac446ffb6bd';
+  const key = process.env.ICICI_KEY;
+  if (!key) throw new Error('[RADICAL] ICICI_KEY environment variable is not set. Cannot process payments.');
   let keyBuffer = Buffer.from(key, 'utf8');
   if (keyBuffer.length > 16) {
     keyBuffer = keyBuffer.subarray(0, 16);
@@ -92,7 +93,10 @@ function cleanName(name) {
 function calculateSecureHash(payload, secretKey) {
   // 1. Sort keys alphabetically (excluding secureHash itself)
   const sortedKeys = Object.keys(payload)
-    .filter(key => key !== 'secureHash')
+    .filter(key => {
+      const k = key.toLowerCase();
+      return k !== 'securehash' && k !== 'secure_hash';
+    })
     .sort();
     
   // 2. Concatenate values without delimiters
@@ -125,11 +129,13 @@ function calculateSecureHash(payload, secretKey) {
  * @param {string} rawCustomerPhone - Customer mobile number
  */
 async function generatePaymentURL(orderId, amount, host, customerEmail, rawCustomerName, rawCustomerPhone) {
-  const mid = process.env.ICICI_MID || '100000000007164';
-  const secretKey = process.env.ICICI_KEY || 'db06cca0-838b-4e01-8b20-6ac446ffb6bd';
-  const aggId = process.env.ICICI_AGG_ID || 'A100000000007164';
-  
-  const saleApiUrl = process.env.ICICI_SALE_API || 'https://pgpayuat.icicibank.com/tsp/pg/api/v2/initiateSale';
+  const mid = process.env.ICICI_MID;
+  const secretKey = process.env.ICICI_KEY;
+  const aggId = process.env.ICICI_AGG_ID;
+  const saleApiUrl = process.env.ICICI_SALE_API;
+  if (!mid || !secretKey || !aggId || !saleApiUrl) {
+    throw new Error('[RADICAL] Missing required ICICI payment environment variables (ICICI_MID, ICICI_KEY, ICICI_AGG_ID, ICICI_SALE_API).');
+  }
 
   // Dynamic Return URL configuration
   const protocol = host.includes('localhost') ? 'http' : 'https';
@@ -202,5 +208,6 @@ async function generatePaymentURL(orderId, amount, host, customerEmail, rawCusto
 module.exports = {
   encrypt,
   decrypt,
-  generatePaymentURL
+  generatePaymentURL,
+  calculateSecureHash
 };

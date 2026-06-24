@@ -4,6 +4,15 @@
  */
 
 (function () {
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   const API = window.RADICAL_API;
 
   // ── State ─────────────────────────────────────────────────────
@@ -66,11 +75,11 @@
     cartBody.innerHTML = cartItems.map(item => `
       <div class="cart__item" data-id="${item.id}">
         <div class="cart__item-img">
-          <img src="${item.product.images[0] || ''}" alt="${item.product.name}" />
+          <img src="${esc(item.product.images[0] || '')}" alt="${esc(item.product.name)}" />
         </div>
         <div class="cart__item-info">
-          <p class="cart__item-name">${item.product.name}</p>
-          ${item.variant ? `<p class="cart__item-variant">${item.variant.label}</p>` : ''}
+          <p class="cart__item-name">${esc(item.product.name)}</p>
+          ${item.variant ? `<p class="cart__item-variant">${esc(item.variant.label)}</p>` : ''}
           <p class="cart__item-price">₹${(item.unit_price * item.quantity).toLocaleString('en-IN')}</p>
           <div class="cart__item-qty">
             <button class="cart__qty-btn" data-action="dec" data-id="${item.id}" data-qty="${item.quantity}">−</button>

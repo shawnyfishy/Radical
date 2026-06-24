@@ -2,6 +2,9 @@
   "name": "radical-website",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "description": "RADICAL Men's Jewellery — static frontend + Express API (backend/) deployed as a Vercel serverless function via api/index.js",
   "scripts": {
     "start": "node backend/server.js",

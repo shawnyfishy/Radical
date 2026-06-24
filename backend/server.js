@@ -4,6 +4,7 @@ const express = require('express');
 const path    = require('path');
 const helmet  = require('helmet');
 const { rateLimit } = require('express-rate-limit');
+const cors = require('cors');
 
 const app       = express();
 const FRONTEND  = path.join(__dirname, '..');  // parent folder = RADICAL WEBSITE
@@ -12,6 +13,25 @@ const IS_VERCEL = !!process.env.VERCEL;
 // ── Security & Rate Limiting ────────────────────────────────────
 // Trust reverse proxies (Vercel uses them) for accurate rate limiting by IP
 app.set('trust proxy', 1);
+
+// CORS: only allow requests from our own domain (and localhost for dev)
+const ALLOWED_ORIGINS = [
+  'https://radicalhood.com',
+  'https://radical-self.vercel.app',
+];
+if (process.env.ALLOWED_ORIGIN) {
+  ALLOWED_ORIGINS.push(process.env.ALLOWED_ORIGIN);
+}
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like server-to-server or curl in dev)
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    callback(new Error('CORS: origin not allowed — ' + origin));
+  },
+  credentials: true,
+}));
 
 // Add standard HTTP security headers (CSP disabled to avoid blocking inline frontend scripts/CDNs)
 app.use(helmet({
@@ -38,6 +58,15 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth', authLimiter);
 
+// Log-error endpoint limiter: max 20 requests per 15 minutes per IP
+const logLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many log requests' }
+});
+
 // ── Middleware ──────────────────────────────────────────────────
 app.use(express.json());
 
@@ -58,7 +87,7 @@ app.use('/api/addresses', require('./routes/addresses'));
 app.use('/api/admin',     require('./routes/admin'));
 
 // ── Error logging from browser ──────────────────────────────────
-app.post('/api/log-error', (req, res) => {
+app.post('/api/log-error', logLimiter, (req, res) => {
   console.log('=== BROWSER ERROR ===', req.body);
   res.sendStatus(200);
 });

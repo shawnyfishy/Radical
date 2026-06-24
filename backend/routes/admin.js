@@ -20,7 +20,8 @@ router.get('/dashboard', (req, res) => {
 
 // GET /api/admin/orders — all orders with filters
 router.get('/orders', (req, res) => {
-  const { status, page = 1, limit = 20 } = req.query;
+  const { status, page = 1 } = req.query;
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
   let sql = 'SELECT o.*, u.name AS customer_name, u.email AS customer_email FROM orders o LEFT JOIN users u ON u.id = o.user_id';
   const params = [];
 

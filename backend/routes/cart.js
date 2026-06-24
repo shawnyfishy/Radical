@@ -70,6 +70,7 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   const { product_id, variant_id, quantity = 1 } = req.body;
   if (!product_id) return res.status(400).json({ error: 'product_id is required' });
+  const safeQty = Math.min(Math.max(parseInt(quantity, 10) || 1, 1), 10);
 
   const product = db.prepare('SELECT * FROM products WHERE id = ? AND is_active = 1').get(product_id);
   if (!product) return res.status(404).json({ error: 'Product not found' });
@@ -77,7 +78,7 @@ router.post('/', (req, res) => {
   if (variant_id) {
     const variant = db.prepare('SELECT * FROM variants WHERE id = ? AND product_id = ?').get(variant_id, product_id);
     if (!variant) return res.status(404).json({ error: 'Variant not found' });
-    if (variant.stock < quantity) return res.status(400).json({ error: 'Not enough stock' });
+    if (variant.stock < safeQty) return res.status(400).json({ error: 'Not enough stock' });
   }
 
   const owner = getCartOwner(req);
@@ -89,11 +90,11 @@ router.post('/', (req, res) => {
   `).get(...where.params, product_id, variant_id ?? null, variant_id ?? null);
 
   if (existing) {
-    db.prepare('UPDATE cart_items SET quantity = quantity + ? WHERE id = ?').run(quantity, existing.id);
+    db.prepare('UPDATE cart_items SET quantity = quantity + ? WHERE id = ?').run(safeQty, existing.id);
   } else {
     const col = owner.user_id ? 'user_id' : 'session_id';
     db.prepare(`INSERT INTO cart_items (${col}, product_id, variant_id, quantity) VALUES (?, ?, ?, ?)`)
-      .run(owner.user_id ?? owner.session_id, product_id, variant_id ?? null, quantity);
+      .run(owner.user_id ?? owner.session_id, product_id, variant_id ?? null, safeQty);
   }
 
   res.status(201).json({ message: 'Item added to cart', session_id: owner.session_id });
@@ -101,8 +102,9 @@ router.post('/', (req, res) => {
 
 // PUT /api/cart/:itemId — update quantity
 router.put('/:itemId', (req, res) => {
-  const { quantity } = req.body;
-  if (!quantity || quantity < 1) return res.status(400).json({ error: 'quantity must be >= 1' });
+  const quantity = parseInt(req.body.quantity, 10);
+  if (!quantity || isNaN(quantity) || quantity < 1) return res.status(400).json({ error: 'quantity must be a number >= 1' });
+  if (quantity > 10) return res.status(400).json({ error: 'Maximum quantity per item is 10' });
 
   const owner = getCartOwner(req);
   const where = cartWhere(owner);
