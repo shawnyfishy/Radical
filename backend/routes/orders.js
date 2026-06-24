@@ -177,7 +177,7 @@ router.post('/', async (req, res) => {
     res.status(201).json({ order: newOrder, paymentUrl });
   } catch (err) {
     console.error('[RADICAL] Payment initiation failed:', err);
-    res.status(500).json({ error: 'Failed to initiate secure checkout session: ' + err.message });
+    res.status(500).json({ error: 'Failed to initiate secure checkout. Please try again or contact support.' });
   }
 });
 
@@ -186,19 +186,20 @@ router.all('/payment/callback', async (req, res) => {
   const params = { ...req.query, ...req.body };
   console.log('[RADICAL] Payment callback received:', params);
 
-  // Verify the callback signature to confirm it genuinely came from ICICI Bank
-  const receivedHash = params['secureHash'] || params['SecureHash'] || params['secure_hash'] || '';
-  if (receivedHash) {
-    const secretKey = process.env.ICICI_KEY;
-    if (!secretKey) {
-      console.error('[RADICAL] Cannot verify callback: ICICI_KEY env var is not set.');
-      return res.status(500).send('Payment verification configuration error.');
-    }
-    const expectedHash = calculateSecureHash(params, secretKey);
-    if (receivedHash.toLowerCase() !== expectedHash.toLowerCase()) {
-      console.error('[RADICAL] Payment callback HMAC mismatch. Possible tampered request. Received:', receivedHash, 'Expected:', expectedHash);
-      return res.status(400).send('Invalid payment callback: signature verification failed.');
-    }
+  const receivedHash = params['secureHash'] || params['SecureHash'] || params['secure_hash'];
+  if (!receivedHash) {
+    console.error('[RADICAL] Payment callback rejected: no secureHash present.');
+    return res.status(400).send('Invalid payment callback: missing signature.');
+  }
+  const secretKey = process.env.ICICI_KEY;
+  if (!secretKey) {
+    console.error('[RADICAL] Cannot verify callback: ICICI_KEY env var is not set.');
+    return res.status(500).send('Payment verification configuration error.');
+  }
+  const expectedHash = calculateSecureHash(params, secretKey);
+  if (receivedHash.toLowerCase() !== expectedHash.toLowerCase()) {
+    console.error('[RADICAL] Payment callback HMAC mismatch. Received:', receivedHash, 'Expected:', expectedHash);
+    return res.status(400).send('Invalid payment callback: signature verification failed.');
   }
 
   const referenceNo = params['ReferenceNo'] || params['Reference No'] || params['merchantTxnNo'] || '';
@@ -227,12 +228,11 @@ router.all('/payment/callback', async (req, res) => {
   }
 
   const isSuccess = (
-    responseCode === 'E000' || 
-    responseCode === '000' || 
-    responseCode === 'R1000' || 
-    txnStatus.toUpperCase() === 'SUC' || 
-    txnStatus.toUpperCase() === 'SUCCESS' ||
-    params['status'] === 'success'
+    responseCode === 'E000' ||
+    responseCode === '000' ||
+    responseCode === 'R1000' ||
+    txnStatus.toUpperCase() === 'SUC' ||
+    txnStatus.toUpperCase() === 'SUCCESS'
   );
 
   if (isSuccess) {
