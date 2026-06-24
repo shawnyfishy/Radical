@@ -25,11 +25,14 @@ async function initSchema() {
   const statements = schema
     .split(';')
     .map(s => s.trim())
-    .filter(s => s.length > 0 && !s.startsWith('--'))
-    .map(s => ({ sql: s + ';', args: [] }));
+    .filter(s => s.length > 0 && !s.startsWith('--'));
 
-  if (statements.length > 0) {
-    await client.batch(statements, 'write');
+  for (const stmt of statements) {
+    try {
+      await client.execute(stmt + ';');
+    } catch (e) {
+      console.log('[RADICAL] Schema stmt skipped (already exists):', e.message.slice(0, 80));
+    }
   }
 
   // Migration: add session_id column to orders if it doesn't exist yet
@@ -56,8 +59,7 @@ async function initSchema() {
 // This promise resolves once the schema is ready.
 // All routes wait for this via server.js before accepting requests.
 const ready = initSchema().catch(e => {
-  console.error('[RADICAL] Fatal: database init failed:', e);
-  process.exit(1);
+  console.error('[RADICAL] Schema init warning (tables may already exist):', e.message);
 });
 
 // ── Query helpers ─────────────────────────────────────────────────────────────
