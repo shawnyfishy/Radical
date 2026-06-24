@@ -1,33 +1,34 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const bcrypt = require('bcryptjs');
 
-function seedDatabase(db) {
+async function seedDatabase(client) {
   console.log('Seeding database...');
 
 // Clear existing products and variants for a clean seed
 try {
-  db.prepare('DELETE FROM order_items').run();
-  db.prepare('DELETE FROM orders').run();
-  db.prepare('DELETE FROM cart_items').run();
+  await client.execute({ sql: 'DELETE FROM order_items', args: [] });
+  await client.execute({ sql: 'DELETE FROM orders', args: [] });
+  await client.execute({ sql: 'DELETE FROM cart_items', args: [] });
 } catch (e) {
   console.log('Note: Tables order_items/orders/cart_items could not be cleared:', e.message);
 }
-db.prepare('DELETE FROM variants').run();
-db.prepare('DELETE FROM products').run();
+await client.execute({ sql: 'DELETE FROM variants', args: [] });
+await client.execute({ sql: 'DELETE FROM products', args: [] });
 try {
-  db.prepare("DELETE FROM sqlite_sequence WHERE name='products'").run();
-  db.prepare("DELETE FROM sqlite_sequence WHERE name='variants'").run();
-  db.prepare("DELETE FROM sqlite_sequence WHERE name='orders'").run();
+  await client.execute({ sql: "DELETE FROM sqlite_sequence WHERE name='products'", args: [] });
+  await client.execute({ sql: "DELETE FROM sqlite_sequence WHERE name='variants'", args: [] });
+  await client.execute({ sql: "DELETE FROM sqlite_sequence WHERE name='orders'", args: [] });
 } catch (e) {}
 console.log('Cleared old products, variants, orders, cart, and reset autoincrement.');
 
 // Admin user
 const adminEmail = process.env.ADMIN_EMAIL || 'admin@radical.com';
-const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
+const adminExists = (await client.execute({ sql: 'SELECT id FROM users WHERE email = ?', args: [adminEmail] })).rows[0];
 if (!adminExists) {
-  db.prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)').run(
-    'Admin', adminEmail, bcrypt.hashSync('radical_admin_123', 10), 'admin'
-  );
+  await client.execute({
+    sql: 'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+    args: ['Admin', adminEmail, bcrypt.hashSync('radical_admin_123', 10), 'admin']
+  });
   console.log(`Admin created: ${adminEmail} / radical_admin_123`);
 }
 
@@ -522,36 +523,46 @@ const products = [
 
 
 for (const p of products) {
-  const exists = db.prepare('SELECT id FROM products WHERE slug = ?').get(p.slug);
+  const exists = (await client.execute({ sql: 'SELECT id FROM products WHERE slug = ?', args: [p.slug] })).rows[0];
   if (!exists) {
-    const result = db.prepare(`
-      INSERT INTO products (name, slug, description, category, price, compare_price, images, material)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(p.name, p.slug, p.description, p.category, p.price, p.compare_price || null, JSON.stringify(p.images), p.material || null);
+    const result = await client.execute({
+      sql: `INSERT INTO products (name, slug, description, category, price, compare_price, images, material)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [p.name, p.slug, p.description, p.category, p.price, p.compare_price || null, JSON.stringify(p.images), p.material || null]
+    });
+
+    const lastInsertId = result.lastInsertRowid ? Number(result.lastInsertRowid) : null;
 
     // Add size variants
     if (p.category === 'rings') {
-      ['Size 8','Size 9','Size 10'].forEach((label, i) => {
-        db.prepare('INSERT INTO variants (product_id, label, sku, stock) VALUES (?, ?, ?, ?)').run(
-          result.lastInsertRowid, label, `${p.slug}-${8+i}`, 10
-        );
-      });
+      for (let i = 0; i < 3; i++) {
+        const label = `Size ${8 + i}`;
+        await client.execute({
+          sql: 'INSERT INTO variants (product_id, label, sku, stock) VALUES (?, ?, ?, ?)',
+          args: [lastInsertId, label, `${p.slug}-${8+i}`, 10]
+        });
+      }
     } else if (p.category === 'bracelets') {
-      ['Size S','Size M','Size L','Size XL'].forEach((label) => {
-        db.prepare('INSERT INTO variants (product_id, label, sku, stock) VALUES (?, ?, ?, ?)').run(
-          result.lastInsertRowid, label, `${p.slug}-${label.toLowerCase().replace(' ', '')}`, 15
-        );
-      });
+      const labels = ['Size S','Size M','Size L','Size XL'];
+      for (const label of labels) {
+        await client.execute({
+          sql: 'INSERT INTO variants (product_id, label, sku, stock) VALUES (?, ?, ?, ?)',
+          args: [lastInsertId, label, `${p.slug}-${label.toLowerCase().replace(' ', '')}`, 15]
+        });
+      }
     } else if (p.category === 'pendants') {
-      ['18"','20"','22"'].forEach((label) => {
-        db.prepare('INSERT INTO variants (product_id, label, sku, stock) VALUES (?, ?, ?, ?)').run(
-          result.lastInsertRowid, label, `${p.slug}-${label.replace('"', 'in')}`, 15
-        );
-      });
+      const labels = ['18"','20"','22"'];
+      for (const label of labels) {
+        await client.execute({
+          sql: 'INSERT INTO variants (product_id, label, sku, stock) VALUES (?, ?, ?, ?)',
+          args: [lastInsertId, label, `${p.slug}-${label.replace('"', 'in')}`, 15]
+        });
+      }
     } else {
-      db.prepare('INSERT INTO variants (product_id, label, sku, stock) VALUES (?, ?, ?, ?)').run(
-        result.lastInsertRowid, 'Standard', `${p.slug}-std`, 20
-      );
+      await client.execute({
+        sql: 'INSERT INTO variants (product_id, label, sku, stock) VALUES (?, ?, ?, ?)',
+        args: [lastInsertId, 'Standard', `${p.slug}-std`, 20]
+      });
     }
     console.log(`Created product: ${p.name}`);
   }
@@ -562,8 +573,13 @@ for (const p of products) {
 
 if (require.main === module) {
   const dbInstance = require('./database');
-  seedDatabase(dbInstance);
-  process.exit(0);
+  dbInstance.ready.then(async () => {
+    await seedDatabase(dbInstance.client);
+    process.exit(0);
+  }).catch(e => {
+    console.error(e);
+    process.exit(1);
+  });
 }
 
 module.exports = { seedDatabase };

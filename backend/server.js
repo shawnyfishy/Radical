@@ -119,11 +119,19 @@ app.use((err, req, res, next) => {
 
 // Vercel imports this module and calls the exported app per-request —
 // it must never call .listen() itself.
+// Wait for database schema init before accepting requests.
+const { ready } = require('./db/database');
+
 if (!IS_VERCEL) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`RADICAL running on http://localhost:${PORT}`);
-    console.log(`API available at http://localhost:${PORT}/api`);
+  ready.then(() => {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`RADICAL running on http://localhost:${PORT}`);
+      console.log(`API available at http://localhost:${PORT}/api`);
+    });
+  }).catch(e => {
+    console.error('[RADICAL] Fatal startup error:', e);
+    process.exit(1);
   });
 }
 

@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
 
   if (!userId && !sessionId) return res.status(400).json({ error: 'No cart session found' });
 
-  const items = db.prepare(`
+  const items = await db.all(`
     SELECT ci.id AS cart_item_id, ci.quantity,
            p.id AS product_id, p.name, p.price, p.is_active,
            v.id AS variant_id, v.label AS variant_label, v.price_delta, v.stock
@@ -34,7 +34,7 @@ router.post('/', async (req, res) => {
     JOIN products p ON p.id = ci.product_id
     LEFT JOIN variants v ON v.id = ci.variant_id
     WHERE ${cartWhere}
-  `).all(cartParam);
+  `, [cartParam]);
 
   if (!items.length) return res.status(400).json({ error: 'Cart is empty' });
 
@@ -53,22 +53,26 @@ router.post('/', async (req, res) => {
   // ── Self-Cleaning Stock Reclaiming ─────────────────────────────────────
   // 1. Reclaim stock from ANY pending orders older than 20 minutes across the system
   try {
-    const expiredOrders = db.prepare(`
+    const expiredOrders = await db.all(`
       SELECT id FROM orders 
       WHERE status = 'pending' 
         AND created_at < datetime('now', '-20 minutes')
-    `).all();
+    `);
 
     for (const exp of expiredOrders) {
-      db.transaction(() => {
-        db.prepare("UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?").run(exp.id);
-        const expItems = db.prepare("SELECT * FROM order_items WHERE order_id = ?").all(exp.id);
-        for (const item of expItems) {
-          if (item.variant_id) {
-            db.prepare('UPDATE variants SET stock = stock + ? WHERE id = ?').run(item.quantity, item.variant_id);
-          }
+      const expItems = await db.all("SELECT * FROM order_items WHERE order_id = ?", [exp.id]);
+      const statements = [
+        { sql: "UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?", args: [exp.id] }
+      ];
+      for (const item of expItems) {
+        if (item.variant_id) {
+          statements.push({
+            sql: 'UPDATE variants SET stock = stock + ? WHERE id = ?',
+            args: [item.quantity, item.variant_id]
+          });
         }
-      })();
+      }
+      await db.transaction(statements);
     }
   } catch (e) {
     console.error('[RADICAL] Failed to clean up expired pending orders:', e);
@@ -77,49 +81,63 @@ router.post('/', async (req, res) => {
   // 2. Cancel previous pending orders for the SAME user or session to free their own stock
   try {
     const userPendingOrders = userId 
-      ? db.prepare("SELECT id FROM orders WHERE user_id = ? AND status = 'pending'").all(userId)
-      : db.prepare("SELECT id FROM orders WHERE session_id = ? AND status = 'pending'").all(cartParam);
+      ? await db.all("SELECT id FROM orders WHERE user_id = ? AND status = 'pending'", [userId])
+      : await db.all("SELECT id FROM orders WHERE session_id = ? AND status = 'pending'", [cartParam]);
 
     for (const po of userPendingOrders) {
-      db.transaction(() => {
-        db.prepare("UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?").run(po.id);
-        const poItems = db.prepare("SELECT * FROM order_items WHERE order_id = ?").all(po.id);
-        for (const item of poItems) {
-          if (item.variant_id) {
-            db.prepare('UPDATE variants SET stock = stock + ? WHERE id = ?').run(item.quantity, item.variant_id);
-          }
+      const poItems = await db.all("SELECT * FROM order_items WHERE order_id = ?", [po.id]);
+      const statements = [
+        { sql: "UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?", args: [po.id] }
+      ];
+      for (const item of poItems) {
+        if (item.variant_id) {
+          statements.push({
+            sql: 'UPDATE variants SET stock = stock + ? WHERE id = ?',
+            args: [item.quantity, item.variant_id]
+          });
         }
-      })();
+      }
+      await db.transaction(statements);
     }
   } catch (e) {
     console.error('[RADICAL] Failed to clean up previous user pending orders:', e);
   }
 
-  // Create order in a transaction (does not clear cart, but reserves stock)
-  const createOrder = db.transaction(() => {
-    const order = db.prepare(`
+  // Create order transaction (Insert order record first, then batch order items + stock decrements)
+  let orderId;
+  try {
+    const orderResult = await db.run(`
       INSERT INTO orders (user_id, guest_email, session_id, subtotal, shipping_cost, total, shipping_address, notes, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-    `).run(userId, guest_email ?? null, userId ? null : cartParam, subtotal, shippingCost, total, JSON.stringify(shipping_address), notes ?? null);
+    `, [userId, guest_email ?? null, userId ? null : cartParam, subtotal, shippingCost, total, JSON.stringify(shipping_address), notes ?? null]);
 
-    const orderId = order.lastInsertRowid;
+    orderId = orderResult.lastInsertRowid;
 
+    const batchStatements = [];
     for (const item of items) {
-      db.prepare(`
-        INSERT INTO order_items (order_id, product_id, variant_id, product_name, variant_label, quantity, unit_price)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(orderId, item.product_id, item.variant_id ?? null, item.name, item.variant_label ?? null, item.quantity, item.price + (item.price_delta ?? 0));
+      batchStatements.push({
+        sql: `INSERT INTO order_items (order_id, product_id, variant_id, product_name, variant_label, quantity, unit_price)
+              VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        args: [orderId, item.product_id, item.variant_id ?? null, item.name, item.variant_label ?? null, item.quantity, item.price + (item.price_delta ?? 0)]
+      });
 
-      // Decrement stock
       if (item.variant_id) {
-        db.prepare('UPDATE variants SET stock = stock - ? WHERE id = ?').run(item.quantity, item.variant_id);
+        batchStatements.push({
+          sql: 'UPDATE variants SET stock = stock - ? WHERE id = ?',
+          args: [item.quantity, item.variant_id]
+        });
       }
     }
 
-    return db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
-  });
+    if (batchStatements.length > 0) {
+      await db.transaction(batchStatements);
+    }
+  } catch (e) {
+    console.error('[RADICAL] Order creation transaction failed:', e);
+    return res.status(500).json({ error: 'Failed to create order.' });
+  }
 
-  const newOrder = createOrder();
+  const newOrder = await db.get('SELECT * FROM orders WHERE id = ?', [orderId]);
   
   // Resolve customer email, name, and phone for the payment gateway
   let customerEmail = guest_email || null;
@@ -138,7 +156,7 @@ router.post('/', async (req, res) => {
 
   if (userId) {
     try {
-      const user = db.prepare('SELECT email, name FROM users WHERE id = ?').get(userId);
+      const user = await db.get('SELECT email, name FROM users WHERE id = ?', [userId]);
       if (user) {
         if (!customerEmail) customerEmail = user.email;
         if (customerName === 'Customer' && user.name) customerName = user.name;
@@ -198,7 +216,7 @@ router.all('/payment/callback', async (req, res) => {
   }
   const orderDbId = parseInt(orderIdMatch[1], 10);
 
-  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderDbId);
+  const order = await db.get('SELECT * FROM orders WHERE id = ?', [orderDbId]);
   if (!order) {
     return res.status(404).send('Order not found.');
   }
@@ -220,15 +238,15 @@ router.all('/payment/callback', async (req, res) => {
   if (isSuccess) {
     try {
       // 1. Update order status to confirmed
-      db.prepare("UPDATE orders SET status = 'confirmed', updated_at = datetime('now') WHERE id = ?").run(order.id);
+      await db.run("UPDATE orders SET status = 'confirmed', updated_at = datetime('now') WHERE id = ?", [order.id]);
       
       // Get the updated order state
-      const confirmedOrder = db.prepare('SELECT * FROM orders WHERE id = ?').get(order.id);
+      const confirmedOrder = await db.get('SELECT * FROM orders WHERE id = ?', [order.id]);
       
       // 2. Clear customer cart
       const deleteWhere = confirmedOrder.user_id ? 'user_id = ?' : 'session_id = ?';
       const deleteParam = confirmedOrder.user_id ?? confirmedOrder.session_id;
-      db.prepare(`DELETE FROM cart_items WHERE ${deleteWhere}`).run(deleteParam);
+      await db.run(`DELETE FROM cart_items WHERE ${deleteWhere}`, [deleteParam]);
 
       // 3. Send order details to the Google Sheet delivery team webhook
       await submitToGoogleSheets(confirmedOrder);
@@ -242,14 +260,21 @@ router.all('/payment/callback', async (req, res) => {
     // Payment failed or was cancelled
     try {
       // 1. Update order status to cancelled
-      db.prepare("UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?").run(order.id);
+      await db.run("UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?", [order.id]);
       
       // 2. Restore stock levels
-      const orderItems = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+      const orderItems = await db.all('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
+      const statements = [];
       for (const item of orderItems) {
         if (item.variant_id) {
-          db.prepare('UPDATE variants SET stock = stock + ? WHERE id = ?').run(item.quantity, item.variant_id);
+          statements.push({
+            sql: 'UPDATE variants SET stock = stock + ? WHERE id = ?',
+            args: [item.quantity, item.variant_id]
+          });
         }
+      }
+      if (statements.length > 0) {
+        await db.transaction(statements);
       }
       
       const errorMsg = params['Reason'] || 'Payment failed or was cancelled by the customer.';
@@ -293,7 +318,7 @@ async function submitToGoogleSheets(order) {
   const cityStateCountry = `${shippingAddress.city}, ${shippingAddress.state}, India`;
   const formattedDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
-  const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+  const items = await db.all('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
   const itemsSummary = items.map(i => 
     `${i.product_name}${i.variant_label ? ' (' + i.variant_label + ')' : ''} x${i.quantity}`
   ).join('; ');
@@ -315,7 +340,6 @@ async function submitToGoogleSheets(order) {
   };
 
   try {
-    // This is a server-to-server request (Node fetch), so CORS does not apply here at all.
     const formBody = Object.entries(payload)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
       .join('&');
@@ -330,8 +354,6 @@ async function submitToGoogleSheets(order) {
       signal: controller.signal,
     }).finally(() => clearTimeout(timeout));
 
-    // Apps Script returns HTTP 200 even when the script itself throws —
-    // the failure shows up as an HTML error page in the body, not the status code.
     const bodyText = await resp.text();
     const looksLikeScriptError = /<title>Error<\/title>|errorMessage/i.test(bodyText);
     if (!resp.ok || looksLikeScriptError) {
@@ -345,35 +367,35 @@ async function submitToGoogleSheets(order) {
 }
 
 // GET /api/orders — current user's orders
-router.get('/', requireAuth, (req, res) => {
-  const orders = db.prepare('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC').all(req.user.id);
-  const withItems = orders.map(o => ({
+router.get('/', requireAuth, async (req, res) => {
+  const orders = await db.all('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC', [req.user.id]);
+  const withItems = await Promise.all(orders.map(async o => ({
     ...o,
     shipping_address: JSON.parse(o.shipping_address),
-    items: db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(o.id),
-  }));
+    items: await db.all('SELECT * FROM order_items WHERE order_id = ?', [o.id]),
+  })));
   res.json({ orders: withItems });
 });
 
 // GET /api/orders/:id — single order
-router.get('/:id', requireAuth, (req, res) => {
-  const order = db.prepare('SELECT * FROM orders WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
+router.get('/:id', requireAuth, async (req, res) => {
+  const order = await db.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
   if (!order) return res.status(404).json({ error: 'Order not found' });
   order.shipping_address = JSON.parse(order.shipping_address);
-  order.items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+  order.items = await db.all('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
   res.json({ order });
 });
 
 // PATCH /api/orders/:id/status — admin updates order status
-router.patch('/:id/status', requireAdmin, (req, res) => {
+router.patch('/:id/status', requireAdmin, async (req, res) => {
   const { status } = req.body;
   if (!VALID_STATUSES.includes(status)) {
     return res.status(400).json({ error: `status must be one of: ${VALID_STATUSES.join(', ')}` });
   }
-  const order = db.prepare('SELECT id FROM orders WHERE id = ?').get(req.params.id);
+  const order = await db.get('SELECT id FROM orders WHERE id = ?', [req.params.id]);
   if (!order) return res.status(404).json({ error: 'Order not found' });
 
-  db.prepare("UPDATE orders SET status = ?, updated_at = datetime('now') WHERE id = ?").run(status, req.params.id);
+  await db.run("UPDATE orders SET status = ?, updated_at = datetime('now') WHERE id = ?", [status, req.params.id]);
   res.json({ message: 'Status updated', status });
 });
 

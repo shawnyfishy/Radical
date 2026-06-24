@@ -12,6 +12,7 @@
     "seed": "node backend/db/seed.js"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.4",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.10.0",
     "cors": "^2.8.6",
