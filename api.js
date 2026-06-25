@@ -72,7 +72,14 @@ const API = (() => {
     remove: (id)     => req('DELETE', `/addresses/${id}`),
   };
 
-  return { auth, products, cart, orders, addresses, setToken, getToken, clearToken, isLoggedIn, getSession };
+  // ── Shipping ──────────────────────────────────────────────────
+  const shipping = {
+    checkPincode: (pincode) => req('POST', '/shipping/check-pincode', { pincode }),
+    getRate:      (data)    => req('POST', '/shipping/rate', data),
+    track:        (waybill) => req('GET',  `/shipping/track/${waybill}`),
+  };
+
+  return { auth, products, cart, orders, addresses, shipping, setToken, getToken, clearToken, isLoggedIn, getSession };
 })();
 
 window.RADICAL_API = API;

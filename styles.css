@@ -6075,3 +6075,255 @@ a[href], button, [role="button"] {
   margin-top: 16px;
   text-align: center;
 }
+
+/* ============================================================
+   DELHIVERY LOGISTICS & TRACKING SYSTEM
+   ============================================================ */
+
+/* 1. Checkout Pincode Checker */
+.pincode-result {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 12px;
+  margin-top: 8px;
+  min-height: 18px;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+
+.pincode-checking {
+  color: var(--color-text-muted);
+}
+
+.pincode-available {
+  color: #10B981; /* Emerald Green */
+  font-weight: 500;
+}
+
+.pincode-unavailable {
+  color: var(--color-crimson);
+  font-weight: 500;
+}
+
+.pincode-error {
+  color: var(--color-crimson);
+}
+
+/* 2. Tracking Page Layout */
+.tracking-page {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tracking-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+}
+
+.tracking-container {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  padding: 48px;
+  max-width: 650px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.tracking-title {
+  font-family: var(--font-display), serif;
+  font-size: 32px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: 400;
+}
+
+.tracking-subtitle {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-bottom: 36px;
+  line-height: 1.6;
+}
+
+.tracking-form-group {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.tracking-form-group input {
+  flex: 1;
+  font-family: var(--font-ui), sans-serif;
+  font-size: 14px;
+  padding: 14px 18px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.tracking-form-group input:focus {
+  border-color: var(--color-text);
+}
+
+.tracking-form-group button {
+  white-space: nowrap;
+  padding: 14px 28px;
+}
+
+.track-result-container {
+  margin-top: 40px;
+}
+
+.track-loading {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 24px;
+}
+
+/* Current Status Box */
+.track-current-status {
+  padding: 24px;
+  background-color: var(--color-bg);
+  border-left: 3px solid var(--color-text);
+  margin-bottom: 36px;
+}
+
+.track-badge {
+  display: inline-block;
+  font-family: var(--font-ui), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background-color: var(--color-text);
+  color: var(--color-white);
+  padding: 6px 12px;
+  margin-bottom: 12px;
+}
+
+.track-instruction {
+  font-family: var(--font-body), serif;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+  color: var(--color-text);
+}
+
+.track-meta {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* History Timeline */
+.track-history {
+  border-top: 1px solid var(--color-border);
+  padding-top: 36px;
+}
+
+.history-title {
+  font-family: var(--font-display), serif;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.timeline {
+  list-style: none;
+  position: relative;
+  padding-left: 24px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background-color: var(--color-border);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 28px;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -24px;
+  top: 6px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-text-faint);
+  transition: all 0.3s ease;
+}
+
+.timeline-item:first-child .timeline-dot {
+  background-color: var(--color-text);
+  border-color: var(--color-text);
+}
+
+.timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scan-status {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.scan-location {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.scan-time {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 11px;
+  color: var(--color-text-faint);
+}
+
+.empty-history {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .tracking-container {
+    padding: 32px 20px;
+  }
+  .tracking-form-group {
+    flex-direction: column;
+  }
+  .tracking-form-group button {
+    width: 100%;
+  }
+}

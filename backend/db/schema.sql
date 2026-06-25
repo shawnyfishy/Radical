@@ -74,6 +74,9 @@ CREATE TABLE IF NOT EXISTS orders (
   total           REAL    NOT NULL,
   shipping_address TEXT   NOT NULL,  -- JSON snapshot of address at time of order
   notes           TEXT,
+  waybill         TEXT,
+  shipping_status TEXT    DEFAULT 'pending',
+  estimated_delivery TEXT,
   created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
   updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
 );

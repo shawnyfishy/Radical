@@ -13,6 +13,7 @@ node_modules/
 
 # SQLite files
 *.db
+*.sqlite
 *.db-wal
 *.db-shm
 *.db-journal

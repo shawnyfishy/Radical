@@ -85,6 +85,7 @@ app.use('/api/cart',      require('./routes/cart'));
 app.use('/api/orders',    require('./routes/orders'));
 app.use('/api/addresses', require('./routes/addresses'));
 app.use('/api/admin',     require('./routes/admin'));
+app.use('/api/shipping',  require('./routes/shipping'));
 
 // ── Error logging from browser ──────────────────────────────────
 app.post('/api/log-error', logLimiter, (req, res) => {

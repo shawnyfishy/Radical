@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Track your RADICAL order shipment in real-time." />
+  <title>Track Shipment | RADICAL Men's Jewellery</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/favicon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Questrial&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="tracking-page">
+
+  <header class="checkout-header">
+    <a href="/index.html" class="checkout-header__brand">RADICAL</a>
+  </header>
+
+  <main class="tracking-main">
+    <div class="tracking-container">
+      <h2 class="tracking-title">Track Shipment</h2>
+      <p class="tracking-subtitle">Enter your Delhivery waybill number to track your package in real-time.</p>
+
+      <div class="tracking-form-group">
+        <input type="text" id="track-input" placeholder="Enter Waybill / Tracking Number" />
+        <button id="track-btn" class="checkout-btn">Track Order</button>
+      </div>
+
+      <p class="form-error" id="track-error" style="display: none;"></p>
+
+      <div id="track-result" class="track-result-container">
+        <!-- Results will be dynamically populated here -->
+      </div>
+    </div>
+  </main>
+
+  <script src="api.js"></script>
+  <script>
+    (async () => {
+      const API = window.RADICAL_API;
+
+      async function trackOrder() {
+        const inputEl = document.getElementById('track-input');
+        const outputEl = document.getElementById('track-result');
+        const errorEl = document.getElementById('track-error');
+        const btn = document.getElementById('track-btn');
+
+        const waybill = inputEl.value.trim();
+        errorEl.style.display = 'none';
+        errorEl.textContent = '';
+
+        if (!waybill) {
+          errorEl.textContent = 'Please enter a valid tracking number.';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Tracking...';
+        outputEl.innerHTML = '<div class="track-loading">Fetching your shipment status...</div>';
+
+        try {
+          // Calling backend proxy endpoint /api/shipping/track/:waybill
+          const result = await API.shipping.track(waybill);
+
+          if (!result.success || !result.data?.ShipmentData?.length) {
+            outputEl.innerHTML = '';
+            errorEl.textContent = 'No tracking data found for this waybill. Please verify the number.';
+            errorEl.style.display = 'block';
+            return;
+          }
+
+          const shipment = result.data.ShipmentData[0]?.Shipment;
+          if (!shipment) {
+            outputEl.innerHTML = '';
+            errorEl.textContent = 'Unable to parse tracking details for this waybill.';
+            errorEl.style.display = 'block';
+            return;
+          }
+
+          const status = shipment.Status?.Status || 'Unknown';
+          const instructions = shipment.Status?.Instructions || '';
+          const city = shipment.Status?.StatusLocation || '';
+          const timestamp = shipment.Status?.StatusDateTime
+            ? new Date(shipment.Status.StatusDateTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+            : '';
+          const scans = shipment.Scans || [];
+
+          let html = `
+            <div class="track-current-status">
+              <span class="track-badge">${status}</span>
+              <p class="track-instruction">${instructions}</p>
+              <p class="track-meta">${city ? city + ' &mdash; ' : ''}${timestamp}</p>
+            </div>
+            
+            <div class="track-history">
+              <h4 class="history-title">Shipment Journey</h4>
+              <ul class="timeline">
+          `;
+
+          if (scans.length === 0) {
+            html += `<li class="timeline-item empty-history">No scan records available yet.</li>`;
+          } else {
+            html += scans.map(s => {
+              const scanDetail = s.ScanDetail || {};
+              const scanTime = scanDetail.ScanDateTime
+                ? new Date(scanDetail.ScanDateTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })
+                : '';
+              return `
+                <li class="timeline-item">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-content">
+                    <span class="scan-status">${scanDetail.Scan || 'Processed'}</span>
+                    <span class="scan-location">${scanDetail.ScannedLocation || ''}</span>
+                    <span class="scan-time">${scanTime}</span>
+                  </div>
+                </li>
+              `;
+            }).join('');
+          }
+
+          html += `
+              </ul>
+            </div>
+          `;
+          outputEl.innerHTML = html;
+        } catch (err) {
+          console.error('Tracking error:', err);
+          outputEl.innerHTML = '';
+          errorEl.textContent = 'Could not retrieve tracking info. Please check your network and try again.';
+          errorEl.style.display = 'block';
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Track Order';
+        }
+      }
+
+      document.getElementById('track-btn').addEventListener('click', trackOrder);
+
+      // Handle enter key on input field
+      document.getElementById('track-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          trackOrder();
+        }
+      });
+
+      // Handle waybill parameter in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const waybillParam = urlParams.get('waybill');
+      if (waybillParam) {
+        document.getElementById('track-input').value = waybillParam;
+        trackOrder();
+      }
+    })();
+  </script>
+</body>
+</html>

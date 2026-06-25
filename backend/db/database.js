@@ -42,6 +42,17 @@ async function initSchema() {
     // Column already exists — expected on all but the very first run
   }
 
+  // Migration: add Delhivery shipping columns to orders if they don't exist yet
+  try {
+    await client.execute('ALTER TABLE orders ADD COLUMN waybill TEXT');
+  } catch (e) {}
+  try {
+    await client.execute("ALTER TABLE orders ADD COLUMN shipping_status TEXT DEFAULT 'pending'");
+  } catch (e) {}
+  try {
+    await client.execute('ALTER TABLE orders ADD COLUMN estimated_delivery TEXT');
+  } catch (e) {}
+
   // Auto-seed products if the database is empty
   try {
     const result = await client.execute('SELECT COUNT(*) as count FROM products');

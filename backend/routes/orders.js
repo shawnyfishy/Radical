@@ -251,6 +251,9 @@ router.all('/payment/callback', async (req, res) => {
       // 3. Send order details to the Google Sheet delivery team webhook
       await submitToGoogleSheets(confirmedOrder);
 
+      // 4. Trigger automatic Delhivery shipping fulfillment
+      await fulfillOrder(confirmedOrder);
+
       return res.redirect(`/checkout.html?status=success&orderId=RAD${order.id}`);
     } catch (e) {
       console.error('[RADICAL] Failed to finalize successful order:', e);
@@ -398,5 +401,76 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
   await db.run("UPDATE orders SET status = ?, updated_at = datetime('now') WHERE id = ?", [status, req.params.id]);
   res.json({ message: 'Status updated', status });
 });
+
+// Automatic Delhivery shipment creation post-payment
+async function fulfillOrder(orderRecord) {
+  try {
+    const shippingAddress = JSON.parse(orderRecord.shipping_address);
+    
+    // Retrieve items from order_items to build product description and weight/quantity
+    const items = await db.all('SELECT * FROM order_items WHERE order_id = ?', [orderRecord.id]);
+    const products_desc = items.map(i => `${i.product_name}${i.variant_label ? ' (' + i.variant_label + ')' : ''}`).join(', ').substring(0, 100);
+    const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+
+    const shipmentPayload = {
+      order: `RAD${orderRecord.id}`,
+      name: shippingAddress.name || 'Customer',
+      add: `${shippingAddress.line1}${shippingAddress.line2 ? ', ' + shippingAddress.line2 : ''}`,
+      pin: shippingAddress.postal_code,
+      city: shippingAddress.city,
+      state: shippingAddress.state,
+      phone: shippingAddress.phone || '919999999999',
+      payment_mode: 'Prepaid', // Online payment callback is always Prepaid
+      order_date: new Date().toISOString(),
+      total_amount: orderRecord.total,
+      cod_amount: 0,
+      weight: 0.3, // rings/pendants approx 0.2-0.3 kg with packaging
+      seller_name: 'RADICAL',
+      seller_add: 'City Centre, unit no. 320, 3rd Floor, Sector-12, Sai Road City Centre, Dwarka, New Delhi',
+      seller_pin: '110078',
+      seller_city: 'New Delhi',
+      seller_state: 'Delhi',
+      products_desc: products_desc || 'Men\'s Jewellery - RADICAL',
+      quantity: quantity || 1,
+      pickup_location_name: 'RADICAL Inc'
+    };
+
+    const delhivery = require('../utils/delhivery');
+    console.log(`[Delhivery] Triggering automatic shipment creation for order RAD${orderRecord.id}`);
+    const shipResult = await delhivery.createShipment(shipmentPayload);
+
+    if (shipResult && (shipResult.success || (shipResult.packages && shipResult.packages.length > 0))) {
+      const firstPkg = shipResult.packages?.[0] || {};
+      const waybill = firstPkg.waybill || shipResult.waybill;
+      
+      if (waybill) {
+        // Save waybill and update status in orders table
+        await db.run(
+          "UPDATE orders SET waybill = ?, shipping_status = 'shipped', updated_at = datetime('now') WHERE id = ?",
+          [waybill, orderRecord.id]
+        );
+        console.log(`[Delhivery] [Order RAD${orderRecord.id}] Shipment created successfully. Waybill: ${waybill}`);
+        return waybill;
+      }
+    }
+    
+    console.error('[Delhivery] Shipment response did not return a valid waybill:', JSON.stringify(shipResult));
+    await db.run(
+      "UPDATE orders SET shipping_status = 'failed_manual_review', updated_at = datetime('now') WHERE id = ?",
+      [orderRecord.id]
+    );
+  } catch (err) {
+    console.error('[Delhivery] FulfillOrder error:', err.message);
+    // Flag for manual review
+    try {
+      await db.run(
+        "UPDATE orders SET shipping_status = 'failed_manual_review', updated_at = datetime('now') WHERE id = ?",
+        [orderRecord.id]
+      );
+    } catch (e) {
+      console.error('[Delhivery] Failed to flag order status:', e.message);
+    }
+  }
+}
 
 module.exports = router;

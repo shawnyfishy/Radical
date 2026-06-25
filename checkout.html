@@ -81,6 +81,7 @@
             <div class="form-group">
               <label for="ship-postal">PIN Code</label>
               <input type="text" id="ship-postal" required placeholder="560001" />
+              <div id="pincode-result" class="pincode-result"></div>
             </div>
             <div class="form-group">
               <label for="ship-country">Country</label>
@@ -232,6 +233,63 @@
       document.querySelector('.checkout-header__steps .step').classList.remove('is-active');
     });
 
+    // Pincode availability check
+    async function checkDeliveryAvailability(pincode) {
+      const resultEl = document.getElementById('pincode-result');
+      if (!resultEl) return;
+      resultEl.textContent = 'Checking availability...';
+      resultEl.className = 'pincode-result pincode-checking';
+
+      try {
+        const result = await API.shipping.checkPincode(pincode);
+
+        if (!result.success) {
+          resultEl.textContent = 'Could not verify pincode. Try again.';
+          resultEl.className = 'pincode-result pincode-error';
+          return;
+        }
+
+        const codes = result.data?.delivery_codes;
+        if (!codes || codes.length === 0) {
+          resultEl.textContent = 'Delivery not available to this pincode.';
+          resultEl.className = 'pincode-result pincode-unavailable';
+        } else {
+          const info = codes[0]?.postal_code;
+          const city = info?.city || '';
+          const edd = info?.pre_edd || 'N/A';
+          resultEl.textContent = `Delivery available to ${city}. Est. Delivery: ${edd}`;
+          resultEl.className = 'pincode-result pincode-available';
+        }
+      } catch (err) {
+        console.error('Pincode check failed:', err);
+        resultEl.textContent = 'Service unavailable. Please try again.';
+        resultEl.className = 'pincode-result pincode-error';
+      }
+    }
+
+    // Attach to input field — debounce to avoid spamming API
+    let pincodeTimer;
+    const pincodeInput = document.getElementById('ship-postal');
+    if (pincodeInput) {
+      pincodeInput.addEventListener('input', (e) => {
+        clearTimeout(pincodeTimer);
+        const val = e.target.value.trim();
+        if (val.length === 6) {
+          pincodeTimer = setTimeout(() => checkDeliveryAvailability(val), 500);
+        } else {
+          const resultEl = document.getElementById('pincode-result');
+          if (resultEl) {
+            resultEl.textContent = '';
+            resultEl.className = 'pincode-result';
+          }
+        }
+      });
+      // Initial check if default value exists
+      if (pincodeInput.value.trim().length === 6) {
+        checkDeliveryAvailability(pincodeInput.value.trim());
+      }
+    }
+
     // Back button
     document.getElementById('back-to-shipping').addEventListener('click', () => {
       document.getElementById('step-payment').classList.remove('is-active');
@@ -284,6 +342,10 @@
           document.getElementById('ship-postal').value  = def.postal_code;
           document.getElementById('ship-phone').value   = def.phone || '';
           document.getElementById('checkout-auth-msg').innerHTML = 'Autofilled from your saved address.';
+          // Trigger check for autofilled pincode
+          if (def.postal_code && def.postal_code.trim().length === 6) {
+            checkDeliveryAvailability(def.postal_code.trim());
+          }
         } else {
           document.getElementById('checkout-auth-msg').innerHTML = '';
         }
