@@ -29,7 +29,7 @@ const RENAMES = [
   ['assets/design section.jpeg',       'assets/images/design.jpeg'],
   ['assets/menu_banner.jpeg',          'assets/images/menu-banner.jpeg'],
   ['assets/purpose section.jpeg',      'assets/images/purpose.jpeg'],
-  ['assets/steel section.jpeg',        'assets/images/steel.jpeg'],
+  ['assets/steel section.jpeg',        'assets/images/wearables.jpeg'],
 
   // Product images — RADICAL FINAL WEBSITE PCITURES → assets/products/
   // Chainlink ring
@@ -223,8 +223,8 @@ const REF_MAP = [
   ['assets/menu_banner.jpeg',          'assets/images/menu-banner.webp'],
   ['assets/purpose%20section.jpeg',    'assets/images/purpose.webp'],
   ['assets/purpose section.jpeg',      'assets/images/purpose.webp'],
-  ['assets/steel%20section.jpeg',      'assets/images/steel.webp'],
-  ['assets/steel section.jpeg',        'assets/images/steel.webp'],
+  ['assets/steel%20section.jpeg',      'assets/images/wearables.webp'],
+  ['assets/steel section.jpeg',        'assets/images/wearables.webp'],
 
   // Product images — old path → new path
   // (products.js uses long paths with spaces; map each one)

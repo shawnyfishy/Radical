@@ -31,7 +31,7 @@ const JOBS = [
   { src: 'assets/images/community.jpeg',   dest: 'assets/images/community.webp',     w: 1920, quality: 88 },
   { src: 'assets/images/design.jpeg',      dest: 'assets/images/design.webp',        w: 1920, quality: 88 },
   { src: 'assets/images/purpose.jpeg',     dest: 'assets/images/purpose.webp',       w: 1920, quality: 88 },
-  { src: 'assets/images/steel.jpeg',       dest: 'assets/images/steel.webp',         w: 1920, quality: 88 },
+  { src: 'assets/images/wearables.jpeg',   dest: 'assets/images/wearables.webp',     w: 1920, quality: 88 },
   { src: 'assets/images/menu-banner.jpeg', dest: 'assets/images/menu-banner.webp',   w: 1440, quality: 88 },
   { src: 'assets/images/preloader.jpeg',   dest: 'assets/images/preloader.webp',     w: 1200, quality: 88 },
 

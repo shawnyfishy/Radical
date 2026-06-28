@@ -24,7 +24,7 @@ const JOBS = [
   { src: 'assets/images/design.jpeg',      dest: 'assets/images/design.webp',       w: 1920, quality: 80 },
   { src: 'assets/images/menu-banner.jpeg', dest: 'assets/images/menu-banner.webp',  w: 1200, quality: 80 },
   { src: 'assets/images/purpose.jpeg',     dest: 'assets/images/purpose.webp',      w: 1920, quality: 80 },
-  { src: 'assets/images/steel.jpeg',       dest: 'assets/images/steel.webp',        w: 1920, quality: 80 },
+  { src: 'assets/images/wearables.jpeg',   dest: 'assets/images/wearables.webp',    w: 1920, quality: 80 },
 
   // Product images — already at ~2.7MB total (previously optimized), just convert to WebP
   { src: 'assets/products/chainlink-ring/black/front.jpeg',                    dest: 'assets/products/chainlink-ring/black/front.webp',                    w: 1200, quality: 82 },
