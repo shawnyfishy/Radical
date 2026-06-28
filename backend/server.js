@@ -68,7 +68,14 @@ const logLimiter = rateLimit({
 });
 
 // ── Middleware ──────────────────────────────────────────────────
-app.use(express.json());
+app.use((req, res, next) => {
+  if (req.path === '/payment/webhook' || 
+      req.originalUrl.includes('/payment/webhook')) {
+    next(); // Skip JSON parsing for webhook — handled in route
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // ── Local dev only: serve the frontend directly from this server.
 // On Vercel, static files (HTML/CSS/JS/images/video) are served by Vercel's
@@ -83,6 +90,7 @@ app.use('/api/auth',      require('./routes/auth'));
 app.use('/api/products',  require('./routes/products'));
 app.use('/api/cart',      require('./routes/cart'));
 app.use('/api/orders',    require('./routes/orders'));
+app.use('/api/payment',   require('./routes/payment'));
 app.use('/api/addresses', require('./routes/addresses'));
 app.use('/api/admin',     require('./routes/admin'));
 app.use('/api/shipping',  require('./routes/shipping'));

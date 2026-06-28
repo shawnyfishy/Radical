@@ -77,6 +77,9 @@ CREATE TABLE IF NOT EXISTS orders (
   waybill         TEXT,
   shipping_status TEXT    DEFAULT 'pending',
   estimated_delivery TEXT,
+  razorpay_order_id TEXT,
+  razorpay_payment_id TEXT,
+  paid_at         TEXT,
   created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
   updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
 );

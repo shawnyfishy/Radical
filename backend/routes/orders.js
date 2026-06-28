@@ -1,9 +1,16 @@
 const router = require('express').Router();
 const db     = require('../db/database');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { generatePaymentURL, calculateSecureHash } = require('../utils/payment');
 
-const VALID_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+
+const Razorpay = require('razorpay');
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+const VALID_STATUSES = ['pending', 'paid', 'payment_failed', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 // POST /api/orders — place an order from current cart
 router.post('/', async (req, res) => {
@@ -139,176 +146,41 @@ router.post('/', async (req, res) => {
 
   const newOrder = await db.get('SELECT * FROM orders WHERE id = ?', [orderId]);
   
-  // Resolve customer email, name, and phone for the payment gateway
-  let customerEmail = guest_email || null;
-  let customerName = 'Customer';
-  let customerPhone = '919999999999';
-
+  // Create Razorpay order
   try {
     const parsedAddr = typeof shipping_address === 'string' ? JSON.parse(shipping_address) : shipping_address;
-    if (parsedAddr) {
-      if (parsedAddr.name) customerName = parsedAddr.name;
-      if (parsedAddr.phone) customerPhone = parsedAddr.phone;
-    }
-  } catch (e) {
-    console.error('[RADICAL] Failed to parse shipping address for payment:', e);
-  }
+    const razorpayOrder = await razorpay.orders.create({
+      amount: Math.round(total * 100), // Razorpay uses paise
+      currency: 'INR',
+      receipt: String(newOrder.id).substring(0, 40),
+      notes: {
+        radical_order_id: String(newOrder.id),
+        customer_name: parsedAddr?.name || 'Customer',
+        customer_email: guest_email || '',
+      },
+    });
 
-  if (userId) {
-    try {
-      const user = await db.get('SELECT email, name FROM users WHERE id = ?', [userId]);
-      if (user) {
-        if (!customerEmail) customerEmail = user.email;
-        if (customerName === 'Customer' && user.name) customerName = user.name;
-      }
-    } catch {}
-  }
+    // Store the Razorpay order ID in the database
+    await db.run('UPDATE orders SET razorpay_order_id = ? WHERE id = ?', [razorpayOrder.id, newOrder.id]);
 
-  // Generate ICICI Bank redirect link
-  try {
-    const paymentUrl = await generatePaymentURL(
-      `RAD${newOrder.id}_${Date.now()}`, 
-      newOrder.total, 
-      req.headers.host, 
-      customerEmail,
-      customerName,
-      customerPhone
-    );
-    res.status(201).json({ order: newOrder, paymentUrl });
+    return res.status(201).json({
+      success: true,
+      localOrderId: newOrder.id,
+      razorpayOrderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      keyId: process.env.RAZORPAY_KEY_ID,
+    });
   } catch (err) {
-    console.error('[RADICAL] Payment initiation failed:', err);
-    res.status(500).json({ error: 'Failed to initiate secure checkout. Please try again or contact support.' });
+    console.error('[RADICAL] Razorpay order creation failed:', err);
+    return res.status(502).json({ 
+      error: 'Could not create payment order. Please try again.' 
+    });
   }
 });
 
-// ── Payment Callback (ICICI Return URL) ──────────────────────────────────
-router.all('/payment/callback', async (req, res) => {
-  const params = { ...req.query, ...req.body };
-  console.log('[RADICAL] Payment callback received:', params);
-
-  const receivedHash = params['secureHash'] || params['SecureHash'] || params['secure_hash'];
-  if (!receivedHash) {
-    console.error('[RADICAL] Payment callback rejected: no secureHash present.');
-    return res.status(400).send('Invalid payment callback: missing signature.');
-  }
-  const secretKey = process.env.ICICI_KEY;
-  if (!secretKey) {
-    console.error('[RADICAL] Cannot verify callback: ICICI_KEY env var is not set.');
-    return res.status(500).send('Payment verification configuration error.');
-  }
-  const expectedHash = calculateSecureHash(params, secretKey);
-  if (receivedHash.toLowerCase() !== expectedHash.toLowerCase()) {
-    console.error('[RADICAL] Payment callback HMAC mismatch. Received:', receivedHash, 'Expected:', expectedHash);
-    return res.status(400).send('Invalid payment callback: signature verification failed.');
-  }
-
-  const referenceNo = params['ReferenceNo'] || params['Reference No'] || params['merchantTxnNo'] || '';
-  const responseCode = params['Response_Code'] || params['Response Code'] || params['responseCode'] || '';
-  const txnStatus = params['txnStatus'] || '';
-  
-  if (!referenceNo) {
-    return res.status(400).send('Invalid payment callback: ReferenceNo is missing.');
-  }
-
-  // Parse order ID from ReferenceNo (e.g., "RAD15_17822..." -> 15, "15" -> 15)
-  const orderIdMatch = referenceNo.match(/^(?:RAD|TEST)?(\d+)/);
-  if (!orderIdMatch) {
-    return res.status(400).send('Invalid payment callback: Invalid ReferenceNo format.');
-  }
-  const orderDbId = parseInt(orderIdMatch[1], 10);
-
-  const order = await db.get('SELECT * FROM orders WHERE id = ?', [orderDbId]);
-  if (!order) {
-    return res.status(404).send('Order not found.');
-  }
-
-  // If already confirmed, redirect directly to success screen
-  if (order.status === 'confirmed') {
-    return res.redirect(`/checkout.html?status=success&orderId=RAD${order.id}`);
-  }
-
-  const isSuccess = (
-    responseCode === 'E000' ||
-    responseCode === '000' ||
-    responseCode === 'R1000' ||
-    txnStatus.toUpperCase() === 'SUC' ||
-    txnStatus.toUpperCase() === 'SUCCESS'
-  );
-
-  if (isSuccess) {
-    try {
-      // 1. Update order status to confirmed
-      await db.run("UPDATE orders SET status = 'confirmed', updated_at = datetime('now') WHERE id = ?", [order.id]);
-      
-      // Get the updated order state
-      const confirmedOrder = await db.get('SELECT * FROM orders WHERE id = ?', [order.id]);
-      
-      // 2. Clear customer cart
-      const deleteWhere = confirmedOrder.user_id ? 'user_id = ?' : 'session_id = ?';
-      const deleteParam = confirmedOrder.user_id ?? confirmedOrder.session_id;
-      await db.run(`DELETE FROM cart_items WHERE ${deleteWhere}`, [deleteParam]);
-
-      // 3. Send order details to the Google Sheet delivery team webhook
-      await submitToGoogleSheets(confirmedOrder);
-
-      // 4. Trigger automatic Delhivery shipping fulfillment
-      await fulfillOrder(confirmedOrder);
-
-      return res.redirect(`/checkout.html?status=success&orderId=RAD${order.id}`);
-    } catch (e) {
-      console.error('[RADICAL] Failed to finalize successful order:', e);
-      return res.redirect('/checkout.html?status=failed&error=Payment+confirmation+error.+Please+contact+support.');
-    }
-  } else {
-    // Payment failed or was cancelled
-    try {
-      // 1. Update order status to cancelled
-      await db.run("UPDATE orders SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?", [order.id]);
-      
-      // 2. Restore stock levels
-      const orderItems = await db.all('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
-      const statements = [];
-      for (const item of orderItems) {
-        if (item.variant_id) {
-          statements.push({
-            sql: 'UPDATE variants SET stock = stock + ? WHERE id = ?',
-            args: [item.quantity, item.variant_id]
-          });
-        }
-      }
-      if (statements.length > 0) {
-        await db.transaction(statements);
-      }
-      
-      const errorMsg = params['Reason'] || 'Payment failed or was cancelled by the customer.';
-      return res.redirect(`/checkout.html?status=failed&error=${encodeURIComponent(errorMsg)}`);
-    } catch (e) {
-      console.error('[RADICAL] Failed to handle payment cancellation:', e);
-      return res.redirect('/checkout.html?status=failed&error=Payment+processing+error.+Please+contact+support.');
-    }
-  }
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  // ── Payment Simulation Endpoint ──────────────────────────────────────────
-  // Simulates the ICICI bank redirection callback
-  router.get('/payment/simulate', (req, res) => {
-    const { orderId, status } = req.query;
-    if (!orderId || !status) {
-      return res.status(400).send('Missing query parameters: orderId and status are required.');
-    }
-
-    const responseCode = status === 'success' ? 'E000' : 'E999';
-    const reason = status === 'success' ? '' : 'Simulated transaction failure.';
-
-    const params = new URLSearchParams();
-    params.append('ReferenceNo', orderId.startsWith('RAD') ? orderId : `RAD${orderId}`);
-    params.append('Response_Code', responseCode);
-    if (reason) params.append('Reason', reason);
-
-    res.redirect(`/api/orders/payment/callback?${params.toString()}`);
-  });
-}
+// Previous payment callback route removed. 
+// TODO: Add new payment gateway webhook/callback route here after integration.
 
 // Helper function to write order to Google Sheets
 async function submitToGoogleSheets(order) {

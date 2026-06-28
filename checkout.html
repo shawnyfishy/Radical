@@ -17,6 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Questrial&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body class="checkout-page">
 
@@ -94,7 +95,7 @@
         </form>
       </div>
 
-      <!-- Step 2: Payment (ICICI Bank Integration) -->
+      <!-- Step 2: Payment -->
       <div id="step-payment" class="checkout-step">
         <h2 class="checkout-step__title">Payment</h2>
         <div class="payment-placeholder">
@@ -102,7 +103,7 @@
             <div class="payment-cod__icon">💳</div>
             <div>
               <p class="payment-cod__title">Secure Online Payment</p>
-              <p class="payment-cod__sub">Pay securely via ICICI Bank Payment Gateway using Credit Card, Debit Card, Net Banking, or UPI.</p>
+              <p class="payment-cod__sub">Pay securely via Credit Card, Debit Card, Net Banking, or UPI. Powered by Razorpay.</p>
             </div>
           </div>
         </div>
@@ -153,21 +154,7 @@
 
     const API = window.RADICAL_API;
 
-    // Handle payment redirect callback query parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const statusParam = urlParams.get('status');
-    const orderIdParam = urlParams.get('orderId');
-    const errorParam = urlParams.get('error');
-
-    if (statusParam === 'success') {
-      document.getElementById('step-shipping').classList.remove('is-active');
-      document.getElementById('step-payment').classList.remove('is-active');
-      document.getElementById('step-confirm').classList.add('is-active');
-      document.getElementById('confirm-order-id').textContent = `Order #${orderIdParam}`;
-      document.getElementById('step-payment-label').classList.add('is-active');
-      document.querySelector('.checkout-header__steps .step').classList.remove('is-active');
-      return; // Do not load cart summary or other listeners
-    }
+    // TODO: Payment gateway callback handling — implement after new gateway is integrated.
 
     let shippingData = null;
     let cartSummary = { items: [], subtotal: 0, shipping: 0, total: 0 };
@@ -205,14 +192,7 @@
 
     await loadSummary();
 
-    // If redirected back with a failure
-    if (statusParam === 'failed') {
-      document.getElementById('step-shipping').classList.remove('is-active');
-      document.getElementById('step-payment').classList.add('is-active');
-      document.getElementById('step-payment-label').classList.add('is-active');
-      document.querySelector('.checkout-header__steps .step').classList.remove('is-active');
-      document.getElementById('payment-error').textContent = errorParam || 'Payment failed. Please try again.';
-    }
+
 
     // Shipping form
     document.getElementById('shipping-form').addEventListener('submit', e => {
@@ -298,29 +278,101 @@
       document.querySelector('.checkout-header__steps .step').classList.add('is-active');
     });
 
-    // Pay Now — creates pending order in db and redirects to ICICI payment gateway
     document.getElementById('place-order-btn').addEventListener('click', async () => {
       const btn = document.getElementById('place-order-btn');
       const err = document.getElementById('payment-error');
       if (!shippingData) return;
-      btn.textContent = 'Redirecting to payment…';
+
+      btn.textContent = 'Preparing payment…';
       btn.disabled = true;
       err.textContent = '';
 
+      let localOrderId = null;
+
       try {
+        // Step 1: Create order in our DB + Razorpay
         const guestEmail = document.getElementById('ship-email').value;
-        const res = await API.orders.place(shippingData, {
+        const orderData = await API.orders.place(shippingData, {
           guest_email: guestEmail
         });
-        
-        if (res.paymentUrl) {
-          window.location.href = res.paymentUrl;
-        } else {
-          throw new Error('Payment gateway link was not received from the server.');
+
+        if (!orderData.razorpayOrderId) {
+          throw new Error('Could not initiate payment. Please try again.');
         }
+
+        localOrderId = orderData.localOrderId;
+
+        // Step 2: Configure Razorpay modal
+        const options = {
+          key: orderData.keyId,
+          amount: orderData.amount,
+          currency: orderData.currency || 'INR',
+          name: 'RADICAL',
+          description: `Order #${localOrderId}`,
+          order_id: orderData.razorpayOrderId,
+          prefill: {
+            name: shippingData.name,
+            email: guestEmail,
+            contact: shippingData.phone || '',
+          },
+          theme: {
+            color: '#C9872F',
+          },
+          modal: {
+            ondismiss: () => {
+              btn.textContent = 'Pay Now';
+              btn.disabled = false;
+              err.textContent = 'Payment cancelled. Try again when ready.';
+            },
+          },
+          handler: async (response) => {
+            // Step 3: Verify payment on our backend
+            btn.textContent = 'Verifying payment…';
+            btn.disabled = true;
+            err.textContent = '';
+
+            try {
+              const verification = await API.payment.verify(
+                response.razorpay_order_id,
+                response.razorpay_payment_id,
+                response.razorpay_signature,
+                localOrderId
+              );
+
+              if (verification.success) {
+                // Step 4: Show confirmation screen
+                document.getElementById('step-payment').classList.remove('is-active');
+                document.getElementById('step-confirm').classList.add('is-active');
+                document.getElementById('confirm-order-id').textContent = `Order #${localOrderId}`;
+                document.getElementById('step-payment-label').classList.add('is-active');
+                document.querySelector('.checkout-header__steps .step').classList.remove('is-active');
+              } else {
+                throw new Error('Verification returned failure.');
+              }
+            } catch (verifyErr) {
+              console.error('[RADICAL] Verify error:', verifyErr);
+              err.textContent = 'Payment received but verification failed. Please contact support with your order ID: ' + localOrderId;
+              btn.textContent = 'Pay Now';
+              btn.disabled = false;
+            }
+          },
+        };
+
+        // Step 3: Open Razorpay modal
+        const rzp = new Razorpay(options);
+
+        rzp.on('payment.failed', (response) => {
+          console.error('[RADICAL] Payment failed:', response.error);
+          err.textContent = response.error?.description || 'Payment failed. Please try again.';
+          btn.textContent = 'Pay Now';
+          btn.disabled = false;
+        });
+
+        rzp.open();
+
       } catch (e) {
-        console.error('[RADICAL] checkout failed:', e);
-        err.textContent = e.message || 'Could not initiate secure checkout. Please try again.';
+        console.error('[RADICAL] Checkout error:', e);
+        err.textContent = e.message || 'Could not initiate checkout. Please try again.';
         btn.textContent = 'Pay Now';
         btn.disabled = false;
       }

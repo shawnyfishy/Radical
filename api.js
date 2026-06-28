@@ -65,6 +65,17 @@ const API = (() => {
     get:    (id)                           => req('GET',  `/orders/${id}`),
   };
 
+  // ── Payment ──────────────────────────────────────────────────
+  const payment = {
+    verify: (razorpayOrderId, razorpayPaymentId, razorpaySignature, localOrderId) =>
+      req('POST', '/payment/verify', {
+        razorpay_order_id: razorpayOrderId,
+        razorpay_payment_id: razorpayPaymentId,
+        razorpay_signature: razorpaySignature,
+        localOrderId: localOrderId,
+      }),
+  };
+
   // ── Addresses ────────────────────────────────────────────────
   const addresses = {
     list:   ()       => req('GET',    '/addresses'),
@@ -79,7 +90,7 @@ const API = (() => {
     track:        (waybill) => req('GET',  `/shipping/track/${waybill}`),
   };
 
-  return { auth, products, cart, orders, addresses, shipping, setToken, getToken, clearToken, isLoggedIn, getSession };
+  return { auth, products, cart, orders, addresses, shipping, payment, setToken, getToken, clearToken, isLoggedIn, getSession };
 })();
 
 window.RADICAL_API = API;
