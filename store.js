@@ -34,15 +34,16 @@
   function openCart()  { cartDrawer?.classList.add('is-open'); cartOverlay?.classList.add('is-active'); document.body.style.overflow = 'hidden'; refreshCart(); }
   function closeCart() { cartDrawer?.classList.remove('is-open'); cartOverlay?.classList.remove('is-active'); document.body.style.overflow = ''; }
 
-  // Delegated on document.body (never replaced, even across Barba SPA page
-  // transitions) instead of binding directly to #nav-bag-btn/#cart-close —
-  // direct bindings on specific PDP-page elements were intermittently going dead.
-  document.body.addEventListener('click', (e) => {
-    if (e.target.closest('#nav-bag-btn')) {
+  // Delegated on document (never replaced, even across Barba SPA page transitions)
+  document.addEventListener('click', function(e) {
+    const trigger = e.target.closest('[href="#cart"], #nav-bag-btn');
+    if (trigger) {
       e.preventDefault();
       openCart();
-      return;
     }
+  });
+
+  document.addEventListener('click', function(e) {
     if (e.target.closest('#cart-close') || e.target === cartOverlay) {
       closeCart();
     }
@@ -140,7 +141,7 @@
   }
 
   // ── Add-to-Bag buttons (product pages) ───────────────────────
-  document.body.addEventListener('click', async (e) => {
+  document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-add-to-bag]');
     if (!btn) return;
 
