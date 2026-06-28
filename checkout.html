@@ -322,7 +322,10 @@
             ondismiss: () => {
               btn.textContent = 'Pay Now';
               btn.disabled = false;
-              err.textContent = 'Payment cancelled. Try again when ready.';
+              err.textContent = 'Payment not completed. You can try again anytime.';
+              // DO NOT make any API calls here
+              // The order stays as pending_payment in the DB
+              // User can click Pay Now again to retry
             },
           },
           handler: async (response) => {
@@ -350,8 +353,11 @@
                 throw new Error('Verification returned failure.');
               }
             } catch (verifyErr) {
-              console.error('[RADICAL] Verify error:', verifyErr);
-              err.textContent = 'Payment received but verification failed. Please contact support with your order ID: ' + localOrderId;
+              console.error('[RADICAL] Verify failed:', verifyErr);
+              err.textContent = 
+                'Payment received but confirmation failed. ' +
+                'Your order ID is: ' + localOrderId + 
+                '. Please contact support.';
               btn.textContent = 'Pay Now';
               btn.disabled = false;
             }

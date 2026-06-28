@@ -58,12 +58,12 @@ router.post('/', async (req, res) => {
   const total        = subtotal + shippingCost;
 
   // ── Self-Cleaning Stock Reclaiming ─────────────────────────────────────
-  // 1. Reclaim stock from ANY pending orders older than 20 minutes across the system
+  // 1. Reclaim stock from ANY pending orders older than 24 hours across the system
   try {
     const expiredOrders = await db.all(`
       SELECT id FROM orders 
       WHERE status = 'pending' 
-        AND created_at < datetime('now', '-20 minutes')
+        AND created_at < datetime('now', '-24 hours')
     `);
 
     for (const exp of expiredOrders) {
@@ -147,36 +147,45 @@ router.post('/', async (req, res) => {
   const newOrder = await db.get('SELECT * FROM orders WHERE id = ?', [orderId]);
   
   // Create Razorpay order
+  let razorpayOrder;
   try {
-    const parsedAddr = typeof shipping_address === 'string' ? JSON.parse(shipping_address) : shipping_address;
-    const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(total * 100), // Razorpay uses paise
+    razorpayOrder = await razorpay.orders.create({
+      amount: Math.round(total * 100),
       currency: 'INR',
       receipt: String(newOrder.id).substring(0, 40),
       notes: {
         radical_order_id: String(newOrder.id),
-        customer_name: parsedAddr?.name || 'Customer',
-        customer_email: guest_email || '',
       },
     });
-
-    // Store the Razorpay order ID in the database
-    await db.run('UPDATE orders SET razorpay_order_id = ? WHERE id = ?', [razorpayOrder.id, newOrder.id]);
-
-    return res.status(201).json({
-      success: true,
-      localOrderId: newOrder.id,
-      razorpayOrderId: razorpayOrder.id,
-      amount: razorpayOrder.amount,
-      currency: razorpayOrder.currency,
-      keyId: process.env.RAZORPAY_KEY_ID,
-    });
-  } catch (err) {
-    console.error('[RADICAL] Razorpay order creation failed:', err);
+    console.log('[RADICAL] Razorpay order created:', razorpayOrder.id);
+  } catch (rzpErr) {
+    console.error('[RADICAL] Razorpay order creation failed:', rzpErr);
     return res.status(502).json({ 
       error: 'Could not create payment order. Please try again.' 
     });
   }
+
+  // Save razorpay_order_id to DB immediately
+  try {
+    await db.run('UPDATE orders SET razorpay_order_id = ? WHERE id = ?', [razorpayOrder.id, newOrder.id]);
+    console.log('[RADICAL] razorpay_order_id saved to DB:', {
+      orderId: newOrder.id,
+      razorpayOrderId: razorpayOrder.id
+    });
+  } catch (dbErr) {
+    console.error('[RADICAL] Failed to save razorpay_order_id:', dbErr);
+    // Still continue — return the IDs to frontend even if 
+    // DB update failed, webhook will be fallback
+  }
+
+  return res.status(201).json({
+    success: true,
+    localOrderId: newOrder.id,
+    razorpayOrderId: razorpayOrder.id,
+    amount: razorpayOrder.amount,
+    currency: razorpayOrder.currency,
+    keyId: process.env.RAZORPAY_KEY_ID,
+  });
 });
 
 // Previous payment callback route removed. 

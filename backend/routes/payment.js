@@ -41,19 +41,36 @@ router.post('/verify', async (req, res) => {
     }
 
     // Update order status to paid in the database
-    await db.run(`UPDATE orders 
-            SET status = 'paid', 
-                razorpay_payment_id = ?, 
-                paid_at = datetime('now') 
-            WHERE id = ?`,
-      [razorpay_payment_id, localOrderId]);
+    const updateResult = await db.run(
+      `UPDATE orders 
+       SET status = 'paid',
+           razorpay_payment_id = ?,
+           paid_at = datetime('now')
+       WHERE razorpay_order_id = ?`,
+      [razorpay_payment_id, razorpay_order_id]
+    );
 
-    console.log('[RADICAL] Payment verified and captured for order:', localOrderId);
+    console.log('[RADICAL] Payment verify DB update:', {
+      razorpay_order_id,
+      razorpay_payment_id,
+      rowsAffected: updateResult.rowsAffected
+    });
+
+    if (updateResult.rowsAffected === 0) {
+      console.error('[RADICAL] Verify: no order found for:', razorpay_order_id);
+      // Payment is real but order not found — return success 
+      // anyway so user sees confirmation, log for manual fix
+      return res.json({
+        success: true,
+        warning: 'Payment captured. Order needs manual review.',
+        razorpay_order_id,
+        razorpay_payment_id
+      });
+    }
 
     return res.json({ 
       success: true, 
-      orderId: localOrderId,
-      message: 'Payment verified successfully.' 
+      message: 'Payment verified.' 
     });
 
   } catch (err) {
@@ -109,16 +126,41 @@ router.post('/webhook',
           event.payload?.payment?.entity?.id;
 
         if (razorpayOrderId) {
-          await db.run(`UPDATE orders 
-                  SET status = 'paid',
-                      razorpay_payment_id = COALESCE(
-                        razorpay_payment_id, ?
-                      ),
-                      paid_at = COALESCE(paid_at, datetime('now'))
-                  WHERE razorpay_order_id = ? 
-                    AND status != 'paid'`,
-            [razorpayPaymentId || null, razorpayOrderId]);
-          console.log('[RADICAL] Order marked paid via webhook:', razorpayOrderId);
+          // Primary lookup by razorpay_order_id
+          let webhookResult = await db.run(
+            `UPDATE orders 
+             SET status = 'paid',
+                 razorpay_payment_id = COALESCE(
+                   NULLIF(razorpay_payment_id, ''), ?
+                 ),
+                 paid_at = COALESCE(NULLIF(paid_at, ''), datetime('now'))
+             WHERE razorpay_order_id = ?`,
+            [razorpayPaymentId || null, razorpayOrderId]
+          );
+
+          console.log('[RADICAL] Webhook marked order paid:', {
+            razorpayOrderId,
+            razorpayPaymentId,
+            rowsAffected: webhookResult.rowsAffected
+          });
+
+          // Fallback: if no rows updated, try by payment_id directly
+          if (webhookResult.rowsAffected === 0 && razorpayPaymentId) {
+            webhookResult = await db.run(
+              `UPDATE orders 
+               SET status = 'paid',
+                   razorpay_order_id = COALESCE(
+                     NULLIF(razorpay_order_id, ''), ?
+                   ),
+                   paid_at = COALESCE(NULLIF(paid_at, ''), datetime('now'))
+               WHERE razorpay_payment_id = ?`,
+              [razorpayOrderId, razorpayPaymentId]
+            );
+            console.log('[RADICAL] Webhook fallback by payment_id:', {
+              razorpayPaymentId,
+              rowsAffected: webhookResult.rowsAffected
+            });
+          }
         }
       }
 
