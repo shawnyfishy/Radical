@@ -1122,7 +1122,7 @@
       return;
     }
 
-    localProduct = window.RADICAL_PRODUCTS.products.find(p => p.id === productId);
+    localProduct = window.RADICAL_PRODUCTS.products.find(p => p.id === productId || String(p.dbId) === productId);
     if (!localProduct) {
       setupLightboxTriggers();
       setupSizesAndAddBtn();
@@ -1141,7 +1141,7 @@
     }
 
     const baseProducts = window.RADICAL_PRODUCTS.getBaseProducts();
-    const baseProduct = baseProducts.find(bp => bp.variants.some(v => v.id === productId));
+    const baseProduct = baseProducts.find(bp => bp.variants.some(v => v.id === productId || String(v.dbId) === productId));
 
     function getColorStyle(colorStr) {
       const color = colorStr.toUpperCase().trim();
@@ -1161,7 +1161,7 @@
     }
 
     async function renderPDPVariant(vId, isFirstLoad) {
-      const targetProduct = window.RADICAL_PRODUCTS.products.find(p => p.id === vId);
+      const targetProduct = window.RADICAL_PRODUCTS.products.find(p => p.id === vId || String(p.dbId) === vId);
       if (!targetProduct) return;
 
       if (!isFirstLoad) {
@@ -1248,8 +1248,15 @@
               const previousActiveBtn = document.querySelector('.pdp__size-btn[aria-pressed="true"]');
               const previousSize = previousActiveBtn ? previousActiveBtn.dataset.size : null;
 
+              // Sort variants numerically by extracting the number from the label
+              const sortedVariants = [...product.variants].sort((a, b) => {
+                const aNum = parseInt(a.label.replace(/\D/g, ''), 10) || 0;
+                const bNum = parseInt(b.label.replace(/\D/g, ''), 10) || 0;
+                return aNum - bNum;
+              });
+
               let sizesHtml = '';
-              product.variants.forEach(v => {
+              sortedVariants.forEach(v => {
                 let displayLabel = v.label;
                 if (displayLabel.startsWith('Size ')) {
                   displayLabel = displayLabel.replace('Size ', '');
@@ -1457,6 +1464,8 @@
 
     function setupAccordions() {
       document.querySelectorAll('.pdp__accordion-toggle').forEach(btn => {
+        if (btn.dataset.accordionBound) return;
+        btn.dataset.accordionBound = 'true';
         btn.addEventListener('click', () => {
           const body   = btn.closest('.pdp__accordion').querySelector('.pdp__accordion-body');
           const isOpen = btn.getAttribute('aria-expanded') === 'true';

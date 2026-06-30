@@ -90,6 +90,15 @@ router.post('/:id/variants', requireAdmin, async (req, res) => {
   const { label, sku, stock, price_delta } = req.body;
   if (!label || !sku) return res.status(400).json({ error: 'label and sku are required' });
 
+  // Pre-check for duplicate label for this product
+  const existing = await db.get(
+    'SELECT id FROM variants WHERE product_id = ? AND label = ?',
+    [req.params.id, label]
+  );
+  if (existing) {
+    return res.status(409).json({ error: 'A variant with this label already exists for this product' });
+  }
+
   const result = await db.run(
     'INSERT INTO variants (product_id, label, sku, stock, price_delta) VALUES (?, ?, ?, ?, ?)',
     [req.params.id, label, sku, stock ?? 0, price_delta ?? 0]

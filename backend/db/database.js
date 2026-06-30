@@ -64,6 +64,13 @@ async function initSchema() {
     await client.execute('ALTER TABLE orders ADD COLUMN delhivery_error TEXT');
   } catch (e) {}
 
+  // Migration: add unique constraint index to variants (product_id, label)
+  try {
+    await client.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_variants_product_label ON variants(product_id, label)');
+  } catch (e) {
+    // Index already exists
+  }
+
   // Auto-seed products if the database is empty
   try {
     const result = await client.execute('SELECT COUNT(*) as count FROM products');

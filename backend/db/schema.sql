@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS variants (
   stock       INTEGER NOT NULL DEFAULT 0,
   price_delta REAL    NOT NULL DEFAULT 0  -- added to base price
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_variants_product_label ON variants(product_id, label);
 
 CREATE TABLE IF NOT EXISTS sessions (
   id         TEXT    PRIMARY KEY,  -- UUID for guest carts

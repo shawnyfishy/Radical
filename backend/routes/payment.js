@@ -7,6 +7,13 @@ const { fulfillOrder } = require('./orders');
 
 async function notifyGoogleSheets(orderId, db) {
   try {
+    // Check if already synced to avoid duplicate rows
+    const syncCheck = await db.get('SELECT sheets_synced_at FROM orders WHERE id = ?', [orderId]);
+    if (syncCheck && syncCheck.sheets_synced_at) {
+      console.log(`[RADICAL] Sheets: Order ${orderId} already synced at ${syncCheck.sheets_synced_at}. Skipping duplicate sync.`);
+      return;
+    }
+
     // Fetch full order details from DB
     const order = await db.get(
       `SELECT o.*, 
