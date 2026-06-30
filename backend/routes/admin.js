@@ -2,6 +2,30 @@ const router = require('express').Router();
 const db     = require('../db/database');
 const { requireAdmin } = require('../middleware/auth');
 
+// Temporary public route to debug environment variables on Vercel
+router.get('/delhivery/config-check-public', async (req, res) => {
+  try {
+    const apiKey = process.env.DELHIVERY_API_KEY;
+    res.json({
+      DELHIVERY_API_KEY: {
+        is_set: typeof apiKey === 'string' && apiKey.length > 0,
+        length: typeof apiKey === 'string' ? apiKey.length : 0
+      },
+      DELHIVERY_ENV: process.env.DELHIVERY_ENV || null,
+      DELHIVERY_SELLER_NAME: process.env.DELHIVERY_SELLER_NAME || null,
+      DELHIVERY_SELLER_ADDRESS: process.env.DELHIVERY_SELLER_ADDRESS || null,
+      DELHIVERY_SELLER_PIN: process.env.DELHIVERY_SELLER_PIN || null,
+      DELHIVERY_SELLER_CITY: process.env.DELHIVERY_SELLER_CITY || null,
+      DELHIVERY_SELLER_STATE: process.env.DELHIVERY_SELLER_STATE || null,
+      DELHIVERY_PICKUP_LOCATION_NAME: process.env.DELHIVERY_PICKUP_LOCATION_NAME || null,
+      JWT_SECRET_SET: typeof process.env.JWT_SECRET === 'string' && process.env.JWT_SECRET.length > 0,
+      JWT_SECRET_LENGTH: typeof process.env.JWT_SECRET === 'string' ? process.env.JWT_SECRET.length : 0
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.use(requireAdmin);
 
 // GET /api/admin/dashboard
