@@ -11,6 +11,15 @@
 (function () {
   'use strict';
 
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   /* ─────────────────────────────────────────────────────────────
      FAILSAFE: Force page visible after 4s regardless of what fails
      This is the wired-up implementation of videoSafetyTimeout.
@@ -2155,7 +2164,7 @@
             successMsg.style.lineHeight = '1.8';
             successMsg.style.color = 'var(--color-text)';
             successMsg.style.textTransform = 'uppercase';
-            successMsg.innerHTML = `THANK YOU, ${name.split(' ')[0]}<br>WELCOME TO THE CLUB.`;
+            successMsg.innerHTML = `THANK YOU, ${esc(name.split(' ')[0])}<br>WELCOME TO THE CLUB.`;
 
             col.appendChild(successMsg);
 

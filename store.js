@@ -156,48 +156,9 @@
       let errorMsg = 'Please select a size';
 
       if (selectedBtn) {
-        let expectedVid = selectedBtn.dataset.variantId || null;
-        if (!expectedVid && window.pdpActiveVariantMap) {
-          const sizeValue = selectedBtn.dataset.size;
-          const container = document.querySelector('[data-barba="container"]');
-          const namespace = container ? container.getAttribute('data-barba-namespace') : '';
-          let category = 'rings';
-          if (namespace === 'product-bracelet') category = 'bracelets';
-          else if (namespace === 'product-pendant') category = 'pendants';
-
-          // Re-derive size label to check window.pdpActiveVariantMap
-          let sizeLabel = '';
-          if (category === 'pendants') {
-            sizeLabel = sizeValue;
-            if (sizeLabel.endsWith('"') && !window.pdpActiveVariantMap[sizeLabel]) {
-              const inchLabel = sizeLabel.replace('"', ' Inches');
-              if (window.pdpActiveVariantMap[inchLabel]) sizeLabel = inchLabel;
-            }
-          } else if (category === 'bracelets') {
-            sizeLabel = `Size ${sizeValue}`;
-            if (!window.pdpActiveVariantMap[sizeLabel]) {
-              let mapped = '';
-              if (sizeValue === 'S') mapped = 'Small (6.5")';
-              else if (sizeValue === 'M') mapped = 'Medium (7")';
-              else if (sizeValue === 'L') mapped = 'Large (7.5")';
-              else if (sizeValue === 'XL') mapped = 'Large (7.5")';
-              if (mapped && window.pdpActiveVariantMap[mapped]) sizeLabel = mapped;
-            }
-          } else {
-            sizeLabel = `Size ${sizeValue}`;
-            if (!window.pdpActiveVariantMap[sizeLabel]) {
-              let mapped = '';
-              if (sizeValue === '8') mapped = 'Size 17';
-              else if (sizeValue === '9') mapped = 'Size 19';
-              else if (sizeValue === '10') mapped = 'Size 21';
-              if (mapped && window.pdpActiveVariantMap[mapped]) sizeLabel = mapped;
-            }
-          }
-          expectedVid = window.pdpActiveVariantMap[sizeLabel] || null;
-        }
-
+        const expectedVid = selectedBtn.dataset.variantId || null;
         const actualVid = btn.dataset.variantId;
-        if (actualVid && expectedVid && String(actualVid) === String(expectedVid)) {
+        if (expectedVid && actualVid && String(actualVid) === String(expectedVid)) {
           isValid = true;
         } else {
           errorMsg = "Couldn't confirm size, please reselect";
