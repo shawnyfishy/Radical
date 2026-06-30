@@ -126,6 +126,10 @@ async function fetchWaybill(count = 1) {
 
 // 3b. CREATE SHIPMENT / WAYBILL
 async function createShipment(orderData) {
+  if (!orderData.seller_name || !orderData.pickup_location_name) {
+    throw new Error('createShipment called without required seller_name/pickup_location_name');
+  }
+
   // Pre-fetch a waybill if caller did not supply one explicitly.
   // Auto-assignment (blank waybill) fails on accounts configured to require explicit pre-fetching.
   let waybill = orderData.waybill || '';
@@ -153,7 +157,7 @@ async function createShipment(orderData) {
           total_amount: orderData.total_amount,
           cod_amount: orderData.cod_amount || 0,
           weight: orderData.weight,
-          seller_name: orderData.seller_name || 'RADICAL',
+          seller_name: orderData.seller_name,
           seller_add: orderData.seller_add,
           seller_pin: orderData.seller_pin,
           seller_city: orderData.seller_city,
@@ -167,7 +171,7 @@ async function createShipment(orderData) {
         }
       ],
       pickup_location: {
-        name: orderData.pickup_location_name || 'RADICAL Warehouse'
+        name: orderData.pickup_location_name
       }
     })
   };
@@ -214,12 +218,13 @@ async function trackShipment(waybillNumber) {
 // 5. CANCEL SHIPMENT
 async function cancelShipment(waybillNumber) {
   const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/api/p/edit?waybill=${waybillNumber}&cancellation=true`;
-  console.log(`[Delhivery] Cancelling waybill ${waybillNumber} via ${url}`);
+  const url = `${baseUrl}/api/p/edit`;
+  console.log(`[Delhivery] Cancelling waybill ${waybillNumber} via POST ${url}`);
 
   const response = await fetch(url, {
-    method: 'GET',
-    headers: getAuthHeader()
+    method: 'POST',
+    headers: getAuthHeader(),
+    body: JSON.stringify({ waybill: waybillNumber, cancellation: 'true' })
   });
   if (!response.ok) {
     throw new Error(`Delhivery cancellation failed: ${response.status}`);
