@@ -303,18 +303,22 @@ async function fulfillOrder(orderRecord) {
     const shipResult = await delhivery.createShipment(shipmentPayload);
     console.log('[Delhivery] Full create response:', JSON.stringify(shipResult));
 
-    if (shipResult && (shipResult.success || (shipResult.packages && shipResult.packages.length > 0))) {
-      const firstPkg = shipResult.packages?.[0] || {};
+    // Require success:true AND a package whose own status is not 'Fail'.
+    // Delhivery always echoes the waybill back even in rejection responses, so checking
+    // packages.length alone is not sufficient — a failed response returns packages with
+    // status:"Fail" and serviceable:false while success:false at the top level.
+    if (shipResult && shipResult.success === true && shipResult.packages && shipResult.packages.length > 0) {
+      const firstPkg = shipResult.packages[0];
       const waybill = firstPkg.waybill || shipResult.waybill;
 
-      if (waybill) {
+      if (waybill && firstPkg.status !== 'Fail') {
         // Save waybill and update status in orders table, clear delhivery_error
         await db.run(
           "UPDATE orders SET waybill = ?, shipping_status = 'shipped', delhivery_error = NULL, updated_at = datetime('now') WHERE id = ?",
           [waybill, orderRecord.id]
         );
         console.log(`[Delhivery] [Order RAD${orderRecord.id}] Shipment created successfully. Waybill: ${waybill}`);
-        return { waybill, raw: shipResult };
+        return waybill;
       }
     }
     
