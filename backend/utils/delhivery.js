@@ -63,14 +63,83 @@ async function getShippingRate({ originPin, destinationPin, weight, paymentMode 
   return await response.json();
 }
 
-// 3. CREATE SHIPMENT / WAYBILL
+// 3a. FETCH WAYBILL NUMBER FROM DELHIVERY
+// Fetches one (or more) pre-assigned waybill numbers from the account's allocated series.
+// Required when the account is not configured for auto-assignment during order creation.
+async function fetchWaybill(count = 1) {
+  const baseUrl = getBaseUrl();
+  const clientName = process.env.DELHIVERY_SELLER_NAME;
+  if (!clientName) {
+    throw new Error('Failed to fetch waybill from Delhivery: DELHIVERY_SELLER_NAME env var is not set');
+  }
+
+  const url = count > 1
+    ? `${baseUrl}/waybill/api/bulk/json/?cl=${encodeURIComponent(clientName)}&count=${count}`
+    : `${baseUrl}/waybill/api/fetch/json/?cl=${encodeURIComponent(clientName)}`;
+
+  console.log(`[Delhivery] Fetching waybill(s) for client "${clientName}" via ${url}`);
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getAuthHeader()
+  });
+
+  const rawText = await response.text();
+  console.log(`[Delhivery] Waybill fetch raw response (status ${response.status}):`, rawText);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch waybill from Delhivery: HTTP ${response.status} — ${rawText}`);
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(rawText);
+  } catch {
+    throw new Error(`Failed to fetch waybill from Delhivery: non-JSON response — ${rawText}`);
+  }
+
+  // Delhivery actual single-waybill response: "57361810000011"  (raw JSON string)
+  // Delhivery object response (documented): { "waybill": "57361810000011" }
+  // Delhivery bulk response (documented):   { "waybill": ["...", "..."] }  or plain array
+  if (count === 1) {
+    let waybill;
+    if (typeof parsed === 'string' && parsed.trim() !== '') {
+      waybill = parsed.trim();  // actual observed format
+    } else if (parsed && typeof parsed.waybill === 'string' && parsed.waybill.trim() !== '') {
+      waybill = parsed.waybill.trim();  // documented object format
+    } else {
+      throw new Error(`Failed to fetch waybill from Delhivery: unexpected response shape — ${rawText}`);
+    }
+    return waybill;
+  } else {
+    let waybills;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      waybills = parsed.map(w => String(w).trim());
+    } else if (parsed && Array.isArray(parsed.waybill) && parsed.waybill.length > 0) {
+      waybills = parsed.waybill.map(w => String(w).trim());
+    } else {
+      throw new Error(`Failed to fetch waybill from Delhivery: unexpected bulk response shape — ${rawText}`);
+    }
+    return waybills;
+  }
+}
+
+// 3b. CREATE SHIPMENT / WAYBILL
 async function createShipment(orderData) {
+  // Pre-fetch a waybill if caller did not supply one explicitly.
+  // Auto-assignment (blank waybill) fails on accounts configured to require explicit pre-fetching.
+  let waybill = orderData.waybill || '';
+  if (!waybill) {
+    waybill = await fetchWaybill(1); // throws with a clear message on failure
+    console.log(`[Delhivery] Pre-fetched waybill ${waybill} for order ${orderData.order}`);
+  }
+
   const shipmentPayload = {
     format: 'json',
     data: JSON.stringify({
       shipments: [
         {
-          waybill: orderData.waybill || '',
+          waybill: waybill,
           order: orderData.order,
           name: orderData.name,
           add: orderData.add,
@@ -161,6 +230,7 @@ async function cancelShipment(waybillNumber) {
 module.exports = {
   checkPincode,
   getShippingRate,
+  fetchWaybill,
   createShipment,
   trackShipment,
   cancelShipment
