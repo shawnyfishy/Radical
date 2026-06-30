@@ -301,11 +301,12 @@ async function fulfillOrder(orderRecord) {
     const delhivery = require('../utils/delhivery');
     console.log(`[Delhivery] Triggering automatic shipment creation for order RAD${orderRecord.id}`);
     const shipResult = await delhivery.createShipment(shipmentPayload);
+    console.log('[Delhivery] Full create response:', JSON.stringify(shipResult));
 
     if (shipResult && (shipResult.success || (shipResult.packages && shipResult.packages.length > 0))) {
       const firstPkg = shipResult.packages?.[0] || {};
       const waybill = firstPkg.waybill || shipResult.waybill;
-      
+
       if (waybill) {
         // Save waybill and update status in orders table, clear delhivery_error
         await db.run(
@@ -313,7 +314,7 @@ async function fulfillOrder(orderRecord) {
           [waybill, orderRecord.id]
         );
         console.log(`[Delhivery] [Order RAD${orderRecord.id}] Shipment created successfully. Waybill: ${waybill}`);
-        return waybill;
+        return { waybill, raw: shipResult };
       }
     }
     

@@ -130,17 +130,18 @@ router.post('/orders/:id/retry-fulfillment', async (req, res) => {
     }
 
     // Await standalone execution of fulfillOrder
-    await fulfillOrder(order);
+    const fulfillResult = await fulfillOrder(order);
 
     // Fetch the updated order state to check results
     const updatedOrder = await db.get('SELECT waybill, shipping_status, delhivery_error FROM orders WHERE id = ?', [orderId]);
 
     if (updatedOrder.waybill) {
-      res.json({ 
-        success: true, 
-        message: 'Order successfully fulfilled and shipment created', 
+      res.json({
+        success: true,
+        message: 'Order successfully fulfilled and shipment created',
         waybill: updatedOrder.waybill,
-        shipping_status: updatedOrder.shipping_status
+        shipping_status: updatedOrder.shipping_status,
+        _debug_raw_delhivery: fulfillResult && fulfillResult.raw ? fulfillResult.raw : null
       });
     } else {
       res.status(500).json({ 
