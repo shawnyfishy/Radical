@@ -53,6 +53,14 @@ async function initSchema() {
     await client.execute('ALTER TABLE orders ADD COLUMN estimated_delivery TEXT');
   } catch (e) {}
 
+  // Migration: add Google Sheets sync status columns to orders
+  try {
+    await client.execute('ALTER TABLE orders ADD COLUMN sheets_synced_at TEXT');
+  } catch (e) {}
+  try {
+    await client.execute('ALTER TABLE orders ADD COLUMN sheets_sync_error TEXT');
+  } catch (e) {}
+
   // Auto-seed products if the database is empty
   try {
     const result = await client.execute('SELECT COUNT(*) as count FROM products');

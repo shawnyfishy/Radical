@@ -80,6 +80,8 @@ CREATE TABLE IF NOT EXISTS orders (
   razorpay_order_id TEXT,
   razorpay_payment_id TEXT,
   paid_at         TEXT,
+  sheets_synced_at TEXT,
+  sheets_sync_error TEXT,
   created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
   updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
 );

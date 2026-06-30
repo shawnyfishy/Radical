@@ -2400,6 +2400,16 @@ body.menu-open {
   letter-spacing: 1.5px;
 }
 
+/* PDP unavailable size button state */
+.pdp__size-btn--unavailable {
+  border-color: #8B1A10 !important;
+  color: #8B1A10 !important;
+  background-color: rgba(139, 26, 16, 0.05) !important;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+
 /* Shake animation for size error feedback */
 @keyframes shake {
   0%  { transform: translateX(0); }

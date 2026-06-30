@@ -45,11 +45,23 @@ router.post('/', async (req, res) => {
 
   if (!items.length) return res.status(400).json({ error: 'Cart is empty' });
 
-  // Validate stock
+  // Validate stock & variants
   for (const item of items) {
     if (!item.is_active) return res.status(400).json({ error: `${item.name} is no longer available` });
+
+    const variants = await db.all('SELECT id, label, price_delta, stock FROM variants WHERE product_id = ?', [item.product_id]);
+    if (variants.length > 1 && !item.variant_id) {
+      return res.status(400).json({ error: `Size/variant is required for ${item.name}` });
+    }
+    if (variants.length === 1 && !item.variant_id) {
+      item.variant_id = variants[0].id;
+      item.variant_label = variants[0].label;
+      item.price_delta = variants[0].price_delta;
+      item.stock = variants[0].stock;
+    }
+
     if (item.variant_id && item.stock < item.quantity) {
-      return res.status(400).json({ error: `Not enough stock for ${item.name} (${item.variant_label})` });
+      return res.status(400).json({ error: `Not enough stock for ${item.name} (${item.variant_label || 'Standard'})` });
     }
   }
 
@@ -191,64 +203,6 @@ router.post('/', async (req, res) => {
 // Previous payment callback route removed. 
 // TODO: Add new payment gateway webhook/callback route here after integration.
 
-// Helper function to write order to Google Sheets
-async function submitToGoogleSheets(order) {
-  const SHEET_WEBHOOK_URL = process.env.GOOGLE_SHEET_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycby-7UlBa-iX7VVi0NcOmvisUOjKscCZX7Ai7HUpI9SusSIt2RG258ln0CPHBllUCFfTQA/exec';
-  
-  const shippingAddress = JSON.parse(order.shipping_address);
-  const nameParts = (shippingAddress.name || '').trim().split(/\s+/);
-  const firstName = nameParts[0] || '';
-  const lastName = nameParts.slice(1).join(' ') || '';
-  const cityStateCountry = `${shippingAddress.city}, ${shippingAddress.state}, India`;
-  const formattedDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-
-  const items = await db.all('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
-  const itemsSummary = items.map(i => 
-    `${i.product_name}${i.variant_label ? ' (' + i.variant_label + ')' : ''} x${i.quantity}`
-  ).join('; ');
-
-  const payload = {
-    first_name:         firstName,
-    last_name:          lastName,
-    email:              order.guest_email || '',
-    phone:              shippingAddress.phone || '',
-    address_line1:      shippingAddress.line1 || '',
-    address_line2:      shippingAddress.line2 || '',
-    city_state_country: cityStateCountry,
-    zipcode:            shippingAddress.postal_code || '',
-    product_name:       itemsSummary,
-    total_amount:       `₹${order.total.toLocaleString('en-IN')}`,
-    date_and_time:      formattedDate,
-    order_id:           `RAD${order.id}`,
-    payment_method:     'Online Payment',
-  };
-
-  try {
-    const formBody = Object.entries(payload)
-      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-      .join('&');
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-    const resp = await fetch(SHEET_WEBHOOK_URL, {
-      method: 'POST',
-      body: formBody,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timeout));
-
-    const bodyText = await resp.text();
-    const looksLikeScriptError = /<title>Error<\/title>|errorMessage/i.test(bodyText);
-    if (!resp.ok || looksLikeScriptError) {
-      throw new Error(`Apps Script returned an error page (HTTP ${resp.status}): ${bodyText.slice(0, 300)}`);
-    }
-
-    console.log(`[RADICAL] Google Sheet webhook succeeded for Order RAD${order.id}:`, bodyText.slice(0, 200));
-  } catch (err) {
-    console.error(`[RADICAL] Google Sheet webhook failed for Order RAD${order.id}:`, err);
-  }
-}
 
 // GET /api/orders — current user's orders
 router.get('/', requireAuth, async (req, res) => {

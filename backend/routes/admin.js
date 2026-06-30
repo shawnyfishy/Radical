@@ -79,4 +79,77 @@ router.get('/inventory', async (req, res) => {
   res.json({ variants });
 });
 
+// Import notifyGoogleSheets helper
+const { notifyGoogleSheets } = require('./payment');
+
+// GET /api/admin/orders/sync-status
+// Returns orders where sheets_synced_at IS NULL (never successfully synced), ordered by created_at DESC
+router.get('/orders/sync-status', async (req, res) => {
+  try {
+    const orders = await db.all(
+      `SELECT id, created_at, status, total, guest_email, shipping_address, sheets_sync_error 
+       FROM orders 
+       WHERE sheets_synced_at IS NULL 
+       ORDER BY created_at DESC`
+    );
+
+    const formattedOrders = orders.map(o => {
+      let shippingAddress = {};
+      try {
+        shippingAddress = JSON.parse(o.shipping_address || '{}');
+      } catch (e) {
+        console.error(`Failed to parse shipping address for order ${o.id}:`, e);
+      }
+      return {
+        id: o.id,
+        created_at: o.created_at,
+        status: o.status,
+        total: o.total,
+        guest_email: o.guest_email,
+        shipping_address: shippingAddress,
+        sheets_sync_error: o.sheets_sync_error
+      };
+    });
+
+    res.json({ orders: formattedOrders });
+  } catch (error) {
+    console.error('[RADICAL] Failed to fetch sheets sync status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/admin/orders/:id/resync-sheet
+// Standalone retry logic that triggers Google Sheets sync for a single order on demand
+router.post('/orders/:id/resync-sheet', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await db.get('SELECT * FROM orders WHERE id = ?', [orderId]);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Await standalone execution of notifyGoogleSheets
+    await notifyGoogleSheets(orderId, db);
+
+    // Fetch the updated order state to check sync results
+    const updatedOrder = await db.get('SELECT sheets_synced_at, sheets_sync_error FROM orders WHERE id = ?', [orderId]);
+
+    if (updatedOrder.sheets_synced_at) {
+      res.json({ 
+        success: true, 
+        message: 'Order successfully synced to Google Sheets', 
+        synced_at: updatedOrder.sheets_synced_at 
+      });
+    } else {
+      res.status(500).json({ 
+        success: false, 
+        error: updatedOrder.sheets_sync_error || 'Google Sheets sync failed with unknown error' 
+      });
+    }
+  } catch (error) {
+    console.error('[RADICAL] Failed to resync order to Google Sheets:', error);
+    res.status(500).json({ error: 'Internal server error during resync' });
+  }
+});
+
 module.exports = router;

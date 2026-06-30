@@ -67,8 +67,19 @@ router.post('/', async (req, res) => {
   const product = await db.get('SELECT * FROM products WHERE id = ? AND is_active = 1', [product_id]);
   if (!product) return res.status(404).json({ error: 'Product not found' });
 
-  if (variant_id) {
-    const variant = await db.get('SELECT * FROM variants WHERE id = ? AND product_id = ?', [variant_id, product_id]);
+  let finalVariantId = variant_id || null;
+  const variants = await db.all('SELECT id, stock FROM variants WHERE product_id = ?', [product_id]);
+
+  if (variants.length > 1 && !finalVariantId) {
+    return res.status(400).json({ error: 'variant_id is required for this product' });
+  }
+
+  if (variants.length === 1 && !finalVariantId) {
+    finalVariantId = variants[0].id;
+  }
+
+  if (finalVariantId) {
+    const variant = await db.get('SELECT * FROM variants WHERE id = ? AND product_id = ?', [finalVariantId, product_id]);
     if (!variant) return res.status(404).json({ error: 'Variant not found' });
     if (variant.stock < safeQty) return res.status(400).json({ error: 'Not enough stock' });
   }
@@ -80,7 +91,7 @@ router.post('/', async (req, res) => {
   const existing = await db.get(`
     SELECT id, quantity FROM cart_items
     WHERE ${whereSql} AND product_id = ? AND (variant_id = ? OR (variant_id IS NULL AND ? IS NULL))
-  `, [whereParam, product_id, variant_id ?? null, variant_id ?? null]);
+  `, [whereParam, product_id, finalVariantId, finalVariantId]);
 
   if (existing) {
     await db.run('UPDATE cart_items SET quantity = quantity + ? WHERE id = ?', [safeQty, existing.id]);
@@ -88,7 +99,7 @@ router.post('/', async (req, res) => {
     const col = owner.user_id ? 'user_id' : 'session_id';
     await db.run(
       `INSERT INTO cart_items (${col}, product_id, variant_id, quantity) VALUES (?, ?, ?, ?)`,
-      [owner.user_id ?? owner.session_id, product_id, variant_id ?? null, safeQty]
+      [owner.user_id ?? owner.session_id, product_id, finalVariantId, safeQty]
     );
   }
 

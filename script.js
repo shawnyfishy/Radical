@@ -1083,10 +1083,42 @@
     if (namespace === 'product-bracelet') category = 'bracelets';
     else if (namespace === 'product-pendant') category = 'pendants';
 
+    function disablePDPInteraction(message) {
+      const addBtn = document.getElementById('pdp-add-btn');
+      if (addBtn) {
+        addBtn.disabled = true;
+        addBtn.textContent = 'Unavailable';
+        addBtn.style.opacity = '0.5';
+        addBtn.style.cursor = 'not-allowed';
+      }
+      document.querySelectorAll('.pdp__size-btn').forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+      });
+      const sizesContainer = document.querySelector('.pdp__sizes');
+      if (sizesContainer) {
+        let errEl = document.getElementById('pdp-size-error-msg');
+        if (!errEl) {
+          errEl = document.createElement('p');
+          errEl.id = 'pdp-size-error-msg';
+          errEl.className = 'pdp__size-error-msg';
+          errEl.style.color = '#8B1A10';
+          errEl.style.fontFamily = 'var(--font-ui)';
+          errEl.style.fontSize = '12px';
+          errEl.style.marginTop = '8px';
+          sizesContainer.appendChild(errEl);
+        }
+        errEl.textContent = message;
+        errEl.style.display = 'block';
+      }
+    }
+
     if (!productId || typeof window.RADICAL_PRODUCTS === 'undefined') {
       setupLightboxTriggers();
       setupSizesAndAddBtn();
       setupAccordions();
+      disablePDPInteraction("Product details could not be loaded.");
       return;
     }
 
@@ -1095,6 +1127,7 @@
       setupLightboxTriggers();
       setupSizesAndAddBtn();
       setupAccordions();
+      disablePDPInteraction("Product not found in catalog.");
       return;
     }
 
@@ -1203,6 +1236,50 @@
           const variantMap = Object.fromEntries((product.variants || []).map(v => [v.label, v.id]));
           window.pdpActiveVariantMap = variantMap;
 
+          const sizesRow = document.querySelector('.pdp__sizes-row');
+          const pdpSizesSection = document.querySelector('.pdp__sizes');
+          if (sizesRow && product.variants && product.variants.length > 0) {
+            const isStandard = product.variants.length === 1 && product.variants[0].label === 'Standard';
+            if (isStandard) {
+              if (pdpSizesSection) pdpSizesSection.style.display = 'none';
+              if (addBtn) addBtn.dataset.variantId = product.variants[0].id;
+            } else {
+              if (pdpSizesSection) pdpSizesSection.style.display = 'block';
+              const previousActiveBtn = document.querySelector('.pdp__size-btn[aria-pressed="true"]');
+              const previousSize = previousActiveBtn ? previousActiveBtn.dataset.size : null;
+
+              let sizesHtml = '';
+              product.variants.forEach(v => {
+                let displayLabel = v.label;
+                if (displayLabel.startsWith('Size ')) {
+                  displayLabel = displayLabel.replace('Size ', '');
+                }
+                if (displayLabel.endsWith(' Inches')) {
+                  displayLabel = displayLabel.replace(' Inches', '"');
+                }
+                if (displayLabel.startsWith('Small')) {
+                  displayLabel = displayLabel.replace('Small', 'S');
+                } else if (displayLabel.startsWith('Medium')) {
+                  displayLabel = displayLabel.replace('Medium', 'M');
+                } else if (displayLabel.startsWith('Large')) {
+                  displayLabel = displayLabel.replace('Large', 'L');
+                }
+                
+                const cleanSizeValue = v.label.replace('Size ', '');
+                sizesHtml += `<button class="pdp__size-btn" data-size="${cleanSizeValue}" data-variant-id="${v.id}" aria-pressed="false">${displayLabel}</button>`;
+              });
+              sizesRow.innerHTML = sizesHtml;
+              setupSizesAndAddBtn();
+
+              if (previousSize) {
+                const matchedBtn = Array.from(document.querySelectorAll('.pdp__size-btn')).find(b => b.dataset.size === previousSize);
+                if (matchedBtn) {
+                  matchedBtn.click();
+                }
+              }
+            }
+          }
+
           const activeSizeBtn = document.querySelector('.pdp__size-btn[aria-pressed="true"]');
           if (activeSizeBtn) {
             const sizeValue = activeSizeBtn.dataset.size;
@@ -1212,6 +1289,7 @@
           }
         } catch (e) {
           console.error('[RADICAL] Failed to fetch variants:', e);
+          disablePDPInteraction("Error loading sizing details. Please try refreshing the page.");
         }
       }
 
@@ -1321,26 +1399,60 @@
     }
 
     function setupSizesAndAddBtn() {
+      const sizesContainer = document.querySelector('.pdp__sizes');
+      let sizeErrorMsg = document.getElementById('pdp-size-error-msg');
+      if (sizesContainer && !sizeErrorMsg) {
+        sizeErrorMsg = document.createElement('p');
+        sizeErrorMsg.id = 'pdp-size-error-msg';
+        sizeErrorMsg.className = 'pdp__size-error-msg';
+        sizeErrorMsg.style.color = '#8B1A10';
+        sizeErrorMsg.style.fontFamily = 'var(--font-ui)';
+        sizeErrorMsg.style.fontSize = '12px';
+        sizeErrorMsg.style.marginTop = '8px';
+        sizeErrorMsg.style.display = 'none';
+        sizesContainer.appendChild(sizeErrorMsg);
+      }
+
       document.querySelectorAll('.pdp__size-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        // Clone to remove previous event listeners
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+
+        newBtn.addEventListener('click', () => {
           document.querySelectorAll('.pdp__size-btn').forEach(b => {
             b.setAttribute('aria-pressed', 'false');
             b.classList.remove('is-selected');
+            b.classList.remove('pdp__size-btn--unavailable');
           });
-          btn.setAttribute('aria-pressed', 'true');
-          btn.classList.add('is-selected');
-          
-          const sizeValue = btn.dataset.size;
-          const sizeLabel = category === 'pendants' ? `${sizeValue}` : `Size ${sizeValue}`;
-          const vid = window.pdpActiveVariantMap ? window.pdpActiveVariantMap[sizeLabel] : null;
+          if (sizeErrorMsg) {
+            sizeErrorMsg.style.display = 'none';
+            sizeErrorMsg.textContent = '';
+          }
           const addBtn = document.getElementById('pdp-add-btn');
+          if (addBtn) {
+            delete addBtn.dataset.variantId;
+          }
+
+          const sizeValue = newBtn.dataset.size;
+          let vid = newBtn.dataset.variantId;
+          if (!vid && window.pdpActiveVariantMap) {
+            const sizeLabel = category === 'pendants' ? `${sizeValue}` : `Size ${sizeValue}`;
+            vid = window.pdpActiveVariantMap[sizeLabel];
+          }
+
           if (vid && addBtn) {
+            newBtn.setAttribute('aria-pressed', 'true');
+            newBtn.classList.add('is-selected');
             addBtn.dataset.variantId = vid;
+          } else {
+            newBtn.classList.add('pdp__size-btn--unavailable');
+            if (sizeErrorMsg) {
+              sizeErrorMsg.textContent = "Couldn't load this size — please refresh the page";
+              sizeErrorMsg.style.display = 'block';
+            }
           }
         });
       });
-      // Note: The actual add-to-bag click + API call is handled by store.js via
-      // event delegation on document.body — do NOT add a duplicate handler here.
     }
 
     function setupAccordions() {

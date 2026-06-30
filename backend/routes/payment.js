@@ -99,10 +99,44 @@ async function notifyGoogleSheets(orderId, db) {
     const sheetsBody = await sheetsRes.text();
     console.log('[RADICAL] Google Sheets response:', sheetsBody);
 
+    let parsed = null;
+    try {
+      parsed = JSON.parse(sheetsBody);
+    } catch (parseErr) {
+      console.error('[RADICAL] Sheets response was not valid JSON:', parseErr);
+    }
+
+    if (sheetsRes.ok && parsed && parsed.status === 'success') {
+      await db.run(
+        `UPDATE orders SET sheets_synced_at = datetime('now'), sheets_sync_error = NULL WHERE id = ?`,
+        [orderId]
+      );
+      console.log('[RADICAL] Google Sheets sync succeeded and recorded for order:', orderId);
+    } else {
+      const errorMsg = parsed && parsed.message 
+        ? parsed.message 
+        : sheetsBody.substring(0, 300) || `HTTP error status ${sheetsRes.status}`;
+      
+      await db.run(
+        `UPDATE orders SET sheets_sync_error = ? WHERE id = ?`,
+        [errorMsg, orderId]
+      );
+      console.warn('[RADICAL] Google Sheets sync failed and error recorded for order:', orderId, errorMsg);
+    }
+
   } catch (sheetsErr) {
     // Never throw from here — a Sheets failure must never
     // break the payment confirmation flow
     console.error('[RADICAL] Google Sheets notification failed:', sheetsErr);
+    try {
+      const errorMsg = sheetsErr.message || String(sheetsErr);
+      await db.run(
+        `UPDATE orders SET sheets_sync_error = ? WHERE id = ?`,
+        [errorMsg.substring(0, 300), orderId]
+      );
+    } catch (dbErr) {
+      console.error('[RADICAL] Failed to record Sheets sync error to DB:', dbErr);
+    }
   }
 }
 
@@ -312,4 +346,5 @@ router.post('/webhook',
   }
 );
 
+router.notifyGoogleSheets = notifyGoogleSheets;
 module.exports = router;
