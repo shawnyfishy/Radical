@@ -26,6 +26,23 @@ router.get('/delhivery/config-check-public', async (req, res) => {
   }
 });
 
+// Temporary public route to debug fulfillment on Vercel
+router.get('/delhivery/retry-public/:id', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await db.get('SELECT * FROM orders WHERE id = ?', [orderId]);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    const { fulfillOrder } = require('./orders');
+    await fulfillOrder(order);
+    const updatedOrder = await db.get('SELECT waybill, shipping_status, delhivery_error FROM orders WHERE id = ?', [orderId]);
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.use(requireAdmin);
 
 // GET /api/admin/dashboard
