@@ -81,6 +81,79 @@ router.get('/inventory', async (req, res) => {
 
 // Import notifyGoogleSheets helper
 const { notifyGoogleSheets } = require('./payment');
+// Import fulfillOrder helper
+const { fulfillOrder } = require('./orders');
+
+// GET /api/admin/orders/fulfillment-status
+// Returns orders where status = 'paid' AND waybill IS NULL, ordered by created_at DESC
+router.get('/orders/fulfillment-status', async (req, res) => {
+  try {
+    const orders = await db.all(
+      `SELECT id, created_at, total, shipping_address, shipping_status, delhivery_error 
+       FROM orders 
+       WHERE status = 'paid' AND waybill IS NULL 
+       ORDER BY created_at DESC`
+    );
+
+    const formattedOrders = orders.map(o => {
+      let shippingAddress = {};
+      try {
+        shippingAddress = JSON.parse(o.shipping_address || '{}');
+      } catch (e) {
+        console.error(`Failed to parse shipping address for order ${o.id}:`, e);
+      }
+      return {
+        id: o.id,
+        created_at: o.created_at,
+        total: o.total,
+        shipping_address: shippingAddress,
+        shipping_status: o.shipping_status,
+        delhivery_error: o.delhivery_error
+      };
+    });
+
+    res.json({ orders: formattedOrders });
+  } catch (error) {
+    console.error('[RADICAL] Failed to fetch fulfillment status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/admin/orders/:id/retry-fulfillment
+// Standalone retry logic that triggers Delhivery fulfillment for a single order on demand
+router.post('/orders/:id/retry-fulfillment', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await db.get('SELECT * FROM orders WHERE id = ?', [orderId]);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Await standalone execution of fulfillOrder
+    await fulfillOrder(order);
+
+    // Fetch the updated order state to check results
+    const updatedOrder = await db.get('SELECT waybill, shipping_status, delhivery_error FROM orders WHERE id = ?', [orderId]);
+
+    if (updatedOrder.waybill) {
+      res.json({ 
+        success: true, 
+        message: 'Order successfully fulfilled and shipment created', 
+        waybill: updatedOrder.waybill,
+        shipping_status: updatedOrder.shipping_status
+      });
+    } else {
+      res.status(500).json({ 
+        success: false, 
+        error: updatedOrder.delhivery_error || 'Delhivery shipment creation failed with unknown error',
+        shipping_status: updatedOrder.shipping_status
+      });
+    }
+  } catch (error) {
+    console.error('[RADICAL] Failed to retry fulfillment:', error);
+    res.status(500).json({ error: 'Internal server error during retry-fulfillment' });
+  }
+});
 
 // GET /api/admin/orders/sync-status
 // Returns orders where sheets_synced_at IS NULL (never successfully synced), ordered by created_at DESC

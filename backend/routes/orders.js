@@ -240,6 +240,13 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
 // Automatic Delhivery shipment creation post-payment
 async function fulfillOrder(orderRecord) {
   try {
+    // Idempotency guard: check if waybill is already set
+    const currentOrder = await db.get('SELECT waybill FROM orders WHERE id = ?', [orderRecord.id]);
+    if (currentOrder && currentOrder.waybill) {
+      console.log(`[Delhivery] Order RAD${orderRecord.id} already has a waybill: ${currentOrder.waybill}. Skipping fulfillment.`);
+      return currentOrder.waybill;
+    }
+
     const shippingAddress = JSON.parse(orderRecord.shipping_address);
     
     // Retrieve items from order_items to build product description and weight/quantity
@@ -279,9 +286,9 @@ async function fulfillOrder(orderRecord) {
       const waybill = firstPkg.waybill || shipResult.waybill;
       
       if (waybill) {
-        // Save waybill and update status in orders table
+        // Save waybill and update status in orders table, clear delhivery_error
         await db.run(
-          "UPDATE orders SET waybill = ?, shipping_status = 'shipped', updated_at = datetime('now') WHERE id = ?",
+          "UPDATE orders SET waybill = ?, shipping_status = 'shipped', delhivery_error = NULL, updated_at = datetime('now') WHERE id = ?",
           [waybill, orderRecord.id]
         );
         console.log(`[Delhivery] [Order RAD${orderRecord.id}] Shipment created successfully. Waybill: ${waybill}`);
@@ -290,17 +297,37 @@ async function fulfillOrder(orderRecord) {
     }
     
     console.error('[Delhivery] Shipment response did not return a valid waybill:', JSON.stringify(shipResult));
+    
+    let errorMsg = 'Shipment response did not return a valid waybill';
+    if (shipResult) {
+      if (shipResult.errors && shipResult.errors.length > 0) {
+        errorMsg = shipResult.errors.join(', ');
+      } else if (shipResult.packages && shipResult.packages.length > 0) {
+        const pkg = shipResult.packages[0];
+        if (pkg.remarks && pkg.remarks.length > 0) {
+          errorMsg = Array.isArray(pkg.remarks) ? pkg.remarks.join(', ') : String(pkg.remarks);
+        } else if (pkg.reason) {
+          errorMsg = pkg.reason;
+        } else if (pkg.status) {
+          errorMsg = `Package Status: ${pkg.status}`;
+        }
+      } else if (shipResult.rmk) {
+        errorMsg = shipResult.rmk;
+      } else {
+        errorMsg = JSON.stringify(shipResult).substring(0, 300);
+      }
+    }
+
     await db.run(
-      "UPDATE orders SET shipping_status = 'failed_manual_review', updated_at = datetime('now') WHERE id = ?",
-      [orderRecord.id]
+      "UPDATE orders SET shipping_status = 'failed_manual_review', delhivery_error = ?, updated_at = datetime('now') WHERE id = ?",
+      [errorMsg.substring(0, 300), orderRecord.id]
     );
   } catch (err) {
     console.error('[Delhivery] FulfillOrder error:', err.message);
-    // Flag for manual review
     try {
       await db.run(
-        "UPDATE orders SET shipping_status = 'failed_manual_review', updated_at = datetime('now') WHERE id = ?",
-        [orderRecord.id]
+        "UPDATE orders SET shipping_status = 'failed_manual_review', delhivery_error = ?, updated_at = datetime('now') WHERE id = ?",
+        [err.message.substring(0, 300), orderRecord.id]
       );
     } catch (e) {
       console.error('[Delhivery] Failed to flag order status:', e.message);
@@ -308,4 +335,5 @@ async function fulfillOrder(orderRecord) {
   }
 }
 
+router.fulfillOrder = fulfillOrder;
 module.exports = router;

@@ -3,6 +3,7 @@ const db     = require('../db/database');
 const fetch  = require('node-fetch');
 const crypto = require('crypto');
 const express = require('express');
+const { fulfillOrder } = require('./orders');
 
 async function notifyGoogleSheets(orderId, db) {
   try {
@@ -210,6 +211,19 @@ router.post('/verify', async (req, res) => {
       console.error('[RADICAL] Sheets notify error in verify:', err);
     });
 
+    // Fulfill Delhivery shipment asynchronously
+    db.get('SELECT * FROM orders WHERE id = ?', [localOrderId])
+      .then(order => {
+        if (order) {
+          fulfillOrder(order).catch(err => {
+            console.error('[RADICAL] Delhivery shipment fulfill error in verify:', err);
+          });
+        }
+      })
+      .catch(err => {
+        console.error('[RADICAL] DB lookup error for fulfillOrder in verify:', err);
+      });
+
     return res.json({ 
       success: true, 
       message: 'Payment verified.' 
@@ -307,20 +321,23 @@ router.post('/webhook',
              updated = webhookResult.rowsAffected > 0;
            }
 
-           if (updated) {
-             // Get the local order ID to pass to Sheets
-             const orderLookup = await db.get(
-               `SELECT id FROM orders 
-                WHERE razorpay_order_id = ? OR razorpay_payment_id = ?`,
-               [razorpayOrderId, razorpayPaymentId]
-             );
-             
-             if (orderLookup) {
-               notifyGoogleSheets(orderLookup.id, db).catch(err => {
-                 console.error('[RADICAL] Sheets notify error in webhook:', err);
-               });
-             }
-           }
+            if (updated) {
+              // Get the full order record to pass to Delhivery and Sheets
+              const orderLookup = await db.get(
+                `SELECT * FROM orders 
+                 WHERE razorpay_order_id = ? OR razorpay_payment_id = ?`,
+                [razorpayOrderId, razorpayPaymentId]
+              );
+              
+              if (orderLookup) {
+                notifyGoogleSheets(orderLookup.id, db).catch(err => {
+                  console.error('[RADICAL] Sheets notify error in webhook:', err);
+                });
+                fulfillOrder(orderLookup).catch(err => {
+                  console.error('[RADICAL] Delhivery shipment fulfill error in webhook:', err);
+                });
+              }
+            }
          }
       }
 

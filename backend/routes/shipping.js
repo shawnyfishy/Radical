@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const delhivery = require('../utils/delhivery');
+const { requireAdmin } = require('../middleware/auth');
 
 // POST /api/shipping/check-pincode
 // Body: { pincode: '400001' }
@@ -45,7 +46,7 @@ router.post('/rate', async (req, res) => {
 
 // POST /api/shipping/create
 // Body: full orderData object
-router.post('/create', async (req, res) => {
+router.post('/create', requireAdmin, async (req, res) => {
   try {
     const orderData = req.body;
     const required = ['order', 'name', 'add', 'pin', 'city', 
@@ -85,7 +86,7 @@ router.get('/track/:waybill', async (req, res) => {
 
 // POST /api/shipping/cancel
 // Body: { waybill: 'WAYBILL123' }
-router.post('/cancel', async (req, res) => {
+router.post('/cancel', requireAdmin, async (req, res) => {
   try {
     const { waybill } = req.body;
     if (!waybill) {

@@ -60,6 +60,9 @@ async function initSchema() {
   try {
     await client.execute('ALTER TABLE orders ADD COLUMN sheets_sync_error TEXT');
   } catch (e) {}
+  try {
+    await client.execute('ALTER TABLE orders ADD COLUMN delhivery_error TEXT');
+  } catch (e) {}
 
   // Auto-seed products if the database is empty
   try {
