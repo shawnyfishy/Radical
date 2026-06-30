@@ -225,4 +225,28 @@ router.post('/orders/:id/resync-sheet', async (req, res) => {
   }
 });
 
+// GET /api/admin/delhivery/config-check
+// Reports whether Delhivery variables are set, masking the API Key
+router.get('/delhivery/config-check', async (req, res) => {
+  try {
+    const apiKey = process.env.DELHIVERY_API_KEY;
+    res.json({
+      DELHIVERY_API_KEY: {
+        is_set: typeof apiKey === 'string' && apiKey.length > 0,
+        length: typeof apiKey === 'string' ? apiKey.length : 0
+      },
+      DELHIVERY_ENV: process.env.DELHIVERY_ENV || null,
+      DELHIVERY_SELLER_NAME: process.env.DELHIVERY_SELLER_NAME || null,
+      DELHIVERY_SELLER_ADDRESS: process.env.DELHIVERY_SELLER_ADDRESS || null,
+      DELHIVERY_SELLER_PIN: process.env.DELHIVERY_SELLER_PIN || null,
+      DELHIVERY_SELLER_CITY: process.env.DELHIVERY_SELLER_CITY || null,
+      DELHIVERY_SELLER_STATE: process.env.DELHIVERY_SELLER_STATE || null,
+      DELHIVERY_PICKUP_LOCATION_NAME: process.env.DELHIVERY_PICKUP_LOCATION_NAME || null
+    });
+  } catch (error) {
+    console.error('[RADICAL] Failed to check Delhivery config:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

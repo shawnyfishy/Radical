@@ -240,6 +240,27 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
 // Automatic Delhivery shipment creation post-payment
 async function fulfillOrder(orderRecord) {
   try {
+    // Validate required environment variables first (before idempotency check)
+    const requiredEnvVars = [
+      'DELHIVERY_SELLER_NAME',
+      'DELHIVERY_SELLER_ADDRESS',
+      'DELHIVERY_SELLER_PIN',
+      'DELHIVERY_SELLER_CITY',
+      'DELHIVERY_SELLER_STATE',
+      'DELHIVERY_PICKUP_LOCATION_NAME'
+    ];
+    const missingVars = requiredEnvVars.filter(v => !process.env[v] || process.env[v].trim() === '');
+    
+    if (missingVars.length > 0) {
+      const errorMsg = `Missing required env var(s): ${missingVars.join(', ')}`;
+      console.error(`[Delhivery] ${errorMsg}`);
+      await db.run(
+        "UPDATE orders SET shipping_status = 'failed_manual_review', delhivery_error = ?, updated_at = datetime('now') WHERE id = ?",
+        [errorMsg, orderRecord.id]
+      );
+      return;
+    }
+
     // Idempotency guard: check if waybill is already set
     const currentOrder = await db.get('SELECT waybill FROM orders WHERE id = ?', [orderRecord.id]);
     if (currentOrder && currentOrder.waybill) {
@@ -267,14 +288,14 @@ async function fulfillOrder(orderRecord) {
       total_amount: orderRecord.total,
       cod_amount: 0,
       weight: 0.3, // rings/pendants approx 0.2-0.3 kg with packaging
-      seller_name: 'RADICAL',
-      seller_add: 'City Centre, unit no. 320, 3rd Floor, Sector-12, Sai Road City Centre, Dwarka, New Delhi',
-      seller_pin: '110078',
-      seller_city: 'New Delhi',
-      seller_state: 'Delhi',
+      seller_name: process.env.DELHIVERY_SELLER_NAME,
+      seller_add: process.env.DELHIVERY_SELLER_ADDRESS,
+      seller_pin: process.env.DELHIVERY_SELLER_PIN,
+      seller_city: process.env.DELHIVERY_SELLER_CITY,
+      seller_state: process.env.DELHIVERY_SELLER_STATE,
       products_desc: products_desc || 'Men\'s Jewellery - RADICAL',
       quantity: quantity || 1,
-      pickup_location_name: 'RADICAL Inc'
+      pickup_location_name: process.env.DELHIVERY_PICKUP_LOCATION_NAME
     };
 
     const delhivery = require('../utils/delhivery');
